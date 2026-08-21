@@ -41,7 +41,11 @@ sync_dir() {
   local src="$1" dest="$2"
   [[ -d "$src" ]] || { echo "skip: $src does not exist"; return; }
   echo "==> $src  →  R2:$R2_BUCKET/$dest"
-  rclone sync "$src" "R2:$R2_BUCKET/$dest" \
+  # `copy`, deliberately not `sync`: sync mirrors, so it would DELETE any bucket
+  # object missing locally. Once the admin uploads media straight to R2, the
+  # bucket knows files this folder never will — a mirror run would destroy them.
+  # Copy only adds and updates; it never removes.
+  rclone copy "$src" "R2:$R2_BUCKET/$dest" \
     --s3-no-check-bucket \
     --header-upload "$CACHE_HEADER" \
     --transfers 64 \

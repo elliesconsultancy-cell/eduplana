@@ -593,7 +593,7 @@ function Downloads({ school }: { school: School }) {
   return (
     <Section title="Downloads" icon={FileDown}>
       <a
-        href={school.admissionForm}
+        href={asset(school.admissionForm)}
         download
         className="group flex items-center gap-4 rounded-card border border-ink-200 bg-white p-4 transition-colors hover:border-brand-500 hover:bg-brand-50/40"
       >

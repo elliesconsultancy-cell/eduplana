@@ -3,9 +3,13 @@
 Education data and management for Nigeria — from choosing a school to running
 one well.
 
-Search, filter, compare and shortlist **7,375 school records** across 38 states;
-read every school for **career-education signals**; and browse nine years of
-education research. All on local data — no database and no accounts yet.
+Search, filter, compare and shortlist **7,375 school records** across all 36
+states and the FCT; read every school for **career-education signals**; and
+browse nine years of education research.
+
+Live at [eduplana.vercel.app](https://eduplana.vercel.app). School records are
+flat JSON in the repo; the ~26,000 photographs, logos and PDFs (1.2 GB) live on
+Cloudflare R2, not in git.
 
 ## Running it
 
@@ -16,9 +20,14 @@ npm run dev
 
 Then open http://localhost:3000.
 
+Set `NEXT_PUBLIC_ASSET_BASE_URL` in `.env.local` to the R2 public URL so school
+photography loads; without it the app falls back to `public/`, which only works
+if you have the asset trees on disk.
+
 ```bash
-npm run build     # production build
-npm run lint      # eslint
+npm run build                # production build
+npm run lint                 # eslint
+./scripts/sync-assets.sh     # upload new files in public/{schools,insights} to R2
 ```
 
 ## What works today
@@ -46,13 +55,25 @@ src/lib/taxonomy.ts         Maps a facility/club label to its icon and colour
 src/lib/career.ts           Career-education signals derived from published tags
 src/lib/insights.ts         The research archive (infographics + documents)
 src/data/insights.json      Archive manifest — titles, topics, file paths
+src/lib/assets.ts           Maps repo-relative asset paths to the CDN
 src/app/                    Routes (App Router, Next 16)
 src/components/             UI, including the client-side shortlist store
-public/schools/             Per-school logos and photographs
-public/brand/               Logo lock-up, icon mark, favicon
-public/images/              Hero photograph and city tiles
-public/insights/            Infographics (WebP) and reports (PDF)
+public/brand/               Logo lock-up, icon mark, favicon (in git)
+public/images/              Hero photograph and city tiles (in git)
+public/schools/             Local copy of school media — gitignored, served from R2
+public/insights/            Local copy of the archive — gitignored, served from R2
+scripts/sync-assets.sh      Uploads public/{schools,insights} to the R2 bucket
 ```
+
+### Assets
+
+School photography, logos, admission forms and the research archive (~26,000
+files, 1.2 GB) are stored in a Cloudflare R2 bucket that mirrors the `public/`
+layout. `src/lib/assets.ts` prefixes those paths with
+`NEXT_PUBLIC_ASSET_BASE_URL` at render time; everything under `/brand` and
+`/images` is small and ships with the repo. The sync script uses `rclone copy`
+on purpose — it only ever adds or updates bucket objects, so files uploaded
+later by the admin can never be deleted by a local run.
 
 ## The data
 
@@ -147,16 +168,14 @@ freeze decisions still being learned from.
   set the floor would put a ₦120,000-a-term school in an "under ₦50,000" search.
   A table whose largest figure is under ₦1,000 is discarded outright as being in
   the wrong units rather than genuinely cheap.
-* **`public/schools` is ~1.1 GB.** Fine locally; it needs object storage rather
-  than the repo before this deploys.
 * Nothing is verified with the schools themselves. Fee bands are indicative and
   the UI says so. A verified badge should only ever apply to facts actually
   checked.
 
 ## Not built yet
 
-1. Postgres, replacing the JSON behind `schools.ts`
+1. Postgres + admin (Payload CMS), replacing the JSON behind `schools.ts` —
+   planned in `docs/admin-phase-plan.md`
 2. Accounts — parent sign-in, saved lists synced across devices
-3. Admin — correction queue, moderation, data-quality tooling
-4. School claiming and per-field verification
-5. Enquiry and application flow
+3. School claiming and per-field verification
+4. Enquiry and application flow
