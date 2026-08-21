@@ -29,6 +29,37 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: remoteImageHosts(),
   },
+
+  // Advertising the exact stack in a response header only helps someone
+  // choosing which exploits to try.
+  poweredByHeader: false,
+
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Stop the browser second-guessing declared content types.
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Leak the origin but never the full path to third-party sites.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // No reason for any page here to be framed by another site.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+        ],
+      },
+      {
+        // The admin holds the write surface, so it is worth being stricter:
+        // never framed, and never cached by an intermediary.
+        source: "/admin/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+        ],
+      },
+    ];
+  },
 };
 
 // withPayload injects the admin panel's webpack/turbopack needs and its

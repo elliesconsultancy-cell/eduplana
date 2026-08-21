@@ -40,7 +40,20 @@ export const Schools: CollectionConfig = {
     maxPerDoc: 20,
   },
   access: {
-    read: () => true,
+    /**
+     * The public sees published records only.
+     *
+     * `read: () => true` is not enough once drafts are enabled: it grants
+     * access to the document regardless of status, so an anonymous request for
+     * `?draft=true` returned an editor's unpublished work verbatim. Returning a
+     * constraint instead of `true` pins the public to published rows at the
+     * query level, while signed-in staff keep full visibility so the admin
+     * panel and previews still work.
+     */
+    read: ({ req }) => {
+      if (req.user) return true;
+      return { _status: { equals: "published" } };
+    },
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     // Deleting a school removes it from the public directory entirely;
