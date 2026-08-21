@@ -67,6 +67,7 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    schools: School;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -75,6 +76,7 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
+    schools: SchoolsSelect<false> | SchoolsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -114,6 +116,162 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
+}
+/**
+ * Every school in the public directory. Changes go live once published.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schools".
+ */
+export interface School {
+  /**
+   * Permanent identifier.
+   */
+  id: string;
+  name: string;
+  /**
+   * The URL segment: /schools/<slug>. Changing it breaks existing links.
+   */
+  slug: string;
+  level: 'primary' | 'secondary';
+  /**
+   * The school's own strapline, if it has one.
+   */
+  tagline?: string | null;
+  /**
+   * Shown as “About this school”. Write in the school's own words, in complete sentences.
+   */
+  summary?: string | null;
+  /**
+   * Stages offered, e.g. “Creche, Primary”.
+   */
+  scope?: string | null;
+  yearFounded?: number | null;
+  /**
+   * British, Nigerian, Montessori, and so on.
+   */
+  curricula?: string[] | null;
+  faith?: ('Secular' | 'Christian' | 'Islamic') | null;
+  /**
+   * Fixed list — pick the official spelling.
+   */
+  state?:
+    | (
+        | 'Abia'
+        | 'Adamawa'
+        | 'Akwa Ibom'
+        | 'Anambra'
+        | 'Bauchi'
+        | 'Bayelsa'
+        | 'Benue'
+        | 'Borno'
+        | 'Cross River'
+        | 'Delta'
+        | 'Ebonyi'
+        | 'Edo'
+        | 'Ekiti'
+        | 'Enugu'
+        | 'FCT (Abuja)'
+        | 'Gombe'
+        | 'Imo'
+        | 'Jigawa'
+        | 'Kaduna'
+        | 'Kano'
+        | 'Katsina'
+        | 'Kebbi'
+        | 'Kogi'
+        | 'Kwara'
+        | 'Lagos'
+        | 'Nasarawa'
+        | 'Niger'
+        | 'Ogun'
+        | 'Ondo'
+        | 'Osun'
+        | 'Oyo'
+        | 'Plateau'
+        | 'Rivers'
+        | 'Sokoto'
+        | 'Taraba'
+        | 'Yobe'
+        | 'Zamfara'
+      )
+    | null;
+  /**
+   * Town or district, e.g. Lekki.
+   */
+  area?: string | null;
+  address?: string | null;
+  /**
+   * Nearest landmark or bus stop.
+   */
+  busStop?: string | null;
+  phone?: string | null;
+  /**
+   * Include https://
+   */
+  website?: string | null;
+  /**
+   * The headline band shown on cards and used by the budget filter.
+   */
+  fee?: {
+    /**
+     * As published, e.g. “N1 000 000+”.
+     */
+    label?: string | null;
+    /**
+     * Lower bound per term, in naira.
+     */
+    min?: number | null;
+    /**
+     * Upper bound per term. Leave empty for open-ended.
+     */
+    max?: number | null;
+  };
+  /**
+   * Exact published tuition lines, where the school itemised them. More precise than the band above.
+   */
+  feeItems?:
+    | {
+        label: string;
+        amount: number;
+        id?: string | null;
+      }[]
+    | null;
+  scholarship?: string | null;
+  siblingsDiscount?: string | null;
+  /**
+   * Path or URL to a downloadable admission form.
+   */
+  admissionForm?: string | null;
+  day?: boolean | null;
+  boarding?: boolean | null;
+  /**
+   * Maximum pupils per class.
+   */
+  maxClassSize?: number | null;
+  facilities?: string[] | null;
+  activities?: string[] | null;
+  clubs?: string[] | null;
+  images?: {
+    /**
+     * Path to the school's logo.
+     */
+    logo?: string | null;
+    gallery?:
+      | {
+          full: string;
+          thumb: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Only tick this once someone has confirmed these details with the school directly. Never from the school's own website alone.
+   */
+  verified?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -171,10 +329,15 @@ export interface PayloadKv {
  */
 export interface PayloadLockedDocument {
   id: number;
-  document?: {
-    relationTo: 'users';
-    value: number | User;
-  } | null;
+  document?:
+    | ({
+        relationTo: 'schools';
+        value: string | School;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
@@ -216,6 +379,67 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schools_select".
+ */
+export interface SchoolsSelect<T extends boolean = true> {
+  id?: T;
+  name?: T;
+  slug?: T;
+  level?: T;
+  tagline?: T;
+  summary?: T;
+  scope?: T;
+  yearFounded?: T;
+  curricula?: T;
+  faith?: T;
+  state?: T;
+  area?: T;
+  address?: T;
+  busStop?: T;
+  phone?: T;
+  website?: T;
+  fee?:
+    | T
+    | {
+        label?: T;
+        min?: T;
+        max?: T;
+      };
+  feeItems?:
+    | T
+    | {
+        label?: T;
+        amount?: T;
+        id?: T;
+      };
+  scholarship?: T;
+  siblingsDiscount?: T;
+  admissionForm?: T;
+  day?: T;
+  boarding?: T;
+  maxClassSize?: T;
+  facilities?: T;
+  activities?: T;
+  clubs?: T;
+  images?:
+    | T
+    | {
+        logo?: T;
+        gallery?:
+          | T
+          | {
+              full?: T;
+              thumb?: T;
+              id?: T;
+            };
+      };
+  verified?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

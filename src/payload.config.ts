@@ -6,6 +6,7 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 import sharp from "sharp";
 
+import { Schools } from "./collections/Schools";
 import { Users } from "./collections/Users";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,7 +39,7 @@ export default buildConfig({
     },
   },
 
-  collections: [Users],
+  collections: [Schools, Users],
 
   editor: lexicalEditor(),
 
