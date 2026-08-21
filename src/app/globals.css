@@ -1,26 +1,214 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Eduplana design tokens.
+ *
+ * Calm, credible, contemporary — not a government database, not a classifieds
+ * site, not a luxury brochure. Deep green carries the brand and gold marks
+ * trust cues; the wider accent palette is reserved for facility, activity and
+ * club chips, where colour is doing real work (telling categories apart) rather
+ * than decorating.
+ */
+@theme {
+  --color-ink-950: #0c1a13;
+  --color-ink-900: #142219;
+  --color-ink-800: #1d2b23;
+  --color-ink-700: #33443b;
+  --color-ink-600: #4a5b52;
+  --color-ink-500: #647368;
+  --color-ink-400: #7b8a82;
+  --color-ink-300: #b6c2ba;
+  --color-ink-200: #d8e0da;
+  --color-ink-100: #eef2ef;
+  --color-ink-50: #f7f9f7;
+
+  /* Sampled from the logo mark: #1a5c33-ish deep forest green. */
+  --color-brand-950: #072318;
+  --color-brand-900: #0f3d2e;
+  --color-brand-800: #134d3a;
+  --color-brand-700: #175c45;
+  --color-brand-600: #1d7355;
+  --color-brand-500: #2a9070;
+  --color-brand-400: #4fb08e;
+  --color-brand-200: #b6e0cd;
+  --color-brand-100: #dff0e8;
+  --color-brand-50: #f1f8f4;
+
+  /*
+   * Career education gets its own accent. The rule is strict: anywhere this
+   * colour appears on the site it means careers — badge, filter, hub, CTA.
+   *
+   * Indigo rather than the orange we started with. Orange against a warning-
+   * shaped badge read as an alert: users saw it and assumed something was
+   * wrong with the school. Indigo carries none of that, stays clearly distinct
+   * from the brand green, and does not collide with the gold reserved for
+   * trust and caution cues.
+   */
+  --color-career-950: #141d3f;
+  --color-career-900: #1c2a5e;
+  --color-career-800: #24357a;
+  --color-career-700: #2c3f8f;
+  --color-career-600: #3a52b3;
+  --color-career-500: #5a72cf;
+  --color-career-400: #8098e2;
+  --color-career-200: #c6d0f4;
+  --color-career-100: #e6ebfc;
+  --color-career-50: #f4f7fe;
+
+  --color-gold-700: #8a6316;
+  --color-gold-600: #a97b1e;
+  --color-gold-400: #d9a441;
+  --color-gold-200: #f2dcae;
+  --color-gold-100: #fbf1dc;
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgb(12 26 19 / 0.04), 0 6px 20px -10px rgb(12 26 19 / 0.14);
+  --shadow-lift: 0 2px 6px rgb(12 26 19 / 0.06), 0 20px 44px -18px rgb(12 26 19 / 0.24);
+  --shadow-float: 0 4px 12px rgb(12 26 19 / 0.06), 0 32px 64px -24px rgb(12 26 19 / 0.3);
+
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: var(--color-ink-950);
 }
 
 @media (prefers-color-scheme: dark) {
+  /* Deliberately light-only for now: school photography and trust cues were
+     designed against a light ground, and a half-tuned dark mode reads as less
+     credible than none. Revisit with proper tokens rather than inverting. */
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: light;
   }
+}
+
+* {
+  border-color: var(--color-ink-200);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Focus ring: visible for keyboard users, invisible for mouse users. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@layer utilities {
+  /*
+   * Headings. Plus Jakarta Sans carries both roles, so the display treatment
+   * is a matter of weight and tracking rather than a second family.
+   */
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.022em;
+  }
+
+  /* Large hero type needs tighter tracking still or it reads loose. */
+  .tracking-display {
+    letter-spacing: -0.035em;
+  }
+
+  /* Clamp long summaries to a predictable card height. */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  /* The hero search panel: frosted white over the photograph. */
+  .glass-panel {
+    background: color-mix(in srgb, white 88%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+
+  /*
+   * Banner backgrounds for pages without a photograph. Two soft radial
+   * highlights over a deep base stop a flat colour block from looking like an
+   * unstyled placeholder, and keep the inner pages related to the photographic
+   * homepage hero without pretending to be it.
+   */
+  .banner-brand {
+    background:
+      radial-gradient(115% 90% at 10% 0%, rgb(42 144 112 / 0.45), transparent 58%),
+      radial-gradient(90% 85% at 92% 6%, rgb(58 82 179 / 0.28), transparent 55%),
+      linear-gradient(150deg, #072318 0%, #0f3d2e 50%, #10352c 100%);
+  }
+
+  .banner-career {
+    background:
+      radial-gradient(120% 100% at 82% 4%, rgb(70 94 190 / 0.42), transparent 62%),
+      radial-gradient(100% 90% at 4% 14%, rgb(42 144 112 / 0.32), transparent 58%),
+      linear-gradient(150deg, #0f1a35 0%, #1b2a55 48%, #113a30 100%);
+  }
+
+  /* A hairline grid, barely visible, to stop large banners reading as flat. */
+  .banner-grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(80% 60% at 50% 0%, black, transparent 75%);
+  }
+
+  /* Fades the bottom of the hero photograph into the page. */
+  .hero-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(7 35 24 / 0.72) 0%,
+      rgb(7 35 24 / 0.5) 45%,
+      rgb(7 35 24 / 0.62) 100%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

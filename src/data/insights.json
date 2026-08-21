@@ -1,0 +1,778 @@
+{
+  "infographics": [
+    {
+      "slug": "1",
+      "title": "New ASUU demands",
+      "year": null,
+      "width": 745,
+      "height": 1080,
+      "full": "/insights/infographics/1.webp",
+      "thumb": "/insights/infographics/1-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "10",
+      "title": "2017 proposed allocation against the UNESCO benchmark",
+      "year": 2017,
+      "width": 1051,
+      "height": 1080,
+      "full": "/insights/infographics/10.webp",
+      "thumb": "/insights/infographics/10-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2",
+      "title": "JAMB 2017: applicants, cut-off marks and CAPS",
+      "year": 2017,
+      "width": 621,
+      "height": 1080,
+      "full": "/insights/infographics/2.webp",
+      "thumb": "/insights/infographics/2-thumb.webp",
+      "topic": "Access"
+    },
+    {
+      "slug": "2018-citizens-education-fund-summary",
+      "title": "2018 Citizens Education Fund Summary",
+      "year": 2018,
+      "width": 592,
+      "height": 1080,
+      "full": "/insights/infographics/2018-citizens-education-fund-summary.webp",
+      "thumb": "/insights/infographics/2018-citizens-education-fund-summary-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2018-jan-feb-wassce-diet",
+      "title": "2018 Jan Feb Wassce Diet",
+      "year": 2018,
+      "width": 558,
+      "height": 1200,
+      "full": "/insights/infographics/2018-jan-feb-wassce-diet.webp",
+      "thumb": "/insights/infographics/2018-jan-feb-wassce-diet-thumb.webp",
+      "topic": "Access"
+    },
+    {
+      "slug": "2018-joint-action-committee-strike",
+      "title": "2018 Joint Action Committee Strike",
+      "year": 2018,
+      "width": 2633,
+      "height": 4219,
+      "full": "/insights/infographics/2018-joint-action-committee-strike.webp",
+      "thumb": "/insights/infographics/2018-joint-action-committee-strike-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "2018-proposed-education-allocation-summary",
+      "title": "2018 Proposed Education Allocation Summary",
+      "year": 2018,
+      "width": 2610,
+      "height": 2813,
+      "full": "/insights/infographics/2018-proposed-education-allocation-summary.webp",
+      "thumb": "/insights/infographics/2018-proposed-education-allocation-summary-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2018-unesco-allocation-nigeria",
+      "title": "2018 UNESCO Allocation (Nigeria)",
+      "year": 2018,
+      "width": 9156,
+      "height": 11295,
+      "full": "/insights/infographics/2018-unesco-allocation-nigeria.webp",
+      "thumb": "/insights/infographics/2018-unesco-allocation-nigeria-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "3",
+      "title": "2016 TETFund intervention: total allocation",
+      "year": 2016,
+      "width": 729,
+      "height": 912,
+      "full": "/insights/infographics/3.webp",
+      "thumb": "/insights/infographics/3-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "4",
+      "title": "2017 education budget: what the allocation types mean",
+      "year": 2017,
+      "width": 624,
+      "height": 967,
+      "full": "/insights/infographics/4.webp",
+      "thumb": "/insights/infographics/4-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "4-2",
+      "title": "The ongoing LAUTECH strike, counted in students",
+      "year": null,
+      "width": 634,
+      "height": 1080,
+      "full": "/insights/infographics/4-2.webp",
+      "thumb": "/insights/infographics/4-2-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "5",
+      "title": "2017 education budget: federal agencies and capital projects",
+      "year": 2017,
+      "width": 671,
+      "height": 658,
+      "full": "/insights/infographics/5.webp",
+      "thumb": "/insights/infographics/5-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "5-2",
+      "title": "2017 allocation: recurrent against capital spending",
+      "year": 2017,
+      "width": 763,
+      "height": 1080,
+      "full": "/insights/infographics/5-2.webp",
+      "thumb": "/insights/infographics/5-2-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "6",
+      "title": "2016 TETFund intervention: annual direct disbursement",
+      "year": 2016,
+      "width": 807,
+      "height": 1080,
+      "full": "/insights/infographics/6.webp",
+      "thumb": "/insights/infographics/6-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "7",
+      "title": "Lagos State 2016 education allocation",
+      "year": 2016,
+      "width": 537,
+      "height": 883,
+      "full": "/insights/infographics/7.webp",
+      "thumb": "/insights/infographics/7-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "8",
+      "title": "2017 proposed allocation to federal universities",
+      "year": 2017,
+      "width": 1080,
+      "height": 1052,
+      "full": "/insights/infographics/8.webp",
+      "thumb": "/insights/infographics/8-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "9",
+      "title": "Revitalisation fund of the university system: six-year breakdown",
+      "year": null,
+      "width": 711,
+      "height": 1080,
+      "full": "/insights/infographics/9.webp",
+      "thumb": "/insights/infographics/9-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "comprehensive-reform-of-higher-education",
+      "title": "Comprehensive Reform of Higher Education",
+      "year": null,
+      "width": 10289,
+      "height": 16892,
+      "full": "/insights/infographics/comprehensive-reform-of-higher-education.webp",
+      "thumb": "/insights/infographics/comprehensive-reform-of-higher-education-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "education-budgetary-allocations-1999-2013",
+      "title": "Education Budgetary Allocations (1999 2013)",
+      "year": null,
+      "width": 430,
+      "height": 1080,
+      "full": "/insights/infographics/education-budgetary-allocations-1999-2013.webp",
+      "thumb": "/insights/infographics/education-budgetary-allocations-1999-2013-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "education-spending-population-growth",
+      "title": "Education Spending & Population Growth",
+      "year": null,
+      "width": 2628,
+      "height": 3980,
+      "full": "/insights/infographics/education-spending-population-growth.webp",
+      "thumb": "/insights/infographics/education-spending-population-growth-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "ekiti-basic-education-indicators",
+      "title": "Ekiti Basic Education Indicators",
+      "year": null,
+      "width": 434,
+      "height": 1080,
+      "full": "/insights/infographics/ekiti-basic-education-indicators.webp",
+      "thumb": "/insights/infographics/ekiti-basic-education-indicators-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "fg-educaton-and-security-2014-2018",
+      "title": "FG Educaton and Security (2014 2018)",
+      "year": 2014,
+      "width": 2313,
+      "height": 3550,
+      "full": "/insights/infographics/fg-educaton-and-security-2014-2018.webp",
+      "thumb": "/insights/infographics/fg-educaton-and-security-2014-2018-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "populous-nations-by-2050",
+      "title": "Populous Nations by 2050",
+      "year": null,
+      "width": 5704,
+      "height": 10933,
+      "full": "/insights/infographics/populous-nations-by-2050.webp",
+      "thumb": "/insights/infographics/populous-nations-by-2050-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "sdg-4-b-1-4c",
+      "title": "SDG 4.b.1 & 4c",
+      "year": null,
+      "width": 438,
+      "height": 525,
+      "full": "/insights/infographics/sdg-4-b-1-4c.webp",
+      "thumb": "/insights/infographics/sdg-4-b-1-4c-thumb.webp",
+      "topic": "Access"
+    },
+    {
+      "slug": "top-education-funding-percentage-military-democratic-rule",
+      "title": "Top Education Funding Percentage(Military & Democratic Rule)",
+      "year": null,
+      "width": 8219,
+      "height": 11996,
+      "full": "/insights/infographics/top-education-funding-percentage-military-democratic-rule.webp",
+      "thumb": "/insights/infographics/top-education-funding-percentage-military-democratic-rule-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "uni-of-ibadan-allocation-breakdown",
+      "title": "Uni of Ibadan Allocation Breakdown",
+      "year": null,
+      "width": 534,
+      "height": 960,
+      "full": "/insights/infographics/uni-of-ibadan-allocation-breakdown.webp",
+      "thumb": "/insights/infographics/uni-of-ibadan-allocation-breakdown-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "university-corruption-survey",
+      "title": "University Corruption Survey",
+      "year": null,
+      "width": 803,
+      "height": 1133,
+      "full": "/insights/infographics/university-corruption-survey.webp",
+      "thumb": "/insights/infographics/university-corruption-survey-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "1-2",
+      "title": "2017 education budget: 16 departments, 226 capital projects",
+      "year": 2017,
+      "width": 5849,
+      "height": 7716,
+      "full": "/insights/infographics/1-2.webp",
+      "thumb": "/insights/infographics/1-2-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2-2",
+      "title": "FUNAAB allocation 2013–2017 and its graduating sets",
+      "year": 2013,
+      "width": 4767,
+      "height": 9509,
+      "full": "/insights/infographics/2-2.webp",
+      "thumb": "/insights/infographics/2-2-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "3-2",
+      "title": "2017 National Assembly against federal universities",
+      "year": 2017,
+      "width": 3511,
+      "height": 4964,
+      "full": "/insights/infographics/3-2.webp",
+      "thumb": "/insights/infographics/3-2-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "4-3",
+      "title": "LAUTECH strike: eight months of closure",
+      "year": null,
+      "width": 634,
+      "height": 1080,
+      "full": "/insights/infographics/4-3.webp",
+      "thumb": "/insights/infographics/4-3-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "eduplana",
+      "title": "Eduplana",
+      "year": null,
+      "width": 1080,
+      "height": 1027,
+      "full": "/insights/infographics/eduplana.webp",
+      "thumb": "/insights/infographics/eduplana-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "info",
+      "title": "Info",
+      "year": null,
+      "width": 2006,
+      "height": 1395,
+      "full": "/insights/infographics/info.webp",
+      "thumb": "/insights/infographics/info-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "info1",
+      "title": "Growing number of federal universities, and the ICT University",
+      "year": null,
+      "width": 300,
+      "height": 285,
+      "full": "/insights/infographics/info1.webp",
+      "thumb": "/insights/infographics/info1-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "info1-2",
+      "title": "Why the continuous spending cut? ₦35bn less than 2016",
+      "year": 2016,
+      "width": 1052,
+      "height": 1080,
+      "full": "/insights/infographics/info1-2.webp",
+      "thumb": "/insights/infographics/info1-2-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "info10",
+      "title": "Federal education agencies allocation",
+      "year": null,
+      "width": 704,
+      "height": 1080,
+      "full": "/insights/infographics/info10.webp",
+      "thumb": "/insights/infographics/info10-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "info11",
+      "title": "2017 proposed allocation to federal polytechnics",
+      "year": 2017,
+      "width": 754,
+      "height": 1080,
+      "full": "/insights/infographics/info11.webp",
+      "thumb": "/insights/infographics/info11-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "info12",
+      "title": "The UNESCO 26% standard against Nigeria's allocation",
+      "year": null,
+      "width": 1051,
+      "height": 1080,
+      "full": "/insights/infographics/info12.webp",
+      "thumb": "/insights/infographics/info12-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "info13",
+      "title": "Federal technical colleges: total allocation",
+      "year": null,
+      "width": 572,
+      "height": 1080,
+      "full": "/insights/infographics/info13.webp",
+      "thumb": "/insights/infographics/info13-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "info14",
+      "title": "States ranked by share of budget spent on education",
+      "year": null,
+      "width": 499,
+      "height": 1080,
+      "full": "/insights/infographics/info14.webp",
+      "thumb": "/insights/infographics/info14-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "info15",
+      "title": "State allocations 2016 against 2017: Kano to Nassarawa",
+      "year": 2016,
+      "width": 634,
+      "height": 1080,
+      "full": "/insights/infographics/info15.webp",
+      "thumb": "/insights/infographics/info15-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "info16",
+      "title": "State allocations 2016 against 2017: Kaduna to Jigawa",
+      "year": 2016,
+      "width": 634,
+      "height": 1080,
+      "full": "/insights/infographics/info16.webp",
+      "thumb": "/insights/infographics/info16-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "info2",
+      "title": "West African neighbours: education as a share of budget",
+      "year": null,
+      "width": 953,
+      "height": 1080,
+      "full": "/insights/infographics/info2.webp",
+      "thumb": "/insights/infographics/info2-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "info3",
+      "title": "2017 allocation percentage: ₦398bn recurrent, ₦50bn capital",
+      "year": 2017,
+      "width": 949,
+      "height": 1080,
+      "full": "/insights/infographics/info3.webp",
+      "thumb": "/insights/infographics/info3-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "info4",
+      "title": "FUTA: the EFCC investigation of Prof Gregory Daramola",
+      "year": null,
+      "width": 1277,
+      "height": 1280,
+      "full": "/insights/infographics/info4.webp",
+      "thumb": "/insights/infographics/info4-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "info5",
+      "title": "Federal science and technology colleges: total allocation",
+      "year": null,
+      "width": 826,
+      "height": 905,
+      "full": "/insights/infographics/info5.webp",
+      "thumb": "/insights/infographics/info5-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "info6",
+      "title": "West African states allocation compared",
+      "year": null,
+      "width": 953,
+      "height": 1080,
+      "full": "/insights/infographics/info6.webp",
+      "thumb": "/insights/infographics/info6-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "info7",
+      "title": "2016–2017 state allocations: the gainers and the losers",
+      "year": 2016,
+      "width": 917,
+      "height": 1080,
+      "full": "/insights/infographics/info7.webp",
+      "thumb": "/insights/infographics/info7-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "info8",
+      "title": "Federal universities allocation, mapped",
+      "year": null,
+      "width": 1080,
+      "height": 1052,
+      "full": "/insights/infographics/info8.webp",
+      "thumb": "/insights/infographics/info8-thumb.webp",
+      "topic": "Universities"
+    },
+    {
+      "slug": "info9",
+      "title": "Education agencies capital spending, 2016 against 2017",
+      "year": 2016,
+      "width": 623,
+      "height": 1080,
+      "full": "/insights/infographics/info9.webp",
+      "thumb": "/insights/infographics/info9-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "press",
+      "title": "Press",
+      "year": null,
+      "width": 904,
+      "height": 1280,
+      "full": "/insights/infographics/press.webp",
+      "thumb": "/insights/infographics/press-thumb.webp",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "spice",
+      "title": "Spice",
+      "year": null,
+      "width": 863,
+      "height": 1000,
+      "full": "/insights/infographics/spice.webp",
+      "thumb": "/insights/infographics/spice-thumb.webp",
+      "topic": "Budget"
+    },
+    {
+      "slug": "state-of-basic-education-anambra-state",
+      "title": "State of basic education anambra state",
+      "year": null,
+      "width": 2536,
+      "height": 2850,
+      "full": "/insights/infographics/state-of-basic-education-anambra-state.webp",
+      "thumb": "/insights/infographics/state-of-basic-education-anambra-state-thumb.webp",
+      "topic": "States"
+    },
+    {
+      "slug": "survey",
+      "title": "Survey",
+      "year": null,
+      "width": 784,
+      "height": 1080,
+      "full": "/insights/infographics/survey.webp",
+      "thumb": "/insights/infographics/survey-thumb.webp",
+      "topic": "Accountability"
+    }
+  ],
+  "documents": [
+    {
+      "slug": "2006-fg-education-budget",
+      "title": "2006 FG Education budget",
+      "year": 2006,
+      "bytes": 364206,
+      "file": "/insights/documents/2006-fg-education-budget.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2009-fg-education-budget",
+      "title": "2009 FG Education Budget",
+      "year": 2009,
+      "bytes": 383584,
+      "file": "/insights/documents/2009-fg-education-budget.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2011-fg-education-budget",
+      "title": "2011 FG Education budget",
+      "year": 2011,
+      "bytes": 135123,
+      "file": "/insights/documents/2011-fg-education-budget.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2012-fg-education-budget",
+      "title": "2012 FG Education Budget",
+      "year": 2012,
+      "bytes": 3871240,
+      "file": "/insights/documents/2012-fg-education-budget.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2013-fg-education-budget",
+      "title": "2013 FG Education Budget",
+      "year": 2013,
+      "bytes": 3777340,
+      "file": "/insights/documents/2013-fg-education-budget.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2013-reconciled-projectss",
+      "title": "2013 Reconciled Projectss",
+      "year": 2013,
+      "bytes": 171851,
+      "file": "/insights/documents/2013-reconciled-projectss.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2014-fg-education-budget",
+      "title": "2014 FG Education Budget",
+      "year": 2014,
+      "bytes": 2883604,
+      "file": "/insights/documents/2014-fg-education-budget.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2014-ubec-constituency-projects",
+      "title": "2014 Ubec Constituency Projects",
+      "year": 2014,
+      "bytes": 300094,
+      "file": "/insights/documents/2014-ubec-constituency-projects.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2015-ubec-constituency-projects",
+      "title": "2015 Ubec Constituency Projects",
+      "year": 2015,
+      "bytes": 299947,
+      "file": "/insights/documents/2015-ubec-constituency-projects.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2017-proposed-education-allocation",
+      "title": "2017 proposed education Allocation",
+      "year": 2017,
+      "bytes": 1427522,
+      "file": "/insights/documents/2017-proposed-education-allocation.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2020-education-budget",
+      "title": "2020 Education Budget",
+      "year": 2020,
+      "bytes": 1572601,
+      "file": "/insights/documents/2020-education-budget.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "2022-education-budget-extracted",
+      "title": "2022 Education Budget extracted",
+      "year": 2022,
+      "bytes": 2378072,
+      "file": "/insights/documents/2022-education-budget-extracted.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "asuu",
+      "title": "ASUU",
+      "year": null,
+      "bytes": 941823,
+      "file": "/insights/documents/asuu.pdf",
+      "topic": "Accountability"
+    },
+    {
+      "slug": "bad-classrooms-in-nigeria-analysis-infographics",
+      "title": "Bad Classrooms in Nigeria (Analysis Infographics)",
+      "year": null,
+      "bytes": 737243,
+      "file": "/insights/documents/bad-classrooms-in-nigeria-analysis-infographics.pdf",
+      "topic": "Access"
+    },
+    {
+      "slug": "comparative-basic-education-dataset-anambra-state",
+      "title": "COMPARATIVE BASIC EDUCATION DATASET (Anambra State)",
+      "year": null,
+      "bytes": 734882,
+      "file": "/insights/documents/comparative-basic-education-dataset-anambra-state.pdf",
+      "topic": "States"
+    },
+    {
+      "slug": "covid19-personal-discovery",
+      "title": "Covid19 Personal Discovery",
+      "year": null,
+      "bytes": 579651,
+      "file": "/insights/documents/covid19-personal-discovery.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "eduplana-homegrown-school-feeding-programme-report",
+      "title": "Eduplana Homegrown school feeding programme Report",
+      "year": null,
+      "bytes": 737485,
+      "file": "/insights/documents/eduplana-homegrown-school-feeding-programme-report.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "ekiti-basic-education-report-1",
+      "title": "Ekiti basic education Report 1",
+      "year": null,
+      "bytes": 7076585,
+      "file": "/insights/documents/ekiti-basic-education-report-1.pdf",
+      "topic": "States"
+    },
+    {
+      "slug": "fts-recruitment-for-2013-2015",
+      "title": "Fts Recruitment For 2013 2015",
+      "year": 2013,
+      "bytes": 394798,
+      "file": "/insights/documents/fts-recruitment-for-2013-2015.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "hesreport-2017-edition",
+      "title": "HESReport [2017 Edition]",
+      "year": 2017,
+      "bytes": 1929525,
+      "file": "/insights/documents/hesreport-2017-edition.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "ikorodu-lagos-min",
+      "title": "Ikorodu Lagos",
+      "year": null,
+      "bytes": 2825111,
+      "file": "/insights/documents/ikorodu-lagos-min.pdf",
+      "topic": "States"
+    },
+    {
+      "slug": "lagos-budget-education",
+      "title": "Lagos Budget Education",
+      "year": null,
+      "bytes": 242555,
+      "file": "/insights/documents/lagos-budget-education.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "report-2",
+      "title": "Report 2",
+      "year": null,
+      "bytes": 1047848,
+      "file": "/insights/documents/report-2.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "roles-and-responsibilities-of-the-departments-of-federal-ministry-of-education",
+      "title": "Roles and Responsibilities of the Departments of Federal Ministry of Education",
+      "year": null,
+      "bytes": 758979,
+      "file": "/insights/documents/roles-and-responsibilities-of-the-departments-of-federal-ministry-of-education.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "summary-of-fts-recruitment-from-2006-2015",
+      "title": "Summary Of Fts Recruitment From 2006 2015",
+      "year": 2006,
+      "bytes": 395758,
+      "file": "/insights/documents/summary-of-fts-recruitment-from-2006-2015.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "ubec-2019-report",
+      "title": "UBEC 2019 Report",
+      "year": 2019,
+      "bytes": 4613552,
+      "file": "/insights/documents/ubec-2019-report.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "unity-schools-report-1",
+      "title": "Unity schools Report 1",
+      "year": null,
+      "bytes": 2591254,
+      "file": "/insights/documents/unity-schools-report-1.pdf",
+      "topic": "Budget"
+    },
+    {
+      "slug": "sdg4report",
+      "title": "Sdg4report",
+      "year": null,
+      "bytes": 9142205,
+      "file": "/insights/documents/sdg4report.pdf",
+      "topic": "Access"
+    },
+    {
+      "slug": "state-education-fund-report-compressed",
+      "title": "State Education Fund report",
+      "year": null,
+      "bytes": 4437396,
+      "file": "/insights/documents/state-education-fund-report-compressed.pdf",
+      "topic": "Budget"
+    }
+  ]
+}
