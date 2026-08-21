@@ -1,54 +1,139 @@
 /*
- * Admin theming.
+ * Eduplana admin theme.
  *
- * Payload exposes its entire palette as CSS custom properties, so the panel
- * can wear Eduplana's colours without forking a single component. Only tokens
- * are set here — no structural overrides, which is what keeps the admin
- * upgradeable when Payload ships new versions.
+ * Payload exposes ~350 CSS custom properties, so the panel can be rebranded by
+ * remapping tokens rather than overriding component styles. That matters for
+ * upgrades: nothing here depends on Payload's internal class structure beyond
+ * a handful of well-known blocks.
  *
- * Plain CSS rather than the .scss Payload's docs use, so the project does not
- * need the `sass` compiler as a dependency for six declarations.
+ * Everything is defined per theme. Payload sets html[data-theme="light"|"dark"]
+ * from the OS preference, and an earlier version of this file hardcoded a white
+ * card and a pale gradient — which turned into unreadable dark inputs on a white
+ * panel for anyone whose machine was in dark mode. Colours below are therefore
+ * either theme-scoped or expressed through Payload's own elevation tokens.
  */
 
+/* ---------------------------------------------------------------- palette -- */
+
+html[data-theme="light"] {
+  /* Brand green drives primary actions, active nav and focus rings. */
+  --color-success-50: #f1f8f4;
+  --color-success-100: #dff0e8;
+  --color-success-200: #b6e0cd;
+  --color-success-400: #4fb08e;
+  --color-success-500: #2a9070;
+  --color-success-600: #1d7355;
+  --color-success-700: #175c45;
+  --color-success-800: #134d3a;
+  --color-success-900: #0f3d2e;
+
+  /* Warm the greys very slightly toward the site's ink palette. */
+  --theme-border-color: #e3e9e5;
+
+  --accessibility-outline: 2px solid #1d7355;
+}
+
+html[data-theme="dark"] {
+  --color-success-50: #0f3d2e;
+  --color-success-100: #134d3a;
+  --color-success-200: #175c45;
+  --color-success-400: #2a9070;
+  --color-success-500: #4fb08e;
+  --color-success-600: #4fb08e;
+  --color-success-700: #7cc9ae;
+  --color-success-800: #b6e0cd;
+  --color-success-900: #dff0e8;
+
+  --accessibility-outline: 2px solid #4fb08e;
+}
+
+/* ------------------------------------------------------------------ type -- */
+
 :root {
-  /* Brand green replaces Payload's default accent for primary actions,
-     active nav items and success states. */
-  --theme-success-50: #f1f8f4;
-  --theme-success-100: #dff0e8;
-  --theme-success-500: #1d7355;
-  --theme-success-600: #175c45;
-  --theme-success-900: #0f3d2e;
+  /* Plus Jakarta Sans, loaded by the layout and matching the public site.
+     Falls back to Payload's own stack if the font fails to load. */
+  --font-body: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Softer corners throughout, in line with the site's rounded cards. */
+  --style-radius-s: 6px;
+  --style-radius-m: 10px;
+  --style-radius-l: 14px;
 }
 
-/* Primary buttons — "Save", "Create", "Publish". */
+/* ---------------------------------------------------------------- buttons -- */
+
+/* Primary actions — Save, Create, Publish — carry the brand rather than
+   Payload's default near-black. */
 .btn--style-primary {
-  --color: #ffffff;
-  background-color: #1d7355;
-  border-color: #1d7355;
+  --btn-color: #ffffff;
+  background-color: var(--color-success-600);
+  border-color: var(--color-success-600);
 }
-.btn--style-primary:not(.btn--disabled):hover {
-  background-color: #175c45;
-  border-color: #175c45;
+.btn--style-primary:not(.btn--disabled):not([disabled]):hover {
+  background-color: var(--color-success-700);
+  border-color: var(--color-success-700);
+}
+html[data-theme="dark"] .btn--style-primary {
+  --btn-color: #06231a;
 }
 
-/* The login and create-first-user screens sit on a tinted ground rather than
-   flat white, so the form reads as a card and the brand is present at sign-in. */
+/* ------------------------------------------------------------ login views -- */
+
+/* The sign-in and create-first-user screens. A tinted ground in both themes so
+   the card reads as a card, with the brand present before you are even in. */
 .template-minimal {
-  background: linear-gradient(160deg, #f1f8f4 0%, #ffffff 55%);
   min-height: 100vh;
+}
+html[data-theme="light"] .template-minimal {
+  background:
+    radial-gradient(110% 70% at 12% 0%, rgb(42 144 112 / 0.10), transparent 60%),
+    linear-gradient(165deg, #f4faf7 0%, #ffffff 60%);
+}
+html[data-theme="dark"] .template-minimal {
+  background:
+    radial-gradient(110% 70% at 12% 0%, rgb(42 144 112 / 0.16), transparent 60%),
+    linear-gradient(165deg, #0d1a15 0%, var(--theme-bg) 60%);
 }
 
 .template-minimal__wrap {
-  background: #ffffff;
-  border: 1px solid var(--theme-elevation-100);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgb(12 26 19 / 0.04), 0 20px 44px -18px rgb(12 26 19 / 0.18);
-  padding: 40px;
+  /* Elevation tokens rather than literal white, so the card inverts correctly. */
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-border-color);
+  border-radius: 16px;
+  padding: 44px 40px;
+  box-shadow:
+    0 1px 2px rgb(12 26 19 / 0.04),
+    0 18px 40px -18px rgb(12 26 19 / 0.22);
+}
+html[data-theme="dark"] .template-minimal__wrap {
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6);
 }
 
-/* Payload renders the logo above the form; give it room. */
-.template-minimal .graphic-logo,
+/* Payload renders the logo above the form on the login view. */
+.template-minimal__wrap .graphic-logo,
 .template-minimal__wrap > a:first-child {
   display: block;
-  margin-bottom: 28px;
+  margin-bottom: 30px;
+}
+
+/* --------------------------------------------------------------- chrome ---- */
+
+/* Brand tint on the active sidebar entry, so "where am I" reads instantly. */
+.nav__link--active,
+.nav__link[aria-current="page"] {
+  background-color: var(--color-success-50);
+  color: var(--color-success-800);
+}
+html[data-theme="dark"] .nav__link--active,
+html[data-theme="dark"] .nav__link[aria-current="page"] {
+  color: var(--color-success-900);
+}
+
+/* Inputs pick up the brand on focus rather than Payload's default blue-grey. */
+.field-type input:focus,
+.field-type textarea:focus,
+.field-type .rs__control--is-focused {
+  border-color: var(--color-success-500);
+  box-shadow: 0 0 0 3px rgb(29 115 85 / 0.14);
 }
