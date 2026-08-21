@@ -236,6 +236,9 @@ export const Schools: CollectionConfig = {
         position: "sidebar",
         description:
           "Only tick this once someone has confirmed these details with the school directly. Never from the school's own website alone.",
+        components: {
+          Cell: "@/components/admin/VerifiedCell#VerifiedCell",
+        },
       },
     },
   ],

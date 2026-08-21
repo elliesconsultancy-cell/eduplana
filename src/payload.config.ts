@@ -36,6 +36,12 @@ export default buildConfig({
         Logo: "@/components/admin/Logo#Logo",
         Icon: "@/components/admin/Icon#Icon",
       },
+      // Replaces the stock "here are your collections" dashboard, which
+      // repeats the sidebar, with live counts and the two actions people
+      // actually arrive wanting.
+      views: {
+        dashboard: { Component: "@/components/admin/Dashboard#Dashboard" },
+      },
     },
   },
 

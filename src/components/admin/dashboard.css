@@ -1,0 +1,96 @@
+/* Admin dashboard. Uses Payload's own theme tokens so it inverts correctly in
+   dark mode rather than hardcoding a light palette. */
+.eduplana-dash {
+  margin-block-end: 2.5rem;
+}
+
+/* As a full view (rather than a block above the stock dashboard) it owns the
+   page gutter Payload would otherwise have provided. */
+.eduplana-dash--view {
+  padding: var(--base) calc(var(--base) * 2);
+  max-width: 1400px;
+}
+
+.eduplana-dash__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 1.25rem;
+}
+.eduplana-dash__head h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.eduplana-dash__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+/* Payload's .btn carries its own margins inside forms; neutralise here. */
+.eduplana-dash__actions .btn {
+  margin: 0;
+}
+
+.eduplana-dash__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+}
+.eduplana-dash__stats li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-m);
+  background: var(--theme-elevation-0);
+}
+.eduplana-dash__value {
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-success-600);
+  font-variant-numeric: tabular-nums;
+}
+.eduplana-dash__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--theme-elevation-800);
+}
+.eduplana-dash__hint {
+  font-size: 0.75rem;
+  color: var(--theme-elevation-500);
+}
+
+.eduplana-dash__recent h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+.eduplana-dash__recent ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-m);
+  overflow: hidden;
+}
+.eduplana-dash__recent li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: var(--theme-elevation-0);
+}
+.eduplana-dash__recent li + li {
+  border-block-start: 1px solid var(--theme-elevation-100);
+}
+.eduplana-dash__meta {
+  font-size: 0.8rem;
+  color: var(--theme-elevation-500);
+}
