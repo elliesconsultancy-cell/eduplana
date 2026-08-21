@@ -66,7 +66,7 @@ export function topics(): Array<{ topic: Topic; count: number }> {
 }
 
 /**
- * `year` is scraped from the title, so it is the year the *data* refers to and
+ * `year` is read from the title, so it is the year the *data* refers to and
  * not always a publication date — "Populous nations by 2050" yields 2050. Any
  * span shown to a reader is therefore clamped to years that can actually have
  * been published, and described as coverage rather than as a publishing run.

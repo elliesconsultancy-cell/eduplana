@@ -51,6 +51,3 @@ CLAUDE.md
 # upload with: ./scripts/sync-assets.sh
 /public/schools/
 /public/insights/
-
-# local data-prep tooling, not part of the app
-/scripts/update_fees.py
