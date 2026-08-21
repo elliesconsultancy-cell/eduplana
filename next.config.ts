@@ -1,3 +1,4 @@
+import { withPayload } from "@payloadcms/next/withPayload";
 import type { NextConfig } from "next";
 
 /**
@@ -30,4 +31,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// withPayload injects the admin panel's webpack/turbopack needs and its
+// server-side externals. It must wrap the final config object.
+export default withPayload(nextConfig);
