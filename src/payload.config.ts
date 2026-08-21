@@ -28,6 +28,14 @@ export default buildConfig({
     meta: {
       titleSuffix: " · Eduplana admin",
     },
+    components: {
+      // Same artwork as the public site, so signing in does not feel like
+      // leaving the product.
+      graphics: {
+        Logo: "@/components/admin/Logo#Logo",
+        Icon: "@/components/admin/Icon#Icon",
+      },
+    },
   },
 
   collections: [Users],
