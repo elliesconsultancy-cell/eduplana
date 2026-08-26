@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f3d2e",
+  themeColor: "#2260b7",
   width: "device-width",
   initialScale: 1,
 };
@@ -83,8 +83,8 @@ function SiteFooter() {
             <Image
               src="/brand/eduplana-logo.png"
               alt="Eduplana"
-              width={538}
-              height={108}
+              width={1624}
+              height={365}
               className="h-8 w-auto"
             />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-600">

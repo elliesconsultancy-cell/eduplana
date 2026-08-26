@@ -115,7 +115,7 @@ just locally).
 
 Payload's admin is themeable, and this is where it gets made "really nice":
 
-- Eduplana logo + brand green via the official theming hooks; custom login
+- Eduplana logo + the brand blue via the official theming hooks; custom login
   screen artwork.
 - Nav grouped **Directory** (Schools) / **Archive** (Infographics, Reports) /
   **Content** (Pages, Settings) / **System** (Users, Media).

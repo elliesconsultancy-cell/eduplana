@@ -120,15 +120,16 @@ function Hero({
       <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-10 pt-14 sm:px-6 sm:pb-12 sm:pt-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
         <div>
           <h1 className="font-display tracking-display text-[2.15rem] font-extrabold leading-[1.06] text-white sm:text-[3.4rem]">
-            Find a school that
-            <br className="hidden sm:block" /> leads somewhere.
+            Plan quality education
+            <br className="hidden sm:block" /> for your child
           </h1>
 
           <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-white/85 sm:text-[17px]">
-            Search every school in Nigeria — fees, curriculum, class sizes, facilities. We also read
-            what each one publishes about{" "}
-            <span className="font-semibold text-career-200">career education</span>, so you can
-            choose for the job after the exam, not just the exam.
+            The right school is a partner in your child’s education, not just a place to send
+            them. Compare every school in Nigeria on fees, curriculum, class sizes and facilities —
+            and see what each one publishes about{" "}
+            <span className="font-semibold text-career-200">career education</span>, so you choose
+            for the job after the exam, not just the exam.
           </p>
 
           <dl className="mt-8 flex flex-wrap items-center gap-x-9 gap-y-3 text-white">
@@ -144,7 +145,7 @@ function Hero({
         <aside className="rounded-[1.5rem] bg-white/95 p-6 shadow-float ring-1 ring-white/60 backdrop-blur">
           <span
             aria-hidden
-            className="grid size-11 place-items-center rounded-2xl bg-career-100 text-career-700"
+            className="grid size-11 place-items-center rounded-2xl bg-brand-100 text-brand-700"
           >
             <Route size={21} strokeWidth={2.3} />
           </span>
@@ -159,7 +160,7 @@ function Hero({
               <li key={signal.key} className="flex items-start gap-2.5 text-sm text-ink-800">
                 <span
                   aria-hidden
-                  className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-career-100 text-career-700"
+                  className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700"
                 >
                   <Check size={11} strokeWidth={3} />
                 </span>

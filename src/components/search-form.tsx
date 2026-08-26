@@ -103,10 +103,10 @@ export function SearchForm({
 
       <button
         type="submit"
-        className="inline-flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-brand-600 px-6 text-[15px] font-bold text-white shadow-[0_8px_20px_-8px_rgb(29_115_85_/_0.7)] transition-colors hover:bg-brand-700"
+        className="inline-flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-brand-600 px-6 text-[15px] font-bold text-white shadow-[0_8px_20px_-8px_rgb(34_96_183_/_0.7)] transition-colors hover:bg-brand-700"
       >
         <Search size={17} strokeWidth={2.6} aria-hidden />
-        Search
+        Find a school partner
       </button>
     </form>
   );

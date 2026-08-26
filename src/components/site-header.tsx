@@ -68,8 +68,8 @@ export function SiteHeader() {
           <Image
             src="/brand/eduplana-logo.png"
             alt="Eduplana"
-            width={538}
-            height={108}
+            width={1624}
+            height={365}
             priority
             className="h-7 w-auto sm:h-8"
           />

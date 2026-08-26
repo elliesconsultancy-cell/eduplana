@@ -4,56 +4,60 @@
  * Eduplana design tokens.
  *
  * Calm, credible, contemporary — not a government database, not a classifieds
- * site, not a luxury brochure. Deep green carries the brand and gold marks
+ * site, not a luxury brochure. The logo blue carries the brand and gold marks
  * trust cues; the wider accent palette is reserved for facility, activity and
  * club chips, where colour is doing real work (telling categories apart) rather
  * than decorating.
  */
 @theme {
-  --color-ink-950: #0c1a13;
-  --color-ink-900: #142219;
-  --color-ink-800: #1d2b23;
-  --color-ink-700: #33443b;
-  --color-ink-600: #4a5b52;
-  --color-ink-500: #647368;
-  --color-ink-400: #7b8a82;
-  --color-ink-300: #b6c2ba;
-  --color-ink-200: #d8e0da;
-  --color-ink-100: #eef2ef;
-  --color-ink-50: #f7f9f7;
+  --color-ink-950: #0b1420;
+  --color-ink-900: #121d2b;
+  --color-ink-800: #1b2634;
+  --color-ink-700: #33404f;
+  --color-ink-600: #4b5866;
+  --color-ink-500: #64717f;
+  --color-ink-400: #7c8895;
+  --color-ink-300: #b6bfc9;
+  --color-ink-200: #d9dfe5;
+  --color-ink-100: #eef1f5;
+  --color-ink-50: #f7f9fb;
 
-  /* Sampled from the logo mark: #1a5c33-ish deep forest green. */
-  --color-brand-950: #072318;
-  --color-brand-900: #0f3d2e;
-  --color-brand-800: #134d3a;
-  --color-brand-700: #175c45;
-  --color-brand-600: #1d7355;
-  --color-brand-500: #2a9070;
-  --color-brand-400: #4fb08e;
-  --color-brand-200: #b6e0cd;
-  --color-brand-100: #dff0e8;
-  --color-brand-50: #f1f8f4;
+  /* The ramp is anchored on brand-600, which is the mean of the strongly
+     blue pixels in the supplied lock-up — the export is faintly noisy, so
+     no single pixel is authoritative. */
+  --color-brand-950: #071830;
+  --color-brand-900: #0e2a53;
+  --color-brand-800: #143a70;
+  --color-brand-700: #1a4a8f;
+  --color-brand-600: #2260b7;
+  --color-brand-500: #3c85d6;
+  --color-brand-400: #6ba3e3;
+  --color-brand-200: #b7d6f4;
+  --color-brand-100: #dcebfa;
+  --color-brand-50: #f1f6fd;
 
   /*
    * Career education gets its own accent. The rule is strict: anywhere this
    * colour appears on the site it means careers — badge, filter, hub, CTA.
    *
-   * Indigo rather than the orange we started with. Orange against a warning-
-   * shaped badge read as an alert: users saw it and assumed something was
-   * wrong with the school. Indigo carries none of that, stays clearly distinct
-   * from the brand green, and does not collide with the gold reserved for
-   * trust and caution cues.
+   * Violet, and it has to be. This was indigo while the brand was green, but
+   * indigo against a blue brand is the one pairing that breaks the rule the
+   * two badges exist to enforce: Verified carries the brand, Career signals
+   * does not, and at chip size a reader must never have to work out which is
+   * which. Violet stays clearly apart from the brand at a glance, carries no
+   * warning connotation the way orange did, and leaves gold free for trust
+   * and caution cues.
    */
-  --color-career-950: #141d3f;
-  --color-career-900: #1c2a5e;
-  --color-career-800: #24357a;
-  --color-career-700: #2c3f8f;
-  --color-career-600: #3a52b3;
-  --color-career-500: #5a72cf;
-  --color-career-400: #8098e2;
-  --color-career-200: #c6d0f4;
-  --color-career-100: #e6ebfc;
-  --color-career-50: #f4f7fe;
+  --color-career-950: #1d1140;
+  --color-career-900: #2a1a5e;
+  --color-career-800: #38237c;
+  --color-career-700: #492e99;
+  --color-career-600: #6041c4;
+  --color-career-500: #7f63da;
+  --color-career-400: #a48ee8;
+  --color-career-200: #d4c8f6;
+  --color-career-100: #ebe4fc;
+  --color-career-50: #f7f4fe;
 
   --color-gold-700: #8a6316;
   --color-gold-600: #a97b1e;
@@ -66,9 +70,9 @@
 
   --radius-card: 1rem;
 
-  --shadow-card: 0 1px 2px rgb(12 26 19 / 0.04), 0 6px 20px -10px rgb(12 26 19 / 0.14);
-  --shadow-lift: 0 2px 6px rgb(12 26 19 / 0.06), 0 20px 44px -18px rgb(12 26 19 / 0.24);
-  --shadow-float: 0 4px 12px rgb(12 26 19 / 0.06), 0 32px 64px -24px rgb(12 26 19 / 0.3);
+  --shadow-card: 0 1px 2px rgb(11 20 32 / 0.04), 0 6px 20px -10px rgb(11 20 32 / 0.14);
+  --shadow-lift: 0 2px 6px rgb(11 20 32 / 0.06), 0 20px 44px -18px rgb(11 20 32 / 0.24);
+  --shadow-float: 0 4px 12px rgb(11 20 32 / 0.06), 0 32px 64px -24px rgb(11 20 32 / 0.3);
 
   --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -169,16 +173,16 @@ body {
    */
   .banner-brand {
     background:
-      radial-gradient(115% 90% at 10% 0%, rgb(42 144 112 / 0.45), transparent 58%),
-      radial-gradient(90% 85% at 92% 6%, rgb(58 82 179 / 0.28), transparent 55%),
-      linear-gradient(150deg, #072318 0%, #0f3d2e 50%, #10352c 100%);
+      radial-gradient(115% 90% at 10% 0%, rgb(60 133 214 / 0.50), transparent 58%),
+      radial-gradient(90% 85% at 92% 6%, rgb(96 65 196 / 0.26), transparent 55%),
+      linear-gradient(150deg, #071830 0%, #0e2a53 50%, #123258 100%);
   }
 
   .banner-career {
     background:
-      radial-gradient(120% 100% at 82% 4%, rgb(70 94 190 / 0.42), transparent 62%),
-      radial-gradient(100% 90% at 4% 14%, rgb(42 144 112 / 0.32), transparent 58%),
-      linear-gradient(150deg, #0f1a35 0%, #1b2a55 48%, #113a30 100%);
+      radial-gradient(120% 100% at 82% 4%, rgb(127 99 218 / 0.45), transparent 62%),
+      radial-gradient(100% 90% at 4% 14%, rgb(60 133 214 / 0.32), transparent 58%),
+      linear-gradient(150deg, #150f33 0%, #241a55 48%, #122d52 100%);
   }
 
   /* A hairline grid, barely visible, to stop large banners reading as flat. */
@@ -197,9 +201,9 @@ body {
   .hero-scrim {
     background: linear-gradient(
       to bottom,
-      rgb(7 35 24 / 0.72) 0%,
-      rgb(7 35 24 / 0.5) 45%,
-      rgb(7 35 24 / 0.62) 100%
+      rgb(7 24 48 / 0.72) 0%,
+      rgb(7 24 48 / 0.5) 45%,
+      rgb(7 24 48 / 0.62) 100%
     );
   }
 }

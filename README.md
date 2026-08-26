@@ -58,11 +58,13 @@ src/data/insights.json      Archive manifest — titles, topics, file paths
 src/lib/assets.ts           Maps repo-relative asset paths to the CDN
 src/app/                    Routes (App Router, Next 16)
 src/components/             UI, including the client-side shortlist store
-public/brand/               Logo lock-up, icon mark, favicon (in git)
+design/brand/lockup.png     Supplied logo export — the source for public/brand
+public/brand/               Logo lock-up, reversed lock-up, icon mark, favicon (in git)
 public/images/              Hero photograph and city tiles (in git)
 public/schools/             Local copy of school media — gitignored, served from R2
 public/insights/            Local copy of the archive — gitignored, served from R2
 scripts/sync-assets.sh      Uploads public/{schools,insights} to the R2 bucket
+scripts/build-brand-assets.mjs  Regenerates public/brand from design/brand/lockup.png
 ```
 
 ### Assets

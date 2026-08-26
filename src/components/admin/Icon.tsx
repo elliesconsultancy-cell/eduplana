@@ -6,9 +6,9 @@ export function Icon() {
     <Image
       src="/brand/eduplana-mark.png"
       alt=""
-      width={256}
-      height={256}
-      style={{ height: 26, width: 26 }}
+      width={387}
+      height={365}
+      style={{ height: 26, width: "auto" }}
     />
   );
 }

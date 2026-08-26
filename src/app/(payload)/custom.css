@@ -16,35 +16,35 @@
 /* ---------------------------------------------------------------- palette -- */
 
 html[data-theme="light"] {
-  /* Brand green drives primary actions, active nav and focus rings. */
-  --color-success-50: #f1f8f4;
-  --color-success-100: #dff0e8;
-  --color-success-200: #b6e0cd;
-  --color-success-400: #4fb08e;
-  --color-success-500: #2a9070;
-  --color-success-600: #1d7355;
-  --color-success-700: #175c45;
-  --color-success-800: #134d3a;
-  --color-success-900: #0f3d2e;
+  /* The brand blue drives primary actions, active nav and focus rings. */
+  --color-success-50: #f1f6fd;
+  --color-success-100: #dcebfa;
+  --color-success-200: #b7d6f4;
+  --color-success-400: #6ba3e3;
+  --color-success-500: #3c85d6;
+  --color-success-600: #2260b7;
+  --color-success-700: #1a4a8f;
+  --color-success-800: #143a70;
+  --color-success-900: #0e2a53;
 
-  /* Warm the greys very slightly toward the site's ink palette. */
-  --theme-border-color: #e3e9e5;
+  /* Cool the greys very slightly toward the site's ink palette. */
+  --theme-border-color: #e2e7ee;
 
-  --accessibility-outline: 2px solid #1d7355;
+  --accessibility-outline: 2px solid #2260b7;
 }
 
 html[data-theme="dark"] {
-  --color-success-50: #0f3d2e;
-  --color-success-100: #134d3a;
-  --color-success-200: #175c45;
-  --color-success-400: #2a9070;
-  --color-success-500: #4fb08e;
-  --color-success-600: #4fb08e;
-  --color-success-700: #7cc9ae;
-  --color-success-800: #b6e0cd;
-  --color-success-900: #dff0e8;
+  --color-success-50: #0e2a53;
+  --color-success-100: #143a70;
+  --color-success-200: #1a4a8f;
+  --color-success-400: #3c85d6;
+  --color-success-500: #6ba3e3;
+  --color-success-600: #6ba3e3;
+  --color-success-700: #92bbe9;
+  --color-success-800: #b7d6f4;
+  --color-success-900: #dcebfa;
 
-  --accessibility-outline: 2px solid #4fb08e;
+  --accessibility-outline: 2px solid #6ba3e3;
 }
 
 /* ------------------------------------------------------------------ type -- */
@@ -75,7 +75,7 @@ html[data-theme="dark"] {
   border-color: var(--color-success-700);
 }
 html[data-theme="dark"] .btn--style-primary {
-  --btn-color: #06231a;
+  --btn-color: #071830;
 }
 
 /* ------------------------------------------------------------ login views -- */
@@ -87,13 +87,13 @@ html[data-theme="dark"] .btn--style-primary {
 }
 html[data-theme="light"] .template-minimal {
   background:
-    radial-gradient(110% 70% at 12% 0%, rgb(42 144 112 / 0.10), transparent 60%),
-    linear-gradient(165deg, #f4faf7 0%, #ffffff 60%);
+    radial-gradient(110% 70% at 12% 0%, rgb(34 96 183 / 0.10), transparent 60%),
+    linear-gradient(165deg, #f1f6fd 0%, #ffffff 60%);
 }
 html[data-theme="dark"] .template-minimal {
   background:
-    radial-gradient(110% 70% at 12% 0%, rgb(42 144 112 / 0.16), transparent 60%),
-    linear-gradient(165deg, #0d1a15 0%, var(--theme-bg) 60%);
+    radial-gradient(110% 70% at 12% 0%, rgb(34 96 183 / 0.20), transparent 60%),
+    linear-gradient(165deg, #08182c 0%, var(--theme-bg) 60%);
 }
 
 .template-minimal__wrap {
@@ -103,8 +103,8 @@ html[data-theme="dark"] .template-minimal {
   border-radius: 16px;
   padding: 44px 40px;
   box-shadow:
-    0 1px 2px rgb(12 26 19 / 0.04),
-    0 18px 40px -18px rgb(12 26 19 / 0.22);
+    0 1px 2px rgb(11 20 32 / 0.04),
+    0 18px 40px -18px rgb(11 20 32 / 0.22);
 }
 html[data-theme="dark"] .template-minimal__wrap {
   box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6);
@@ -135,5 +135,18 @@ html[data-theme="dark"] .nav__link[aria-current="page"] {
 .field-type textarea:focus,
 .field-type .rs__control--is-focused {
   border-color: var(--color-success-500);
-  box-shadow: 0 0 0 3px rgb(29 115 85 / 0.14);
+  box-shadow: 0 0 0 3px rgb(34 96 183 / 0.14);
+}
+
+/* ----------------------------------------------------------- login lock-up -- */
+
+/*
+ * Both lock-ups ship and CSS picks one. Choosing the asset in the component
+ * would mean reading the theme in JS — but Payload resolves it from a cookie
+ * and can flip it after mount, so the blue mark would paint onto the dark card
+ * for a frame before swapping. A CSS toggle never shows the wrong one.
+ */
+html[data-theme="light"] .brand-lockup__dark,
+html[data-theme="dark"] .brand-lockup__light {
+  display: none;
 }
