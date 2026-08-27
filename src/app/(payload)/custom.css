@@ -150,3 +150,17 @@ html[data-theme="light"] .brand-lockup__dark,
 html[data-theme="dark"] .brand-lockup__light {
   display: none;
 }
+
+/* ------------------------------------------------------- password resets -- */
+
+/*
+ * Hide "Forgot password?" on the login screen.
+ *
+ * There is no email adapter, so the flow could only ever claim to have sent a
+ * message. Resets are done by a super-admin from the user's record instead.
+ * The route itself redirects to /admin/login (see next.config.ts) — this only
+ * removes the invitation to try.
+ */
+.template-minimal a[href$="/forgot"] {
+  display: none;
+}

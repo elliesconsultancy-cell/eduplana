@@ -291,6 +291,8 @@ export interface School {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Accounts that can sign in. Passwords cannot be read back — set a new one here if somebody is locked out.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -301,9 +303,9 @@ export interface User {
    */
   name: string;
   /**
-   * Editors manage content. Admins additionally manage users and may mark schools as verified.
+   * Editors manage content. Admins additionally mark schools as verified. Super admins additionally manage accounts and passwords.
    */
-  role: 'admin' | 'editor';
+  role: 'super-admin' | 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
   email: string;

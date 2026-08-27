@@ -19,7 +19,7 @@ export const NIGERIAN_STATE_NAMES = [
 const NIGERIAN_STATES = NIGERIAN_STATE_NAMES.map((state) => ({ label: state, value: state }));
 
 const isAdmin = ({ req }: { req: { user?: { role?: string } | null } }) =>
-  req.user?.role === "admin";
+  req.user?.role === "admin" || req.user?.role === "super-admin";
 
 /**
  * Phrases that mean "we were not told", written into a field as though they

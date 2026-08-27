@@ -16,10 +16,10 @@ import "./dashboard.css";
 export async function Dashboard() {
   const payload = await getPayload({ config });
 
-  // Only admins may create people, so only admins are offered the control —
-  // showing it to an editor would just produce a permission error on submit.
+  // Accounts are managed by super-admins alone, so nobody else is offered
+  // the controls — showing them would just produce a permission error on save.
   const { user } = await payload.auth({ headers: await nextHeaders() });
-  const isAdmin = user && "role" in user && user.role === "admin";
+  const isSuperAdmin = user && "role" in user && user.role === "super-admin";
 
   const count = (where?: Where) =>
     payload.count({ collection: "schools", ...(where ? { where } : {}) });
@@ -66,7 +66,7 @@ export async function Dashboard() {
           <Link className="btn btn--style-secondary btn--size-small" href="/admin/collections/schools">
             Browse all schools
           </Link>
-          {isAdmin ? (
+          {isSuperAdmin ? (
             <>
               <Link
                 className="btn btn--style-secondary btn--size-small"

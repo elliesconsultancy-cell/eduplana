@@ -177,14 +177,31 @@ they are about to reach.
 ## The admin
 
 Payload CMS at `/admin`, backed by the same Neon Postgres the migration writes
-to. Two roles: **admin** manages people and may mark a school verified,
-**editor** writes and publishes everything else.
+to. Three roles:
 
-**Adding someone.** Sign in as an admin, then *Add a user* on the dashboard, or
-Users → Create New. You set their password on that form and hand it to them —
-there is no invitation email, because no email adapter is configured yet. That
-also means *Forgot password* cannot deliver, so a locked-out user needs an admin
-to set a new password for them.
+| | |
+| --- | --- |
+| **super admin** | manages accounts: creates them, resets passwords, and is the only role that can grant super admin |
+| **admin** | full control of content, including the `verified` flag |
+| **editor** | writes and publishes content, but cannot assert verification |
+
+The admin/editor line exists because "verified" is a factual claim to the public
+that a human confirmed a school's details — not something to tick while tidying
+copy. The super-admin line exists because managing accounts is a different kind
+of power from managing content: an admin who could edit other accounts could
+reset the super admin's password and take the site over.
+
+**Passwords cannot be read back, by anyone.** Payload stores a salted hash, so
+the original text is not in the database to display — there is no setting that
+would reveal it, and storing the plaintext alongside the hash would mean one
+leaked backup exposes every account. When somebody is locked out, a super admin
+opens their record, types a new password and passes it on. That is why the
+"Forgot password?" link is gone: no email adapter is configured, so it could
+only ever claim to have sent a message. `/admin/forgot` redirects to the login
+page.
+
+**Adding someone.** Sign in as super admin, then *Add a user* on the dashboard,
+or Users → Create New. You set their password on that form.
 
 **Sessions end.** A session lasts an hour from signing in and does not renew
 itself. Payload prompts a minute before expiry so anyone mid-edit can extend on

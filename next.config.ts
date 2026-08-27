@@ -34,6 +34,16 @@ const nextConfig: NextConfig = {
   // choosing which exploits to try.
   poweredByHeader: false,
 
+  async redirects() {
+    return [
+      // Password resets are handled by a super-admin from the Users screen,
+      // and no email adapter is configured, so this page could only ever
+      // promise a message that never arrives. The link is hidden in
+      // custom.css; this closes the route to anyone typing it in.
+      { source: "/admin/forgot", destination: "/admin/login", permanent: false },
+    ];
+  },
+
   async headers() {
     return [
       {
