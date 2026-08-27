@@ -205,6 +205,9 @@ export interface School {
    * Nearest landmark or bus stop.
    */
   busStop?: string | null;
+  /**
+   * The school’s own line. Leave empty if unknown — never a directory or agency number.
+   */
   phone?: string | null;
   /**
    * Named contact for admissions enquiries, e.g. “Ms Winnie Oragwu”. Shown beside the number so a parent knows who they are about to reach.
@@ -245,7 +248,13 @@ export interface School {
         id?: string | null;
       }[]
     | null;
+  /**
+   * What the school itself publishes. Leave empty if it says nothing at all — an empty field reads as “not provided”, which is different from the school telling us there is no scholarship.
+   */
   scholarship?: string | null;
+  /**
+   * As published, e.g. “5% off the third sibling”. Leave empty if unknown.
+   */
   siblingsDiscount?: string | null;
   /**
    * Path or URL to a downloadable admission form.

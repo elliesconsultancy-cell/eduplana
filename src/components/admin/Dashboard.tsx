@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers as nextHeaders } from "next/headers";
 import { getPayload, type Where } from "payload";
 import config from "@payload-config";
 
@@ -14,6 +15,11 @@ import "./dashboard.css";
  */
 export async function Dashboard() {
   const payload = await getPayload({ config });
+
+  // Only admins may create people, so only admins are offered the control —
+  // showing it to an editor would just produce a permission error on submit.
+  const { user } = await payload.auth({ headers: await nextHeaders() });
+  const isAdmin = user && "role" in user && user.role === "admin";
 
   const count = (where?: Where) =>
     payload.count({ collection: "schools", ...(where ? { where } : {}) });
@@ -60,6 +66,22 @@ export async function Dashboard() {
           <Link className="btn btn--style-secondary btn--size-small" href="/admin/collections/schools">
             Browse all schools
           </Link>
+          {isAdmin ? (
+            <>
+              <Link
+                className="btn btn--style-secondary btn--size-small"
+                href="/admin/collections/users/create"
+              >
+                Add a user
+              </Link>
+              <Link
+                className="btn btn--style-secondary btn--size-small"
+                href="/admin/collections/users"
+              >
+                Manage users
+              </Link>
+            </>
+          ) : null}
         </div>
       </div>
 

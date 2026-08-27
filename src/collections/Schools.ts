@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionConfig, PayloadRequest } from "payload";
 
 /**
  * Nigeria's 36 states plus the Federal Capital Territory.
@@ -20,6 +20,67 @@ const NIGERIAN_STATES = NIGERIAN_STATE_NAMES.map((state) => ({ label: state, val
 
 const isAdmin = ({ req }: { req: { user?: { role?: string } | null } }) =>
   req.user?.role === "admin";
+
+/**
+ * Phrases that mean "we were not told", written into a field as though they
+ * were an answer.
+ *
+ * An empty field renders as "not provided", which is honest. A field holding
+ * "N/A" asserts something nobody ever said. Rejecting these on save is what
+ * stops the rule eroding one record at a time — the alternative is auditing
+ * the dataset again in six months.
+ */
+const ABSENCE_MARKERS =
+  /^(not stated|not applicable|not available|not specified|not provided|n\/?a|unknown|tbd|tba|-+|\.+|_+)$/i;
+
+const noPlaceholder = (value: unknown) => {
+  if (typeof value !== "string" || !value.trim()) return true;
+  return ABSENCE_MARKERS.test(value.trim())
+    ? "Leave this empty instead. The page already says \u201cnot provided\u201d when a field is blank \u2014 writing it in claims we asked and were told."
+    : true;
+};
+
+/**
+ * A phone number must be plausible, and must not be a number already sitting
+ * on a pile of unrelated schools.
+ *
+ * The dataset previously carried one of two directory switchboard numbers on
+ * 4,454 records, so "Call school" reached the wrong place on six pages in ten.
+ *
+ * The bar sits above the largest genuine group in the data: Adedokun
+ * International School lists nine campuses on one head-office line, and a
+ * primary and secondary record of the same institution always share one. Ten
+ * unrelated schools on a number means an agency, not a school — which is how
+ * the one remaining bad number was found.
+ */
+const SHARED_PHONE_LIMIT = 10;
+
+const validatePhone = async (
+  value: unknown,
+  { req, id }: { req?: PayloadRequest; id?: number | string },
+) => {
+  if (value == null || value === "") return true;
+  const raw = String(value).trim();
+  if (ABSENCE_MARKERS.test(raw)) {
+    return "Leave this empty if the school\u2019s own number is unknown \u2014 a wrong number is worse than none.";
+  }
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length < 10 || digits.length > 14) {
+    return "That does not look like a phone number. Leave it empty rather than entering a placeholder.";
+  }
+  // Only reachable from the admin and the migration, both of which pass `req`.
+  if (!req?.payload) return true;
+  const { totalDocs } = await req.payload.count({
+    collection: "schools",
+    req,
+    where: id
+      ? { and: [{ phone: { equals: raw } }, { id: { not_equals: id } }] }
+      : { phone: { equals: raw } },
+  });
+  return totalDocs >= SHARED_PHONE_LIMIT
+    ? `${totalDocs} other schools already list this number, so it is almost certainly a directory or agency line rather than this school\u2019s own. Leave it empty instead.`
+    : true;
+};
 
 export const Schools: CollectionConfig = {
   slug: "schools",
@@ -96,7 +157,12 @@ export const Schools: CollectionConfig = {
               ],
               index: true,
             },
-            { name: "tagline", type: "text", admin: { description: "The school's own strapline, if it has one." } },
+            {
+              name: "tagline",
+              type: "text",
+              validate: noPlaceholder,
+              admin: { description: "The school's own strapline, if it has one." },
+            },
             {
               name: "summary",
               type: "textarea",
@@ -144,8 +210,21 @@ export const Schools: CollectionConfig = {
             },
             { name: "area", type: "text", index: true, admin: { description: "Town or district, e.g. Lekki." } },
             { name: "address", type: "textarea" },
-            { name: "busStop", type: "text", admin: { description: "Nearest landmark or bus stop." } },
-            { name: "phone", type: "text" },
+            {
+              name: "busStop",
+              type: "text",
+              validate: noPlaceholder,
+              admin: { description: "Nearest landmark or bus stop." },
+            },
+            {
+              name: "phone",
+              type: "text",
+              validate: validatePhone,
+              admin: {
+                description:
+                  "The school\u2019s own line. Leave empty if unknown \u2014 never a directory or agency number.",
+              },
+            },
             {
               name: "admissionsOfficer",
               type: "text",
@@ -188,8 +267,27 @@ export const Schools: CollectionConfig = {
                 { name: "amount", type: "number", required: true },
               ],
             },
-            { name: "scholarship", type: "text" },
-            { name: "siblingsDiscount", type: "text" },
+            {
+              /*
+               * Deliberately not validated against the placeholder list.
+               * 4,380 records hold "Not available", which that list rejects —
+               * and until it is settled whether those are schools saying they
+               * offer nothing or an unchanged form default, rejecting the value
+               * would make every one of those records unsavable in the admin.
+               */
+              name: "scholarship",
+              type: "text",
+              admin: {
+                description:
+                  "What the school itself publishes. Leave empty if it says nothing at all \u2014 an empty field reads as \u201cnot provided\u201d, which is different from the school telling us there is no scholarship.",
+              },
+            },
+            {
+              name: "siblingsDiscount",
+              type: "text",
+              validate: noPlaceholder,
+              admin: { description: "As published, e.g. \u201c5% off the third sibling\u201d. Leave empty if unknown." },
+            },
             {
               name: "admissionForm",
               type: "text",

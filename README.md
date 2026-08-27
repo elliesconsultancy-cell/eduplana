@@ -168,11 +168,36 @@ number: 4,454 records carried one of just two phones, so "Call school" reached
 the wrong place. Those were replaced with the school's own line, matched on
 record id so a number can never land on the wrong school.
 
-6,688 of 7,375 records now carry a number and 4,862 of those are distinct. Where
+6,674 of 7,375 records now carry a number and 4,861 of those are distinct. Where
 no genuine number could be established the field is `null` — "not provided"
 beats a wrong number, which is worse than silence because someone acts on it.
 The named admissions contact is stored alongside it, since it tells a parent who
 they are about to reach.
+
+## The admin
+
+Payload CMS at `/admin`, backed by the same Neon Postgres the migration writes
+to. Two roles: **admin** manages people and may mark a school verified,
+**editor** writes and publishes everything else.
+
+**Adding someone.** Sign in as an admin, then *Add a user* on the dashboard, or
+Users → Create New. You set their password on that form and hand it to them —
+there is no invitation email, because no email adapter is configured yet. That
+also means *Forgot password* cannot deliver, so a locked-out user needs an admin
+to set a new password for them.
+
+**Sessions end.** A session lasts an hour from signing in and does not renew
+itself. Payload prompts a minute before expiry so anyone mid-edit can extend on
+purpose; walking away from the machine logs you out. Five wrong passwords locks
+an account for fifteen minutes.
+
+**The no-guess rule is enforced, not just documented.** `not stated`, `n/a`,
+`unknown`, `tbd` and bare punctuation are rejected on save for the free-text
+fields, and a phone number must have 10–14 digits. A number already sitting on
+ten or more other schools is refused outright — that is what a directory or
+agency line looks like, and it is how the last bad number in the data was found.
+The bar sits above the largest genuine school group, which lists nine campuses
+on one head-office line.
 
 ## Known limitations
 

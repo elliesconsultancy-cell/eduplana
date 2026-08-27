@@ -13,7 +13,25 @@ import type { CollectionConfig } from "payload";
  */
 export const Users: CollectionConfig = {
   slug: "users",
-  auth: true,
+  auth: {
+    /**
+     * Sessions expire an hour after signing in, whether or not the tab stayed
+     * open. `admin.autoRefresh` is left off deliberately: with it on the token
+     * renews silently and the session never actually ends, which is the thing
+     * we are trying to avoid. Payload shows a "stay logged in" prompt a minute
+     * before expiry, so someone mid-edit can extend on purpose rather than
+     * losing work — but walking away from the machine does log you out.
+     */
+    tokenExpiration: 60 * 60,
+
+    /**
+     * Five wrong passwords locks the account for fifteen minutes. The admin
+     * sits on a public URL, so without this the only thing between a guessed
+     * password and the whole directory is how fast someone can send requests.
+     */
+    maxLoginAttempts: 5,
+    lockTime: 15 * 60 * 1000,
+  },
   admin: {
     useAsTitle: "name",
     defaultColumns: ["name", "email", "role"],
