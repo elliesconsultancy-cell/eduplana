@@ -207,6 +207,14 @@ export interface School {
   busStop?: string | null;
   phone?: string | null;
   /**
+   * Named contact for admissions enquiries, e.g. “Ms Winnie Oragwu”. Shown beside the number so a parent knows who they are about to reach.
+   */
+  admissionsOfficer?: string | null;
+  /**
+   * That person’s role, e.g. “Admissions Manager”.
+   */
+  admissionsRole?: string | null;
+  /**
    * Include https://
    */
   website?: string | null;
@@ -400,6 +408,8 @@ export interface SchoolsSelect<T extends boolean = true> {
   address?: T;
   busStop?: T;
   phone?: T;
+  admissionsOfficer?: T;
+  admissionsRole?: T;
   website?: T;
   fee?:
     | T

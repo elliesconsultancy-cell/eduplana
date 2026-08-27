@@ -8,10 +8,10 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
-  Compass,
   ChevronRight,
   Church,
   Coins,
+  Compass,
   ExternalLink,
   FileDown,
   Globe,
@@ -21,6 +21,7 @@ import {
   Phone,
   Signpost,
   Sparkles,
+  UserRound,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -420,6 +421,22 @@ function ContactAside({
         <a href={tel ?? "#"} className="font-semibold text-brand-800 hover:underline">
           {phone}
         </a>
+      ),
+    });
+  }
+  // The directory names a real person for admissions enquiries — worth showing
+  // beside the number, since it tells a parent who they are about to reach.
+  if (school.admissionsOfficer) {
+    rows.push({
+      icon: UserRound,
+      label: "Admissions contact",
+      node: (
+        <>
+          {school.admissionsOfficer}
+          {school.admissionsRole ? (
+            <span className="block text-ink-500">{school.admissionsRole}</span>
+          ) : null}
+        </>
       ),
     });
   }

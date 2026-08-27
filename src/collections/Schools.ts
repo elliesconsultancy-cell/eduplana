@@ -146,6 +146,19 @@ export const Schools: CollectionConfig = {
             { name: "address", type: "textarea" },
             { name: "busStop", type: "text", admin: { description: "Nearest landmark or bus stop." } },
             { name: "phone", type: "text" },
+            {
+              name: "admissionsOfficer",
+              type: "text",
+              admin: {
+                description:
+                  "Named contact for admissions enquiries, e.g. \u201cMs Winnie Oragwu\u201d. Shown beside the number so a parent knows who they are about to reach.",
+              },
+            },
+            {
+              name: "admissionsRole",
+              type: "text",
+              admin: { description: "That person\u2019s role, e.g. \u201cAdmissions Manager\u201d." },
+            },
             { name: "website", type: "text", admin: { description: "Include https://" } },
           ],
         },

@@ -94,7 +94,9 @@ source of truth. Each file is a flat JSON array of records shaped like this:
   "area": "Lekki",
   "address": "Meadow Hall Way, …",
   "busStop": "…",                     // nearest landmark
-  "phone": "07010821938",
+  "phone": "08073000554",             // the school's own line, not the directory's
+  "admissionsOfficer": "Ms.Winnie Oragwu",
+  "admissionsRole": "Admissions Manager",
   "website": "https://www.meadowhallschool.org",
   "yearFounded": 2002,
   "curricula": ["British", "Nigerian"],
@@ -158,6 +160,19 @@ columns, and no component needs to change.
 Local JSON is deliberate for now: 7,375 records is ~11 MB in memory and a full
 scan takes under a millisecond, and committing to a schema this early would
 freeze decisions still being learned from.
+
+### Phone numbers
+
+An earlier import captured a shared enquiry line rather than each school's own
+number: 4,454 records carried one of just two phones, so "Call school" reached
+the wrong place. Those were replaced with the school's own line, matched on
+record id so a number can never land on the wrong school.
+
+6,688 of 7,375 records now carry a number and 4,862 of those are distinct. Where
+no genuine number could be established the field is `null` — "not provided"
+beats a wrong number, which is worse than silence because someone acts on it.
+The named admissions contact is stored alongside it, since it tells a parent who
+they are about to reach.
 
 ## Known limitations
 

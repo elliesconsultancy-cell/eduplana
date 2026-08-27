@@ -33,6 +33,10 @@ export interface School {
   address: string | null;
   busStop: string | null;
   phone: string | null;
+  /** Named admissions contact the school published, e.g. "Mrs Wantana". */
+  admissionsOfficer: string | null;
+  /** That person's role, e.g. "Admission Officer". */
+  admissionsRole: string | null;
   website: string | null;
   yearFounded: number | null;
   curricula: string[];
