@@ -121,3 +121,53 @@ await write("public/brand/eduplana-mark.png", tile);
 await write("public/brand/icon.png", tile, 256);
 
 for (const [f, size] of written) console.log(`  ${f.padEnd(42)} ${size}`);
+
+/* ------------------------------------------------------------ share card -- */
+
+/**
+ * The 1200x630 card shown when a link is posted to WhatsApp, Facebook, X or
+ * LinkedIn — and the image Google may pick for the result.
+ *
+ * Built from the hero photograph rather than a flat colour so a shared link
+ * looks like the site, with a navy scrim carrying the reversed lock-up. No
+ * text is drawn: the renderer has no access to the site's webfont, and a
+ * headline set in a fallback face looks worse than none at all. The title and
+ * description arrive as Open Graph tags anyway.
+ */
+const OG = { width: 1200, height: 630 };
+const scrim = Buffer.from(
+  `<svg width="${OG.width}" height="${OG.height}" xmlns="http://www.w3.org/2000/svg">
+     <defs>
+       <linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1">
+         <stop offset="0%" stop-color="#071830" stop-opacity="0.92"/>
+         <stop offset="55%" stop-color="#0e2a53" stop-opacity="0.86"/>
+         <stop offset="100%" stop-color="#2260b7" stop-opacity="0.80"/>
+       </linearGradient>
+     </defs>
+     <rect width="100%" height="100%" fill="url(#g)"/>
+   </svg>`,
+);
+
+const heroLayer = await sharp("public/images/hero-students.webp")
+  .resize(OG.width, OG.height, { fit: "cover", position: "attention" })
+  .toBuffer();
+
+const cardMark = await sharp("public/brand/eduplana-logo-reversed.png")
+  .resize({ width: Math.round(OG.width * 0.46) })
+  .toBuffer();
+const cardMarkMeta = await sharp(cardMark).metadata();
+
+await sharp(heroLayer)
+  .composite([
+    { input: scrim, blend: "over" },
+    {
+      input: cardMark,
+      left: Math.round((OG.width - cardMarkMeta.width) / 2),
+      top: Math.round((OG.height - cardMarkMeta.height) / 2),
+    },
+  ])
+  .png({ compressionLevel: 9 })
+  .toFile("public/brand/og-card.png");
+
+const ogMeta = await sharp("public/brand/og-card.png").metadata();
+console.log(`  ${"public/brand/og-card.png".padEnd(42)} ${ogMeta.width}x${ogMeta.height}`);

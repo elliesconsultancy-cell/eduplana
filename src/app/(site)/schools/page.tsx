@@ -42,7 +42,17 @@ export async function generateMetadata({
   const params = await searchParams;
   const bits = [one(params, "q"), one(params, "area"), one(params, "state")].filter(Boolean);
   const title = bits.length ? `Schools in ${bits.join(", ")}` : "Find schools";
-  return { title, description: `Search schools across Nigeria. ${title}.` };
+  return {
+    title,
+    description: `Search schools across Nigeria. ${title}.`,
+    /*
+     * Every filter combination is its own URL, which is what makes a search
+     * shareable — but it also means thousands of near-identical pages competing
+     * with each other. Pointing them all at the bare listing keeps the ranking
+     * on one page instead of split across the permutations.
+     */
+    alternates: { canonical: "/schools" },
+  };
 }
 
 export default async function SchoolsPage({

@@ -174,6 +174,32 @@ beats a wrong number, which is worse than silence because someone acts on it.
 The named admissions contact is stored alongside it, since it tells a parent who
 they are about to reach.
 
+## Search
+
+`src/lib/site.ts` holds the canonical host, and everything that emits a URL
+reads it from there. The apex redirects to `www`, so canonical tags, Open Graph
+URLs and the sitemap all have to agree on `www.eduplana.org` — two addresses for
+one page splits the ranking between them. Note what is deliberately *not* in
+that fallback chain: `VERCEL_PROJECT_PRODUCTION_URL`, which resolves to the
+deployment name and is how the site previously declared the wrong domain.
+
+| | |
+| --- | --- |
+| `src/app/robots.ts` | Points crawlers at the sitemap; keeps them out of `/admin`, `/compare`, `/shortlist` |
+| `src/app/(site)/sitemap.ts` | All 7,375 school pages plus the static routes |
+| Canonicals | Per page. `/schools?q=…` canonicalises to `/schools`, so filter permutations do not compete |
+| Open Graph / Twitter | Site-wide defaults, overridden per school; card at `public/brand/og-card.png` |
+| Structured data | `Organization` + `WebSite` (with a search action) site-wide, `School` per profile |
+
+`robots.ts` sits at the app root rather than in the `(site)` route group beside
+`sitemap.ts`. That asymmetry is not a preference — `sitemap.ts` is picked up
+from inside a route group and `robots.ts` is silently ignored there, never
+appearing in the build manifest. Moving it back breaks it with no error.
+
+School structured data emits only fields the record actually holds, and never
+`aggregateRating`: there are no reviews, and inventing stars is what earns a
+manual penalty.
+
 ## The admin
 
 Payload CMS at `/admin`, backed by the same Neon Postgres the migration writes

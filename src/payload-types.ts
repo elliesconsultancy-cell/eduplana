@@ -249,7 +249,7 @@ export interface School {
       }[]
     | null;
   /**
-   * What the school itself publishes. Leave empty if it says nothing at all — an empty field reads as “not provided”, which is different from the school telling us there is no scholarship.
+   * What the school itself publishes, e.g. “Partial” or “Full”. Leave empty if it says nothing — an empty field reads as “not provided”, which is honest, whereas “not available” tells a parent the school offers none.
    */
   scholarship?: string | null;
   /**

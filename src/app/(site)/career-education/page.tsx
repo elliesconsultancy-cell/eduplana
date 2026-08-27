@@ -8,6 +8,7 @@ import { allSchools, search } from "@/lib/schools";
 import { CAREER_ICONS } from "@/lib/career-icons";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/career-education" },
   title: "Career education",
   description:
     "Which Nigerian schools are doing real work on career education — read from the facilities, activities and clubs each school publishes.",

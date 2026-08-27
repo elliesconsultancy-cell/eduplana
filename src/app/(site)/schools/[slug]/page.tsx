@@ -46,6 +46,7 @@ import {
 import { summaryTeaser } from "@/lib/summary";
 import type { School } from "@/lib/types";
 import { asset, assetOrUndefined } from "@/lib/assets";
+import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -56,17 +57,32 @@ export async function generateMetadata({
   const school = getSchool(slug);
   if (!school) return { title: "School not found" };
 
+  const description =
+    summaryTeaser(school.summary, 155) ??
+    `${school.name} — ${locationLabel(school)}. Fees, curriculum and facilities.`;
+  // A school with no photograph of its own still needs a share card, or the
+  // link renders bare; fall back to the site card rather than nothing.
+  const image =
+    assetOrUndefined(school.images.gallery[0]?.full ?? school.images.logo) ?? "/brand/og-card.png";
+
   return {
     title: school.name,
-    description:
-      summaryTeaser(school.summary, 155) ??
-      `${school.name} — ${locationLabel(school)}. Fees, curriculum and facilities.`,
+    description,
+    alternates: { canonical: `/schools/${school.slug}` },
     openGraph: {
-      title: school.name,
-      description: locationLabel(school),
-      images: assetOrUndefined(
-        school.images.gallery[0]?.full ?? school.images.logo,
-      ),
+      type: "profile",
+      siteName: SITE_NAME,
+      locale: "en_NG",
+      url: absoluteUrl(`/schools/${school.slug}`),
+      title: `${school.name} — ${locationLabel(school)}`,
+      description,
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${school.name} — ${locationLabel(school)}`,
+      description,
+      images: [image],
     },
   };
 }
@@ -101,8 +117,41 @@ export default async function SchoolPage({
   const listed = new Set(school.activities.map((a) => a.toLowerCase()));
   const clubs = school.clubs.filter((c) => !listed.has(c.toLowerCase()));
 
+  /*
+   * Describes this one school to search engines. Only fields the record
+   * actually holds are emitted — an empty address or a telephone we do not
+   * have would be a claim, and structured data that contradicts the page is
+   * worse than none. Deliberately no aggregateRating: there are no reviews,
+   * and inventing stars is exactly the kind of thing that earns a penalty.
+   */
+  const schoolJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "School",
+    name: school.name,
+    url: absoluteUrl(`/schools/${school.slug}`),
+    ...(summary ? { description: summary } : {}),
+    ...(school.phone ? { telephone: school.phone } : {}),
+    ...(school.website ? { sameAs: [school.website] } : {}),
+    ...(school.yearFounded ? { foundingDate: String(school.yearFounded) } : {}),
+    ...(assetOrUndefined(school.images.gallery[0]?.full ?? school.images.logo)
+      ? { image: assetOrUndefined(school.images.gallery[0]?.full ?? school.images.logo) }
+      : {}),
+    address: {
+      "@type": "PostalAddress",
+      ...(school.address ? { streetAddress: school.address } : {}),
+      ...(school.area ? { addressLocality: school.area } : {}),
+      ...(school.state ? { addressRegion: school.state } : {}),
+      addressCountry: "NG",
+    },
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+  };
+
   return (
     <article className="pb-4">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schoolJsonLd) }}
+      />
       <ProfileBar school={school} tel={tel} />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">

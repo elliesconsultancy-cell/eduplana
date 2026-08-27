@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -68,6 +69,10 @@ const PILLARS: Array<{ icon: LucideIcon; title: string; body: string }> = [
     body: "Cut the paperwork. Admissions, enrolment, records and statutory returns — and your public profile updates from the same source of truth.",
   },
 ];
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function HomePage() {
   const states = topStates(40);

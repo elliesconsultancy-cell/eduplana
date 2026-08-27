@@ -14,6 +14,7 @@ import { PageBanner } from "@/components/page-banner";
 import { totalCount } from "@/lib/schools";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/for-schools" },
   title: "For schools",
   description:
     "Eduplana's education management platform — finance, operations, student development, parent engagement, teacher efficiency and administration in one system.",

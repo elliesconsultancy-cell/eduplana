@@ -4,6 +4,7 @@ import { InfographicGrid } from "@/components/infographic-grid";
 import { allInfographics } from "@/lib/insights";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/insights/infographics" },
   title: "Infographics",
   description:
     "Education budget, funding and access data from across Nigeria, visualised — free to read and free to cite.",

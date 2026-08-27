@@ -7,6 +7,7 @@ import { allDocuments, allInfographics, archiveStats, formatBytes, topics } from
 import { asset } from "@/lib/assets";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/insights" },
   title: "Insights & data",
   description:
     "Education budget analyses, state datasets and infographics from Eduplana's research on Nigerian education.",

@@ -6,6 +6,14 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { CompareTray } from "@/components/compare-tray";
 import { ShortlistProvider } from "@/components/shortlist-provider";
+import {
+  FOUNDERS,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_PROFILES,
+  SITE_URL,
+  absoluteUrl,
+} from "@/lib/site";
 
 /**
  * One family across the whole product. Plus Jakarta Sans has enough weight
@@ -19,30 +27,100 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700", "800"],
 });
 
-/**
- * School pages set relative Open Graph images, which Next resolves against
- * this base. Without it every share card in production points at
- * http://localhost:3000 and renders blank.
- */
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "https://www.eduplana.org");
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Eduplana — Find schools across Nigeria",
+    default: "Eduplana — Find and compare schools in Nigeria",
     template: "%s · Eduplana",
   },
-  description:
-    "Search, compare and shortlist primary and secondary schools across all 36 states and the FCT. Fees, curriculum, facilities and contact details in one place.",
-  keywords: ["Nigeria schools", "primary school", "secondary school", "school fees", "admissions"],
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "schools in Nigeria",
+    "school fees Nigeria",
+    "primary schools Nigeria",
+    "secondary schools Nigeria",
+    "school directory Nigeria",
+    "admissions Nigeria",
+  ],
+  authors: FOUNDERS.map((person) => ({ name: person.name })),
   icons: {
     icon: "/brand/icon.png",
     apple: "/brand/icon.png",
   },
+  /*
+   * Open Graph and Twitter tags were absent entirely, so a link pasted into
+   * WhatsApp or LinkedIn rendered as a bare URL. Child pages override title,
+   * description and image; everything else is inherited from here.
+   */
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_NG",
+    url: SITE_URL,
+    title: "Eduplana — Find and compare schools in Nigeria",
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/brand/og-card.png", width: 1200, height: 630, alt: SITE_NAME }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Eduplana — Find and compare schools in Nigeria",
+    description: SITE_DESCRIPTION,
+    images: ["/brand/og-card.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
+};
+
+/**
+ * Structured data, so search engines read the site as an organisation with a
+ * directory rather than as loose pages.
+ *
+ * The WebSite entry declares how to search the directory, which is what lets
+ * Google offer a search box directly in the result. Both blocks live in the
+ * root layout because they describe the site as a whole; a school page adds its
+ * own entry describing that one school.
+ */
+const organisationJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: absoluteUrl("/brand/eduplana-logo.png"),
+      image: absoluteUrl("/brand/og-card.png"),
+      description: SITE_DESCRIPTION,
+      areaServed: { "@type": "Country", name: "Nigeria" },
+      founder: FOUNDERS.map((person) => ({
+        "@type": "Person",
+        name: person.name,
+        jobTitle: person.jobTitle,
+      })),
+      sameAs: SITE_PROFILES,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      inLanguage: "en-NG",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/schools?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
 };
 
 export const viewport: Viewport = {
@@ -55,6 +133,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-NG" className={jakarta.variable}>
       <body className="flex min-h-screen flex-col bg-white">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organisationJsonLd) }}
+        />
         <ShortlistProvider>
           <a
             href="#main"

@@ -4,6 +4,7 @@ import { DocumentList } from "@/components/document-list";
 import { allDocuments, formatBytes } from "@/lib/insights";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/insights/reports" },
   title: "Reports & data",
   description:
     "Budget analyses, state datasets and research reports on Nigerian education — free to download and free to cite.",
