@@ -111,7 +111,7 @@ source of truth. Each file is a flat JSON array of records shaped like this:
   "boarding": false,
   "faith": "Secular",                 // "Secular" | "Christian" | "Islamic"
   "maxClassSize": 25,
-  "scholarship": "Not available",
+  "scholarship": null,                // only when the school publishes one
   "siblingsDiscount": "5% off the third sibling",
   "facilities": ["Swimming Pool", "Standard ICT Centre"],
   "activities": ["Swimming", "Inter-House Sports"],
@@ -218,6 +218,11 @@ on one head-office line.
 
 ## Known limitations
 
+* **Scholarships are published by 74 schools.** 4,380 records previously read
+  "Not available", which was indistinguishable from an untouched form default
+  in the source and told a parent the school offers nothing. Those are now
+  `null` and the card is omitted rather than saying "not provided" — on 7,301
+  pages it would have been a row that says nothing.
 * **Fees are present on 4,476 of 7,375 records.** Schools without a fee band
   disappear whenever a budget filter is applied. That is correct — inventing a
   band would be worse — but it needs a product answer before launch.

@@ -1,11 +1,10 @@
-import Image from "next/image";
+import { AssetImage } from "@/components/asset-image";
 import Link from "next/link";
 import { Camera, Compass, MapPin, ShieldCheck } from "lucide-react";
 import type { School } from "@/lib/types";
 import { boardingLabel, locationLabel, shortFee } from "@/lib/format";
 import { careerProfile } from "@/lib/career";
 import { SaveButton, CompareButton } from "./school-actions";
-import { asset } from "@/lib/assets";
 
 /**
  * A result card answers four questions at a glance: what is it, where is it,
@@ -23,8 +22,8 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-ink-200 hover:shadow-lift">
       <div className="relative aspect-[16/10] overflow-hidden bg-ink-100">
         {photo ? (
-          <Image
-            src={asset(photo.thumb)}
+          <AssetImage
+            path={photo.thumb}
             alt=""
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
@@ -112,8 +111,8 @@ function LogoPlaceholder({ school }: { school: School }) {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 via-white to-ink-100">
       {school.images.logo ? (
-        <Image
-          src={asset(school.images.logo)}
+        <AssetImage
+          path={school.images.logo}
           alt=""
           width={96}
           height={96}

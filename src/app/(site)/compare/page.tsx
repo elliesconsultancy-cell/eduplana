@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
+import { AssetImage } from "@/components/asset-image";
 import Link from "next/link";
 import { useShortlist } from "@/components/shortlist-provider";
 import { useSchoolList } from "@/components/use-school-list";
 import { boardingLabel, formatFee, locationLabel } from "@/lib/format";
 import type { School } from "@/lib/types";
-import { asset } from "@/lib/assets";
 
 /**
  * Side-by-side comparison on a fixed set of attributes.
@@ -84,8 +83,8 @@ export default function ComparePage() {
                   <th key={school.id} scope="col" className="p-3 align-bottom">
                     <div className="flex flex-col items-start gap-2 text-left">
                       {school.images.logo ? (
-                        <Image
-                          src={asset(school.images.logo)}
+                        <AssetImage
+                          path={school.images.logo}
                           alt=""
                           width={48}
                           height={48}

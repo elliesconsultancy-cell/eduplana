@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { AssetImage } from "@/components/asset-image";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Download, Expand, X } from "lucide-react";
 import { asset } from "@/lib/assets";
@@ -118,8 +118,8 @@ export function InfographicGrid({ items }: { items: Item[] }) {
                * shows every chart whole and makes every tile the same size.
                */}
               <span className="relative block aspect-[4/5] w-full shrink-0 overflow-hidden bg-gradient-to-b from-ink-50 to-ink-100/60 p-3">
-                <Image
-                  src={asset(item.thumb)}
+                <AssetImage
+                  path={item.thumb}
                   alt=""
                   fill
                   sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 260px"
@@ -203,7 +203,7 @@ export function InfographicGrid({ items }: { items: Item[] }) {
           </div>
 
           <div className="relative mt-4 min-h-0 flex-1" onClick={(e) => e.stopPropagation()}>
-            <Image src={asset(open.full)} alt={open.title} fill sizes="100vw" className="object-contain" />
+            <AssetImage path={open.full} alt={open.title} fill sizes="100vw" className="object-contain" />
           </div>
 
           {visible.length > 1 ? (

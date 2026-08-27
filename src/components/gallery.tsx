@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
+import { AssetImage } from "@/components/asset-image";
 import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { GalleryImage } from "@/lib/types";
-import { asset } from "@/lib/assets";
 
 /** Photo gallery with a lightbox. Keyboard-navigable, Escape closes. */
 export function Gallery({ images, name }: { images: GalleryImage[]; name: string }) {
@@ -53,8 +52,8 @@ export function Gallery({ images, name }: { images: GalleryImage[]; name: string
           onClick={() => setOpenIndex(0)}
           className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-ink-100 sm:aspect-auto sm:h-full"
         >
-          <Image
-            src={asset(lead.full)}
+          <AssetImage
+            path={lead.full}
             alt={`${name} — photo 1`}
             fill
             sizes="(max-width: 640px) 100vw, 700px"
@@ -76,8 +75,8 @@ export function Gallery({ images, name }: { images: GalleryImage[]; name: string
                 onClick={() => setOpenIndex(index + 1)}
                 className="group relative aspect-[4/3] min-h-0 overflow-hidden rounded-2xl bg-ink-100 sm:aspect-auto"
               >
-                <Image
-                  src={asset(image.thumb)}
+                <AssetImage
+                  path={image.thumb}
                   alt={`${name} — photo ${index + 2}`}
                   fill
                   sizes="240px"
@@ -113,8 +112,8 @@ export function Gallery({ images, name }: { images: GalleryImage[]; name: string
           </button>
 
           <div className="relative h-full w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-            <Image
-              src={asset(images[openIndex].full)}
+            <AssetImage
+              path={images[openIndex].full}
               alt={`${name} — photo ${openIndex + 1}`}
               fill
               sizes="100vw"

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { AssetImage } from "@/components/asset-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -29,7 +29,11 @@ import { Gallery } from "@/components/gallery";
 import { SchoolCard } from "@/components/school-card";
 import { CompareButton, SaveButton } from "@/components/school-actions";
 import { IconChipList } from "@/components/icon-chip";
-import { CareerBadge, CareerBreakdown, VerifiedBadge } from "@/components/career-badge";
+import {
+  CareerBadge,
+  CareerBreakdown,
+  VerifiedBadge,
+} from "@/components/career-badge";
 import { allSchools, getSchool, relatedSchools } from "@/lib/schools";
 import {
   boardingLabel,
@@ -60,7 +64,9 @@ export async function generateMetadata({
     openGraph: {
       title: school.name,
       description: locationLabel(school),
-      images: assetOrUndefined(school.images.gallery[0]?.full ?? school.images.logo),
+      images: assetOrUndefined(
+        school.images.gallery[0]?.full ?? school.images.logo,
+      ),
     },
   };
 }
@@ -76,7 +82,11 @@ export function generateStaticParams() {
     .map((s) => ({ slug: s.slug }));
 }
 
-export default async function SchoolPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function SchoolPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const school = getSchool(slug);
   if (!school) notFound();
@@ -131,7 +141,11 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
             <Downloads school={school} />
 
             {school.facilities.length > 0 ? (
-              <Section title="Facilities" icon={Building2} count={school.facilities.length}>
+              <Section
+                title="Facilities"
+                icon={Building2}
+                count={school.facilities.length}
+              >
                 <IconChipList items={school.facilities} />
               </Section>
             ) : null}
@@ -147,7 +161,11 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
             ) : null}
 
             {clubs.length > 0 ? (
-              <Section title="Clubs and societies" icon={Users} count={clubs.length}>
+              <Section
+                title="Clubs and societies"
+                icon={Users}
+                count={clubs.length}
+              >
                 <IconChipList items={clubs} />
               </Section>
             ) : null}
@@ -162,9 +180,12 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="font-display text-2xl text-ink-950">Other schools nearby</h2>
+                <h2 className="font-display text-2xl text-ink-950">
+                  Other schools nearby
+                </h2>
                 <p className="mt-1.5 text-ink-600">
-                  In {school.area ?? school.state ?? "the same area"}, at a similar fee level.
+                  In {school.area ?? school.state ?? "the same area"}, at a
+                  similar fee level.
                 </p>
               </div>
               {school.state ? (
@@ -255,8 +276,8 @@ function Masthead({ school }: { school: School }) {
   return (
     <header className="mt-5 flex flex-wrap items-start gap-5">
       {school.images.logo ? (
-        <Image
-          src={asset(school.images.logo)}
+        <AssetImage
+          path={school.images.logo}
           alt=""
           width={112}
           height={112}
@@ -273,7 +294,12 @@ function Masthead({ school }: { school: School }) {
           <p className="mt-1.5 text-[15px] text-brand-700">{school.tagline}</p>
         ) : null}
         <p className="mt-2.5 flex items-center gap-1.5 text-ink-600">
-          <MapPin size={16} strokeWidth={2.2} aria-hidden className="shrink-0 text-ink-400" />
+          <MapPin
+            size={16}
+            strokeWidth={2.2}
+            aria-hidden
+            className="shrink-0 text-ink-400"
+          />
           {locationLabel(school)}
         </p>
 
@@ -307,11 +333,21 @@ function AtAGlance({ school }: { school: School }) {
     value: string | null;
     tint: string;
     feature?: boolean;
+    /**
+     * Drop the card entirely when there is no value, rather than saying "not
+     * provided". Used where absence is the overwhelming norm and the row would
+     * be noise on nearly every page — scholarships are published by 74 schools
+     * out of 7,375, so the other 7,301 would carry a card that says nothing.
+     */
+    omitWhenEmpty?: boolean;
   }> = [
     {
       icon: Coins,
       label: "Fees per term",
-      value: school.fee.min == null && school.fee.max == null ? null : formatFee(school),
+      value:
+        school.fee.min == null && school.fee.max == null
+          ? null
+          : formatFee(school),
       tint: "bg-amber-50 text-amber-700",
       feature: true,
     },
@@ -356,6 +392,7 @@ function AtAGlance({ school }: { school: School }) {
       label: "Scholarships",
       value: school.scholarship,
       tint: "bg-emerald-50 text-emerald-700",
+      omitWhenEmpty: true,
     },
     {
       icon: Sparkles,
@@ -368,35 +405,39 @@ function AtAGlance({ school }: { school: School }) {
   return (
     <Section title="At a glance" icon={Info}>
       <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {facts.map((fact) => {
-          const Icon = fact.icon;
-          return (
-            <div
-              key={fact.label}
-              className="rounded-card border border-ink-100 bg-white p-4 shadow-card transition-shadow hover:shadow-lift"
-            >
-              <span
-                aria-hidden
-                className={`grid size-9 place-items-center rounded-xl ${fact.tint}`}
+        {facts
+          .filter((fact) => fact.value || !fact.omitWhenEmpty)
+          .map((fact) => {
+            const Icon = fact.icon;
+            return (
+              <div
+                key={fact.label}
+                className="rounded-card border border-ink-100 bg-white p-4 shadow-card transition-shadow hover:shadow-lift"
               >
-                <Icon size={17} strokeWidth={2.2} />
-              </span>
-              <dt className="mt-3 text-[13px] font-medium text-ink-500">{fact.label}</dt>
-              <dd
-                className={
-                  fact.value
-                    ? fact.feature
-                      ? "font-display mt-0.5 text-[17px] text-brand-700"
-                      : "mt-0.5 font-semibold text-ink-900"
-                    : "mt-0.5 text-ink-400"
-                }
-              >
-                {/* Missing values say so explicitly — never a blank or a dash. */}
-                {fact.value || "Not provided"}
-              </dd>
-            </div>
-          );
-        })}
+                <span
+                  aria-hidden
+                  className={`grid size-9 place-items-center rounded-xl ${fact.tint}`}
+                >
+                  <Icon size={17} strokeWidth={2.2} />
+                </span>
+                <dt className="mt-3 text-[13px] font-medium text-ink-500">
+                  {fact.label}
+                </dt>
+                <dd
+                  className={
+                    fact.value
+                      ? fact.feature
+                        ? "font-display mt-0.5 text-[17px] text-brand-700"
+                        : "mt-0.5 font-semibold text-ink-900"
+                      : "mt-0.5 text-ink-400"
+                  }
+                >
+                  {/* Missing values say so explicitly — never a blank or a dash. */}
+                  {fact.value || "Not provided"}
+                </dd>
+              </div>
+            );
+          })}
       </dl>
     </Section>
   );
@@ -411,14 +452,21 @@ function ContactAside({
   phone: string | null;
   tel: string | null;
 }) {
-  const rows: Array<{ icon: LucideIcon; label: string; node: React.ReactNode }> = [];
+  const rows: Array<{
+    icon: LucideIcon;
+    label: string;
+    node: React.ReactNode;
+  }> = [];
 
   if (phone) {
     rows.push({
       icon: Phone,
       label: "Phone",
       node: (
-        <a href={tel ?? "#"} className="font-semibold text-brand-800 hover:underline">
+        <a
+          href={tel ?? "#"}
+          className="font-semibold text-brand-800 hover:underline"
+        >
           {phone}
         </a>
       ),
@@ -444,7 +492,11 @@ function ContactAside({
     rows.push({ icon: MapPin, label: "Address", node: school.address });
   }
   if (school.busStop) {
-    rows.push({ icon: Signpost, label: "Nearest landmark", node: school.busStop });
+    rows.push({
+      icon: Signpost,
+      label: "Nearest landmark",
+      node: school.busStop,
+    });
   }
   if (school.website) {
     rows.push({
@@ -458,7 +510,12 @@ function ContactAside({
           className="inline-flex items-center gap-1 break-all font-semibold text-brand-800 hover:underline"
         >
           {school.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-          <ExternalLink size={13} strokeWidth={2.4} aria-hidden className="shrink-0" />
+          <ExternalLink
+            size={13}
+            strokeWidth={2.4}
+            aria-hidden
+            className="shrink-0"
+          />
         </a>
       ),
     });
@@ -487,8 +544,12 @@ function ContactAside({
                     <Icon size={15} strokeWidth={2.2} />
                   </span>
                   <div className="min-w-0">
-                    <dt className="text-[12px] font-medium text-ink-500">{row.label}</dt>
-                    <dd className="mt-0.5 leading-relaxed text-ink-800">{row.node}</dd>
+                    <dt className="text-[12px] font-medium text-ink-500">
+                      {row.label}
+                    </dt>
+                    <dd className="mt-0.5 leading-relaxed text-ink-800">
+                      {row.node}
+                    </dd>
                   </div>
                 </div>
               );
@@ -515,12 +576,17 @@ function ContactAside({
 
       <div className="rounded-card border border-gold-200 bg-gold-100/50 p-5">
         <h2 className="flex items-center gap-2 text-sm font-bold text-ink-900">
-          <BadgeCheck size={16} strokeWidth={2.3} aria-hidden className="text-gold-600" />
+          <BadgeCheck
+            size={16}
+            strokeWidth={2.3}
+            aria-hidden
+            className="text-gold-600"
+          />
           Before you apply
         </h2>
         <p className="mt-2 text-[13px] leading-relaxed text-ink-700">
-          Fees and admissions requirements change between sessions. Confirm the current session’s
-          details with the school directly before you apply.
+          Fees and admissions requirements change between sessions. Confirm the
+          current session’s details with the school directly before you apply.
         </p>
       </div>
     </aside>
@@ -596,8 +662,9 @@ function FeeBreakdown({ school }: { school: School }) {
         </table>
       </div>
       <p className="mt-3 text-xs text-ink-500">
-        Published by the school per term. Confirm the current session&rsquo;s fees directly —
-        these change between sessions and may exclude registration, uniform and other charges.
+        Published by the school per term. Confirm the current session&rsquo;s
+        fees directly — these change between sessions and may exclude
+        registration, uniform and other charges.
       </p>
     </Section>
   );

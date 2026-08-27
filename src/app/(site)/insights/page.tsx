@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { AssetImage } from "@/components/asset-image";
 import Link from "next/link";
 import { ArrowRight, ExternalLink, FileText, Images } from "lucide-react";
 import { PageBanner } from "@/components/page-banner";
@@ -94,8 +94,8 @@ export default function InsightsPage() {
                   className="group block overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-lift"
                 >
                   <span className="relative block aspect-[3/4] overflow-hidden bg-ink-50">
-                    <Image
-                      src={asset(item.thumb)}
+                    <AssetImage
+                      path={item.thumb}
                       alt=""
                       fill
                       sizes="(max-width: 640px) 45vw, 260px"

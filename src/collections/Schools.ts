@@ -268,18 +268,12 @@ export const Schools: CollectionConfig = {
               ],
             },
             {
-              /*
-               * Deliberately not validated against the placeholder list.
-               * 4,380 records hold "Not available", which that list rejects —
-               * and until it is settled whether those are schools saying they
-               * offer nothing or an unchanged form default, rejecting the value
-               * would make every one of those records unsavable in the admin.
-               */
               name: "scholarship",
               type: "text",
+              validate: noPlaceholder,
               admin: {
                 description:
-                  "What the school itself publishes. Leave empty if it says nothing at all \u2014 an empty field reads as \u201cnot provided\u201d, which is different from the school telling us there is no scholarship.",
+                  "What the school itself publishes, e.g. \u201cPartial\u201d or \u201cFull\u201d. Leave empty if it says nothing \u2014 an empty field reads as \u201cnot provided\u201d, which is honest, whereas \u201cnot available\u201d tells a parent the school offers none.",
               },
             },
             {
