@@ -77,6 +77,8 @@ export const metadata: Metadata = {
 export default function HomePage() {
   const states = topStates(40);
   const total = totalCount();
+  const primary = allSchools().filter((s) => s.level === "primary").length;
+  const secondary = allSchools().filter((s) => s.level === "secondary").length;
   const counts = new Map(states.map((s) => [s.value, s.count]));
   const careerCount = allSchools().filter((s) => careerProfile(s).tier === "strong").length;
   const featured = search({ careerReady: true, hasPhotos: true, sort: "career" }).slice(0, 6);
@@ -84,7 +86,13 @@ export default function HomePage() {
 
   return (
     <>
-      <Hero total={total} states={states} careerCount={careerCount} />
+      <Hero
+        total={total}
+        primary={primary}
+        secondary={secondary}
+        states={states}
+        careerCount={careerCount}
+      />
       <PopularLocations counts={counts} />
       <FeaturedSchools featured={featured} careerCount={careerCount} />
       <ManagementPillars />
@@ -96,10 +104,14 @@ export default function HomePage() {
 
 function Hero({
   total,
+  primary,
+  secondary,
   states,
   careerCount,
 }: {
   total: number;
+  primary: number;
+  secondary: number;
   states: Array<{ value: string; count: number }>;
   careerCount: number;
 }) {
@@ -138,9 +150,17 @@ function Hero({
           </p>
 
           <dl className="mt-8 flex flex-wrap items-center gap-x-9 gap-y-3 text-white">
-            {/* Rounded rather than exact: the precise count changes with every
-                import and invites a reader to audit it. */}
-            <HeroStat value={`${Math.floor(total / 1000).toLocaleString()},000+`} label="Schools" />
+            {/*
+              * Exact rather than rounded, and split by level. "7,000+" was the
+              * safer-looking choice, but a reader deciding whether a directory
+              * is worth their time is reading these numbers as evidence — and a
+              * rounded figure with no breakdown reads as a claim rather than a
+              * count. The split also answers the first question anyone asks:
+              * does this cover the phase my child is in?
+              */}
+            <HeroStat value={total.toLocaleString()} label="Schools" />
+            <HeroStat value={primary.toLocaleString()} label="Primary" />
+            <HeroStat value={secondary.toLocaleString()} label="Secondary" />
             <HeroStat value="36" label="States + FCT" />
             <HeroStat value={careerCount.toLocaleString()} label="Career signals" accent />
           </dl>
