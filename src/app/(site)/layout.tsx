@@ -5,6 +5,8 @@ import Link from "next/link";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { CompareTray } from "@/components/compare-tray";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ShortlistProvider } from "@/components/shortlist-provider";
 import {
   FOUNDERS,
@@ -151,6 +153,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteFooter />
           <CompareTray />
         </ShortlistProvider>
+
+        {/*
+          * Analytics sits in the site layout, not the root, so the admin is not
+          * measured. Nobody needs a funnel report on their own editing, and on a
+          * metered event allowance it would be spend with nothing to show for it.
+          *
+          * Both are cookieless, which is the reason for choosing them over Google
+          * Analytics: no consent banner is required under the NDPR, and the payload
+          * is about a kilobyte rather than fifty — which matters when most of the
+          * audience is on a phone paying for data by the megabyte.
+          */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

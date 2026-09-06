@@ -223,6 +223,29 @@ School structured data emits only fields the record actually holds, and never
 `aggregateRating`: there are no reviews, and inventing stars is what earns a
 manual penalty.
 
+## Analytics
+
+`@vercel/analytics` and `@vercel/speed-insights`, mounted in the **site** layout
+rather than the root, so the admin is not measured — nobody needs a funnel
+report on their own editing, and on a metered event allowance it is spend with
+nothing to show for it.
+
+Both are cookieless, which is why they were chosen over Google Analytics: no
+consent banner is needed under the NDPR, and the payload is about a kilobyte
+against fifty. Most of the audience is on a phone paying for data by the
+megabyte, so a tracker heavier than the page it measures is a real cost.
+
+**The packages alone collect nothing.** Web Analytics and Speed Insights each
+have to be switched on for the project in the Vercel dashboard; until then the
+scripts load and the dashboard stays empty.
+
+What this layer cannot answer is the question worth asking — which searches
+return nothing, and which schools people actually open. That needs logging in
+`/api/suggest` and the profile route, written to Postgres and surfaced in the
+admin. It is deliberately not a third-party script: it needs no cookie, no
+consent and no vendor, and it is the only analytics here that would inform what
+to build next.
+
 ## The admin
 
 Payload CMS at `/admin`, backed by the same Neon Postgres the migration writes
