@@ -79,8 +79,11 @@ later by the admin can never be deleted by a local run.
 
 ## The data
 
-`src/data/schools.primary.json` and `src/data/schools.secondary.json` are the
-source of truth. Each file is a flat JSON array of records shaped like this:
+**Postgres is the source of truth.** The site reads it through
+`src/lib/schools.ts`; edits made in the admin are live within a request or two,
+without a deploy. The two JSON files under `src/data` are the seed the database
+was migrated from and the input to `scripts/migrate-schools.mts` — nothing in
+the app reads them any more. Each file is a flat JSON array of records shaped like this:
 
 ```jsonc
 {
@@ -150,16 +153,36 @@ not merge them.
 Tuning the bar is a one-line change (`STRONG_THRESHOLD`); adding an indicator
 means adding an entry to `SIGNALS` with the substrings it matches.
 
-### Moving to a database
+### How the site reads the database
 
-`src/lib/schools.ts` is the seam. Everything above it calls `search()`,
-`getSchool()`, `facetsFor()` and friends, so the records can move into Postgres
-by reimplementing that one file — the field names above map directly onto
-columns, and no component needs to change.
+`src/lib/schools.ts` is the seam, and it held: moving from JSON to Postgres
+changed only that file's body plus an `await` at each call site. No component
+moved.
 
-Local JSON is deliberate for now: 7,375 records is ~11 MB in memory and a full
-scan takes under a millisecond, and committing to a schema this early would
-freeze decisions still being learned from.
+Caching is in two layers, and the shape of it is forced by a limit worth
+knowing about. **`unstable_cache` rejects entries over 2 MB**, and the dataset
+is 9.5 MB — so wrapping the whole thing in it fails *silently*: every write is
+dropped and every render falls through to Postgres. Trimming does not save it
+either; a projection carrying only what search and the cards need is still
+6.3 MB.
+
+What is cached instead is a **token**: a few bytes, tagged `schools`, holding a
+random string. The dataset itself is held in process alongside the token it was
+built from. A request reads the token — free, from the data cache — and reuses
+the in-process copy when they match. Saving in the admin invalidates the tag,
+the next read mints a different token, and the copy is rebuilt. The database is
+asked for the full set only when something has actually changed.
+
+A save reaches the public page on the next request or the one after, because
+`revalidateTag` is stale-while-revalidate: the first visitor after an edit gets
+the old page and triggers the rebuild. `updateTag` would be immediate but is
+only valid inside a Server Action, which a Payload hook is not.
+
+Two guards: a five-minute `revalidate` on the token, so a missed invalidation
+heals itself rather than persisting until the next deploy; and prerendering
+capped at the 500 richest profiles, because every prerendered page is a query
+at build time and 3,046 of them against Neon's free compute timed the build
+out.
 
 ### Phone numbers
 

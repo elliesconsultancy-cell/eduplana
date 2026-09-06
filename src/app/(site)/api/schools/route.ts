@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   if (slugs.length === 0) return NextResponse.json({ schools: [] });
 
   return NextResponse.json(
-    { schools: getSchools(slugs) },
+    { schools: await getSchools(slugs) },
     { headers: { "Cache-Control": "public, max-age=300" } },
   );
 }

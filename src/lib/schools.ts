@@ -1,59 +1,206 @@
 import "server-only";
 
-import primary from "@/data/schools.primary.json";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
+import { getPayload } from "payload";
+import config from "@payload-config";
+import { SCHOOLS_TAG } from "./cache-tags";
 import { careerProfile } from "./career";
-import type { Facet, School, SearchFilters, SortKey } from "./types";
+import type { Facet, FeeItem, GalleryImage, School, SearchFilters, SortKey } from "./types";
 
 /**
  * The data layer.
  *
- * The two JSON files under `src/data` are the source of truth, and they hold
- * exactly what the app renders — no cleanup, parsing or repair happens at
- * request time. Everything lives in memory: 7,375 records is small enough that
- * a linear scan per request costs under a millisecond, which keeps the app
- * free of a database until the schema has settled.
+ * Records live in Postgres and are edited in the admin. Everything above this
+ * file calls `search()`, `getSchool()`, `facetsFor()` and friends, so the
+ * surface is unchanged from when these records were flat JSON — only the
+ * bodies below read from the database instead of an import.
  *
- * The exported functions are the exact surface a real query layer will need to
- * satisfy, so moving these records into a database should not touch a single
- * component — only the bodies below.
+ * Two layers of caching, doing different jobs:
+ *
+ *   unstable_cache  spares the database. One read of all published records is
+ *                   shared across every visitor until an edit invalidates it,
+ *                   so Neon sees a handful of queries a day rather than one
+ *                   per page view.
+ *
+ *   react cache     spares the CPU. The slug index and the search haystack are
+ *                   Maps, which cannot be serialised into the data cache, so
+ *                   they are rebuilt once per request and reused within it.
+ *
+ * An edit in the admin invalidates the tag (see the schools collection's
+ * afterChange hook) and the next request rebuilds — no redeploy.
  */
 
-import secondary from "@/data/schools.secondary.json";
+/** Re-exported for callers that already import from here. */
+export { SCHOOLS_TAG };
 
-// TypeScript infers a literal shape from each JSON file (e.g. `level: string`
-// rather than the `Level` union), so both need asserting to the domain type.
-const ALL: School[] = [
-  ...(primary as unknown as School[]),
-  ...(secondary as unknown as School[]),
-];
+/**
+ * Payload returns array rows with an extra `id`, and `_status` alongside the
+ * document. Narrowing here rather than casting keeps the domain type honest
+ * about what the rest of the app is allowed to assume.
+ */
+type SchoolDoc = Record<string, unknown>;
 
-const bySlug = new Map(ALL.map((s) => [s.slug, s]));
+function toSchool(doc: SchoolDoc): School {
+  const images = (doc.images ?? {}) as { logo?: string | null; gallery?: unknown[] };
+  const fee = (doc.fee ?? {}) as { label?: string | null; min?: number | null; max?: number | null };
+  const list = (value: unknown): string[] => (Array.isArray(value) ? (value as string[]) : []);
 
-/** Precomputed lowercase haystack per school — built once, reused per query. */
-const HAYSTACK = new Map(
-  ALL.map((s) => [
-    s.id,
-    [s.name, s.area, s.state, s.address, s.tagline, ...s.curricula]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase(),
-  ]),
+  return {
+    id: String(doc.id),
+    slug: String(doc.slug),
+    name: String(doc.name),
+    level: doc.level as School["level"],
+    tagline: (doc.tagline as string | null) ?? null,
+    summary: (doc.summary as string | null) ?? null,
+    state: (doc.state as string | null) ?? null,
+    area: (doc.area as string | null) ?? null,
+    address: (doc.address as string | null) ?? null,
+    busStop: (doc.busStop as string | null) ?? null,
+    phone: (doc.phone as string | null) ?? null,
+    admissionsOfficer: (doc.admissionsOfficer as string | null) ?? null,
+    admissionsRole: (doc.admissionsRole as string | null) ?? null,
+    website: (doc.website as string | null) ?? null,
+    yearFounded: (doc.yearFounded as number | null) ?? null,
+    curricula: list(doc.curricula),
+    scope: (doc.scope as string | null) ?? null,
+    fee: { label: fee.label ?? null, min: fee.min ?? null, max: fee.max ?? null },
+    feeItems: (Array.isArray(doc.feeItems) ? doc.feeItems : []).map((row) => {
+      const r = row as { label?: string; amount?: number };
+      return { label: String(r.label ?? ""), amount: Number(r.amount ?? 0) } satisfies FeeItem;
+    }),
+    admissionForm: (doc.admissionForm as string | null) ?? null,
+    day: Boolean(doc.day),
+    boarding: Boolean(doc.boarding),
+    faith: (doc.faith as string) ?? "Secular",
+    maxClassSize: (doc.maxClassSize as number | null) ?? null,
+    scholarship: (doc.scholarship as string | null) ?? null,
+    siblingsDiscount: (doc.siblingsDiscount as string | null) ?? null,
+    facilities: list(doc.facilities),
+    activities: list(doc.activities),
+    clubs: list(doc.clubs),
+    images: {
+      logo: images.logo ?? null,
+      gallery: (images.gallery ?? []).map((row) => {
+        const g = row as { full?: string; thumb?: string };
+        return { full: String(g.full ?? ""), thumb: String(g.thumb ?? "") } satisfies GalleryImage;
+      }),
+    },
+    verified: Boolean(doc.verified),
+  };
+}
+
+/**
+ * Every published record, in one query.
+ *
+ * `pagination: false` rather than a large `limit`: a limit that quietly sat
+ * below the row count would drop schools off the site with nothing to show for
+ * it. `depth: 0` because nothing here is a relationship — gallery rows and fee
+ * lines are array fields and come back regardless.
+ */
+async function fetchPublished(): Promise<School[]> {
+  const payload = await getPayload({ config });
+  const { docs } = await payload.find({
+    collection: "schools",
+    where: { _status: { equals: "published" } },
+    pagination: false,
+    depth: 0,
+    overrideAccess: true,
+  });
+  return docs.map((doc) => toSchool(doc as unknown as SchoolDoc));
+}
+
+/**
+ * A token that changes exactly when the data does.
+ *
+ * The obvious approach — wrapping the whole dataset in `unstable_cache` — does
+ * not work: entries are capped at 2 MB and the dataset is 9.5 MB, so every
+ * write was silently rejected and every render fell through to Postgres. Even
+ * a trimmed projection is 6.3 MB, so there is no version of that idea that fits.
+ *
+ * What does fit is a token. The cached value is a random string, so it is a few
+ * bytes; when the admin invalidates the tag the entry is dropped and the next
+ * read mints a different one. Comparing it against the token held alongside the
+ * in-process copy below tells us whether that copy is stale, without asking the
+ * database anything.
+ *
+ * `revalidate` is a safety net rather than the mechanism: if an invalidation is
+ * ever missed, the site heals itself within five minutes instead of serving a
+ * stale directory until the next deploy.
+ */
+const readVersion = unstable_cache(
+  async () => crypto.randomUUID(),
+  ["schools:version"],
+  { tags: [SCHOOLS_TAG], revalidate: 300 },
 );
 
-export function allSchools(): School[] {
-  return ALL;
+interface Dataset {
+  all: School[];
+  bySlug: Map<string, School>;
+  haystack: Map<string, string>;
 }
 
-export function getSchool(slug: string): School | undefined {
-  return bySlug.get(slug);
+function index(all: School[]): Dataset {
+  return {
+    all,
+    bySlug: new Map(all.map((s) => [s.slug, s])),
+    haystack: new Map(
+      all.map((s) => [
+        s.id,
+        [s.name, s.area, s.state, s.address, s.tagline, ...s.curricula]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase(),
+      ]),
+    ),
+  };
 }
 
-export function getSchools(slugs: string[]): School[] {
+/**
+ * The dataset and the token it was built from, held for the life of the
+ * process. Serverless instances are reused between requests, so in practice
+ * this is read far more often than it is filled.
+ */
+let held: { version: string; data: Dataset } | null = null;
+let inFlight: Promise<Dataset> | null = null;
+
+/**
+ * Deduplicated per request by React's cache, and shared across requests by the
+ * token check. A burst of concurrent requests on a cold instance waits on one
+ * query rather than starting several.
+ */
+const dataset = cache(async (): Promise<Dataset> => {
+  const version = await readVersion();
+  if (held && held.version === version) return held.data;
+  if (!inFlight) {
+    inFlight = fetchPublished()
+      .then((all) => {
+        const data = index(all);
+        held = { version, data };
+        return data;
+      })
+      .finally(() => {
+        inFlight = null;
+      });
+  }
+  return inFlight;
+});
+
+export async function allSchools(): Promise<School[]> {
+  return (await dataset()).all;
+}
+
+export async function getSchool(slug: string): Promise<School | undefined> {
+  return (await dataset()).bySlug.get(slug);
+}
+
+export async function getSchools(slugs: string[]): Promise<School[]> {
+  const { bySlug } = await dataset();
   return slugs.map((s) => bySlug.get(s)).filter((s): s is School => Boolean(s));
 }
 
-export function totalCount(): number {
-  return ALL.length;
+export async function totalCount(): Promise<number> {
+  return (await dataset()).all.length;
 }
 
 interface Query {
@@ -92,12 +239,12 @@ function startsWord(text: string, token: string): boolean {
  * searching "Lekki" should surface schools *in* Lekki above one whose name
  * merely contains the word.
  */
-function score(school: School, query: Query): number {
+function score(school: School, query: Query, haystacks: Map<string, string>): number {
   const { tokens, prefixOnly } = query;
   if (tokens.length === 0) return 0;
   const name = school.name.toLowerCase();
   const place = `${school.area ?? ""} ${school.state ?? ""}`.toLowerCase();
-  const haystack = HAYSTACK.get(school.id) ?? "";
+  const haystack = haystacks.get(school.id) ?? "";
   const has = prefixOnly
     ? (text: string, token: string) => startsWord(text, token)
     : (text: string, token: string) => text.includes(token);
@@ -117,11 +264,12 @@ function score(school: School, query: Query): number {
   return total;
 }
 
-export function search(filters: SearchFilters): School[] {
+export async function search(filters: SearchFilters): Promise<School[]> {
+  const { all, haystack } = await dataset();
   const query = parseQuery(filters.q ?? "");
   const scored: Array<{ school: School; score: number }> = [];
 
-  for (const school of ALL) {
+  for (const school of all) {
     if (filters.level && school.level !== filters.level) continue;
     if (filters.state && school.state !== filters.state) continue;
     if (filters.area && school.area !== filters.area) continue;
@@ -160,7 +308,7 @@ export function search(filters: SearchFilters): School[] {
       if (ceiling == null || ceiling < filters.feeMin) continue;
     }
 
-    const relevance = score(school, query);
+    const relevance = score(school, query, haystack);
     if (relevance < 0) continue;
     scored.push({ school, score: relevance });
   }
@@ -266,12 +414,13 @@ export interface Suggestion {
  * name, then the town — typing "lek" should offer Lekki schools, and typing
  * "meadow" should put Meadow Hall first rather than a school on Meadow Road.
  */
-export function suggest(query: string, limit = 8): Suggestion[] {
+export async function suggest(query: string, limit = 8): Promise<Suggestion[]> {
   const q = query.trim().toLowerCase();
   if (q.length < 2) return [];
 
+  const { all } = await dataset();
   const hits: Array<{ school: School; rank: number }> = [];
-  for (const school of ALL) {
+  for (const school of all) {
     const name = school.name.toLowerCase();
     const place = `${school.area ?? ""} ${school.state ?? ""}`.toLowerCase();
 
@@ -305,17 +454,20 @@ function locationOf(school: School): string {
   return [school.area, school.state].filter(Boolean).join(", ");
 }
 
-export function topStates(limit = 8): Facet[] {
-  return tally(ALL.map((s) => s.state)).slice(0, limit);
+export async function topStates(limit = 8): Promise<Facet[]> {
+  const { all } = await dataset();
+  return tally(all.map((s) => s.state)).slice(0, limit);
 }
 
-export function topAreas(state: string, limit = 12): Facet[] {
-  return tally(ALL.filter((s) => s.state === state).map((s) => s.area)).slice(0, limit);
+export async function topAreas(state: string, limit = 12): Promise<Facet[]> {
+  const { all } = await dataset();
+  return tally(all.filter((s) => s.state === state).map((s) => s.area)).slice(0, limit);
 }
 
 /** Similar schools for the profile page: same area first, then same state. */
-export function relatedSchools(school: School, limit = 4): School[] {
-  const pool = ALL.filter((s) => s.id !== school.id);
+export async function relatedSchools(school: School, limit = 4): Promise<School[]> {
+  const { all } = await dataset();
+  const pool = all.filter((s) => s.id !== school.id);
   const sameArea = pool.filter((s) => s.state === school.state && s.area === school.area);
   const sameState = pool.filter((s) => s.state === school.state && s.area !== school.area);
 

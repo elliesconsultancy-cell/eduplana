@@ -34,7 +34,7 @@ import {
   CareerBreakdown,
   VerifiedBadge,
 } from "@/components/career-badge";
-import { allSchools, getSchool, relatedSchools } from "@/lib/schools";
+import { allSchools, getSchool, profileDepth, relatedSchools } from "@/lib/schools";
 import {
   boardingLabel,
   displayPhone,
@@ -54,7 +54,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const school = getSchool(slug);
+  const school = await getSchool(slug);
   if (!school) return { title: "School not found" };
 
   const description =
@@ -92,9 +92,21 @@ export async function generateMetadata({
  * demand and is cached thereafter. Building all 7,000 would slow every build
  * for pages almost nobody opens directly.
  */
-export function generateStaticParams() {
-  return allSchools()
+/**
+ * Prerender the richest profiles only.
+ *
+ * Every entry here is a database read at build time. Building all 3,046
+ * photographed profiles meant 3,046 queries per deploy against Neon's free
+ * compute, for pages that are then cached anyway — so the top slice is built
+ * ahead and the long tail renders on demand and caches on first visit. A
+ * visitor cannot tell the difference; the build and the database can.
+ */
+export async function generateStaticParams() {
+  const all = await allSchools();
+  return all
     .filter((s) => s.images.gallery.length > 0)
+    .sort((a, b) => profileDepth(b) - profileDepth(a))
+    .slice(0, 500)
     .map((s) => ({ slug: s.slug }));
 }
 
@@ -104,10 +116,10 @@ export default async function SchoolPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const school = getSchool(slug);
+  const school = await getSchool(slug);
   if (!school) notFound();
 
-  const related = relatedSchools(school);
+  const related = await relatedSchools(school);
   const summary = school.summary;
   const phone = displayPhone(school.phone);
   const tel = telHref(school.phone);

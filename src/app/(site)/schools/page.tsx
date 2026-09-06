@@ -64,7 +64,7 @@ export default async function SchoolsPage({
   const filters = toFilters(params);
   const page = Math.max(1, Number(one(params, "page")) || 1);
 
-  const results = search(filters);
+  const results = await search(filters);
   const facets = facetsFor(results);
   const start = (page - 1) * PAGE_SIZE;
   const visible = results.slice(start, start + PAGE_SIZE);

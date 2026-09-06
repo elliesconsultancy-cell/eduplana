@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const q = searchParams.get("q") ?? "";
 
   return NextResponse.json(
-    { suggestions: suggest(q) },
+    { suggestions: await suggest(q) },
     { headers: { "Cache-Control": "public, max-age=60" } },
   );
 }

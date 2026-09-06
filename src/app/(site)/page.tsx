@@ -74,14 +74,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function HomePage() {
-  const states = topStates(40);
-  const total = totalCount();
-  const primary = allSchools().filter((s) => s.level === "primary").length;
-  const secondary = allSchools().filter((s) => s.level === "secondary").length;
+export default async function HomePage() {
+  // One dataset read serves all of these: the loader is memoised per request,
+  // so the six calls below do not become six queries.
+  const [states, total, all, featured] = await Promise.all([
+    topStates(40),
+    totalCount(),
+    allSchools(),
+    search({ careerReady: true, hasPhotos: true, sort: "career" }),
+  ]);
+  const primary = all.filter((s) => s.level === "primary").length;
+  const secondary = all.filter((s) => s.level === "secondary").length;
   const counts = new Map(states.map((s) => [s.value, s.count]));
-  const careerCount = allSchools().filter((s) => careerProfile(s).tier === "strong").length;
-  const featured = search({ careerReady: true, hasPhotos: true, sort: "career" }).slice(0, 6);
+  const careerCount = all.filter((s) => careerProfile(s).tier === "strong").length;
   const archive = archiveStats();
 
   return (
@@ -94,7 +99,7 @@ export default function HomePage() {
         careerCount={careerCount}
       />
       <PopularLocations counts={counts} />
-      <FeaturedSchools featured={featured} careerCount={careerCount} />
+      <FeaturedSchools featured={featured.slice(0, 6)} careerCount={careerCount} />
       <ManagementPillars />
       <Heritage archive={archive} />
       <Doors />

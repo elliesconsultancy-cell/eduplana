@@ -86,8 +86,8 @@ const STEPS = [
   },
 ];
 
-export default function ForSchoolsPage() {
-  const total = totalCount();
+export default async function ForSchoolsPage() {
+  const total = await totalCount();
 
   return (
     <>

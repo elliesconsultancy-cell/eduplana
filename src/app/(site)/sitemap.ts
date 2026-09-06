@@ -16,7 +16,7 @@ import { absoluteUrl } from "@/lib/site";
  * `/compare` and `/shortlist` are left out for the same reason robots.txt
  * disallows them: they render per-visitor state, not content.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/schools"), changeFrequency: "daily", priority: 0.9 },
@@ -27,7 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/insights/reports"), changeFrequency: "monthly", priority: 0.5 },
   ];
 
-  const schools: MetadataRoute.Sitemap = allSchools().map((school) => ({
+  const schools: MetadataRoute.Sitemap = (await allSchools()).map((school) => ({
     url: absoluteUrl(`/schools/${school.slug}`),
     changeFrequency: "monthly",
     // Richer profiles are the ones worth crawling first.

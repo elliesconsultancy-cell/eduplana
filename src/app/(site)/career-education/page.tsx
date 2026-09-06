@@ -42,10 +42,13 @@ const QUESTIONS = [
   },
 ];
 
-export default function CareerEducationPage() {
-  const all = allSchools();
+export default async function CareerEducationPage() {
+  const [all, featuredAll] = await Promise.all([
+    allSchools(),
+    search({ careerReady: true, hasPhotos: true, sort: "career" }),
+  ]);
   const strong = all.filter((s) => careerProfile(s).tier === "strong");
-  const featured = search({ careerReady: true, hasPhotos: true, sort: "career" }).slice(0, 6);
+  const featured = featuredAll.slice(0, 6);
 
   const perSignal = SIGNALS.map((signal) => ({
     signal,

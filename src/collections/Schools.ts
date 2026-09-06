@@ -1,4 +1,6 @@
 import type { CollectionConfig, PayloadRequest } from "payload";
+import { revalidateTag } from "next/cache";
+import { SCHOOLS_TAG } from "@/lib/cache-tags";
 
 /**
  * Nigeria's 36 states plus the Federal Capital Territory.
@@ -94,6 +96,43 @@ export const Schools: CollectionConfig = {
       "Every school in the public directory. Changes go live once published.",
     pagination: { defaultLimit: 25 },
   },
+  hooks: {
+    /**
+     * Drop the cached dataset whenever a record changes, so an edit is live on
+     * the public site within seconds instead of waiting for a redeploy.
+     *
+     * Without this the site would read a snapshot taken at the last cache fill
+     * and a save would look like it had done nothing — which is exactly the
+     * bug this replaced.
+     *
+     * `revalidateTag` takes a required expiry profile in Next 16; "max" clears
+     * it immediately. Failures are swallowed deliberately: the write already
+     * succeeded, and throwing here would show the editor an error for a save
+     * that actually went through. Stale-by-a-few-minutes beats a false alarm.
+     */
+    afterChange: [
+      ({ doc }) => {
+        try {
+          revalidateTag(SCHOOLS_TAG, "max");
+        } catch {
+          // Outside a request context (a migration script, say) there is no
+          // cache to clear.
+        }
+        return doc;
+      },
+    ],
+    afterDelete: [
+      ({ doc }) => {
+        try {
+          revalidateTag(SCHOOLS_TAG, "max");
+        } catch {
+          /* see above */
+        }
+        return doc;
+      },
+    ],
+  },
+
   // Edits are staged until published, so a half-finished record never appears
   // on the public site. Version history also makes mistakes recoverable.
   versions: {
