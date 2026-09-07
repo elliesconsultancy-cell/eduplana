@@ -300,10 +300,18 @@ opens their record, types a new password and passes it on. That is why the
 only ever claim to have sent a message. `/admin/forgot` redirects to the login
 page.
 
-**The panel is dark, always.** Not a preference: it is a dashboard read for
-long stretches, and the panels, charts and elevation scale were drawn for a dark
-canvas. Leaving it switchable would mean maintaining a light version that
-nothing was designed for.
+**Both themes are first-class.** An earlier pass forced dark and removed the
+switcher, which is not a choice to make on somebody's behalf. Both scales are
+defined in `custom.css`, the dashboard reads Payload's tokens rather than
+hardcoding a palette, and the chart pair is stepped per theme — `#2260b7` /
+`#12805e` on light, `#3d8ce0` / `#1fa97e` on dark. Each pair clears a
+colour-vision check against its own surface; the dark steps are too light to
+read on white and the light steps too dark to read on navy.
+
+The sidebar carries the lock-up and links to Overview and Analytics, which
+Payload cannot know about because it builds its nav from collections. The
+horizontal gutter is cut from three base units to about one: the default leaves
+a directory table floating in the middle of a wide screen.
 
 **The dashboard** answers how many people came, what they searched for, and what
 the directory still needs — every figure from our own Postgres, with no
@@ -313,7 +321,14 @@ against the dark surface at ΔE 21 for deuteranopes. Blue against violet, the
 first pairing tried, came out at 5.4 and would have been one colour to a
 sizeable share of readers.
 
-It also opens with coverage by state rather than a row of totals. A
+It also opens with coverage by state rather than a row of totals.
+
+**Every row on the analytics screen opens.** A page leads to its own traffic
+over 30 days, its referrers, its devices, and links to the live page and the
+record behind it; a search leads to how often it ran, how many results came
+back, and — when the answer is none — a prompt to add the school. A list of
+counts with nothing behind it is where most admin analytics stops, and it is
+where a number stops being useful. A
 count of 7,375 is not something anyone can act on; the shape of the tail is —
 Lagos holds 1 in every 3 schools listed, and fifteen states have fewer than 50.
 The two-tone split in the chart marks exactly that sub-50 tail, so the picture

@@ -31,13 +31,12 @@ export default buildConfig({
       titleSuffix: " · Eduplana admin",
     },
     /*
-     * Dark, always. Not a preference: the admin is a dashboard read for long
-     * stretches, and the panels, charts and elevation scale below are designed
-     * for a dark canvas. Leaving the theme switchable would mean maintaining
-     * two versions of that design, and the light one would be the worse of the
-     * two because nothing here was drawn for it.
+     * Both themes. Forcing dark removed the switcher entirely, which is not a
+     * decision anyone asked for — somebody working in a bright room should be
+     * able to choose. Both scales are defined in custom.css and the dashboard
+     * reads its colours from Payload's tokens, so neither is an afterthought.
      */
-    theme: "dark",
+    theme: "all",
     components: {
       // Same artwork as the public site, so signing in does not feel like
       // leaving the product.
@@ -45,6 +44,9 @@ export default buildConfig({
         Logo: "@/components/admin/Logo#Logo",
         Icon: "@/components/admin/Icon#Icon",
       },
+      // Payload builds the sidebar from collections, so custom views are
+      // otherwise reachable only by typing the URL.
+      beforeNavLinks: ["@/components/admin/NavLinks#NavLinks"],
       // Replaces the stock "here are your collections" dashboard, which
       // repeats the sidebar, with live counts and the two actions people
       // actually arrive wanting.

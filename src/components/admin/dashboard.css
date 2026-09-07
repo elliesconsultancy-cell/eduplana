@@ -10,9 +10,17 @@
  * Figures are set in mono. A directory is a register, and mono keeps columns of
  * digits in alignment while giving counts the quality of a roll being read.
  */
-.ep {
+html[data-theme="dark"] .ep {
   --ep-a: #3d8ce0;
   --ep-b: #1fa97e;
+}
+
+.ep {
+  /* Stepped per theme rather than flipped. Both pairs clear a colour-vision
+     check against their own surface; the dark steps are too light to read on
+     white and the light steps too dark to read on navy. */
+  --ep-a: #2260b7;
+  --ep-b: #12805e;
   --ep-warn: #d9a441;
   --ep-down: #e5686d;
   --ep-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -384,6 +392,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.ep-rows li > a {
+  color: var(--theme-elevation-900);
+  text-decoration: none;
+}
+.ep-rows li > a:hover {
+  color: var(--ep-a);
+  text-decoration: underline;
 }
 .ep-rows em {
   flex: none;

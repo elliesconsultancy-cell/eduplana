@@ -1,22 +1,20 @@
 /*
  * Eduplana admin theme.
  *
- * Payload exposes ~350 CSS custom properties, so the panel can be rebranded by
+ * Payload exposes ~350 CSS custom properties, so the panel is rebranded by
  * remapping tokens rather than overriding component styles. That matters for
- * upgrades: nothing here depends on Payload's internal class structure beyond
- * a handful of well-known blocks.
+ * upgrades: almost nothing here depends on Payload's internal class structure.
  *
- * Everything is defined per theme. Payload sets html[data-theme="light"|"dark"]
- * from the OS preference, and an earlier version of this file hardcoded a white
- * card and a pale gradient — which turned into unreadable dark inputs on a white
- * panel for anyone whose machine was in dark mode. Colours below are therefore
- * either theme-scoped or expressed through Payload's own elevation tokens.
+ * Both themes are first-class. An earlier pass forced dark and removed the
+ * switcher, which is not a choice to make on somebody's behalf — a person
+ * working in a bright room should be able to pick. Every colour below is
+ * defined for both, and the dashboard reads Payload's tokens rather than
+ * hardcoding a palette, so it follows whichever is active.
  */
 
 /* ---------------------------------------------------------------- palette -- */
 
 html[data-theme="light"] {
-  /* The brand blue drives primary actions, active nav and focus rings. */
   --color-success-50: #f1f6fd;
   --color-success-100: #dcebfa;
   --color-success-200: #b7d6f4;
@@ -27,8 +25,22 @@ html[data-theme="light"] {
   --color-success-800: #143a70;
   --color-success-900: #0e2a53;
 
-  /* Cool the greys very slightly toward the site's ink palette. */
-  --theme-border-color: #e2e7ee;
+  --theme-bg: #f6f8fb;
+  --theme-elevation-0: #ffffff;
+  --theme-elevation-50: #f4f7fb;
+  --theme-elevation-100: #e4eaf2;
+  --theme-elevation-150: #d7dfea;
+  --theme-elevation-200: #c4cfdd;
+  --theme-elevation-250: #b2bfd1;
+  --theme-elevation-300: #9dabc0;
+  --theme-elevation-400: #7d8da5;
+  --theme-elevation-500: #64748b;
+  --theme-elevation-600: #4c5a70;
+  --theme-elevation-700: #3a465a;
+  --theme-elevation-800: #263141;
+  --theme-elevation-900: #16202e;
+  --theme-elevation-1000: #0b111c;
+  --theme-border-color: #e4eaf2;
 
   --accessibility-outline: 2px solid #2260b7;
 }
@@ -44,138 +56,6 @@ html[data-theme="dark"] {
   --color-success-800: #b7d6f4;
   --color-success-900: #dcebfa;
 
-  --accessibility-outline: 2px solid #6ba3e3;
-}
-
-/* ------------------------------------------------------------------ type -- */
-
-:root {
-  /* Plus Jakarta Sans, loaded by the layout and matching the public site.
-     Falls back to Payload's own stack if the font fails to load. */
-  --font-body: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
-
-  /* Softer corners throughout, in line with the site's rounded cards. */
-  --style-radius-s: 6px;
-  --style-radius-m: 10px;
-  --style-radius-l: 14px;
-}
-
-/* ---------------------------------------------------------------- buttons -- */
-
-/* Primary actions — Save, Create, Publish — carry the brand rather than
-   Payload's default near-black. */
-.btn--style-primary {
-  --btn-color: #ffffff;
-  background-color: var(--color-success-600);
-  border-color: var(--color-success-600);
-}
-.btn--style-primary:not(.btn--disabled):not([disabled]):hover {
-  background-color: var(--color-success-700);
-  border-color: var(--color-success-700);
-}
-html[data-theme="dark"] .btn--style-primary {
-  --btn-color: #071830;
-}
-
-/* ------------------------------------------------------------ login views -- */
-
-/* The sign-in and create-first-user screens. A tinted ground in both themes so
-   the card reads as a card, with the brand present before you are even in. */
-.template-minimal {
-  min-height: 100vh;
-}
-html[data-theme="light"] .template-minimal {
-  background:
-    radial-gradient(110% 70% at 12% 0%, rgb(34 96 183 / 0.10), transparent 60%),
-    linear-gradient(165deg, #f1f6fd 0%, #ffffff 60%);
-}
-html[data-theme="dark"] .template-minimal {
-  background:
-    radial-gradient(110% 70% at 12% 0%, rgb(34 96 183 / 0.20), transparent 60%),
-    linear-gradient(165deg, #08182c 0%, var(--theme-bg) 60%);
-}
-
-.template-minimal__wrap {
-  /* Elevation tokens rather than literal white, so the card inverts correctly. */
-  background: var(--theme-elevation-0);
-  border: 1px solid var(--theme-border-color);
-  border-radius: 16px;
-  padding: 44px 40px;
-  box-shadow:
-    0 1px 2px rgb(11 20 32 / 0.04),
-    0 18px 40px -18px rgb(11 20 32 / 0.22);
-}
-html[data-theme="dark"] .template-minimal__wrap {
-  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6);
-}
-
-/* Payload renders the logo above the form on the login view. */
-.template-minimal__wrap .graphic-logo,
-.template-minimal__wrap > a:first-child {
-  display: block;
-  margin-bottom: 30px;
-}
-
-/* --------------------------------------------------------------- chrome ---- */
-
-/* Brand tint on the active sidebar entry, so "where am I" reads instantly. */
-.nav__link--active,
-.nav__link[aria-current="page"] {
-  background-color: var(--color-success-50);
-  color: var(--color-success-800);
-}
-html[data-theme="dark"] .nav__link--active,
-html[data-theme="dark"] .nav__link[aria-current="page"] {
-  color: var(--color-success-900);
-}
-
-/* Inputs pick up the brand on focus rather than Payload's default blue-grey. */
-.field-type input:focus,
-.field-type textarea:focus,
-.field-type .rs__control--is-focused {
-  border-color: var(--color-success-500);
-  box-shadow: 0 0 0 3px rgb(34 96 183 / 0.14);
-}
-
-/* ----------------------------------------------------------- login lock-up -- */
-
-/*
- * Both lock-ups ship and CSS picks one. Choosing the asset in the component
- * would mean reading the theme in JS — but Payload resolves it from a cookie
- * and can flip it after mount, so the blue mark would paint onto the dark card
- * for a frame before swapping. A CSS toggle never shows the wrong one.
- */
-html[data-theme="light"] .brand-lockup__dark,
-html[data-theme="dark"] .brand-lockup__light {
-  display: none;
-}
-
-/* ------------------------------------------------------- password resets -- */
-
-/*
- * Hide "Forgot password?" on the login screen.
- *
- * There is no email adapter, so the flow could only ever claim to have sent a
- * message. Resets are done by a super-admin from the user's record instead.
- * The route itself redirects to /admin/login (see next.config.ts) — this only
- * removes the invitation to try.
- */
-.template-minimal a[href$="/forgot"] {
-  display: none;
-}
-
-/* ------------------------------------------------------------- dark scale -- */
-
-/*
- * Payload's dark theme is a neutral near-black. This restates it as a navy
- * scale so the whole panel — collection lists, edit forms, the dashboard —
- * reads as one dark product rather than a dark CMS with a dashboard bolted on.
- *
- * These are Payload's own tokens, so every component it ships picks the new
- * values up without being restyled individually.
- */
-html[data-theme="dark"] {
   --theme-bg: #0b111c;
   --theme-input-bg: #131b29;
   --theme-elevation-0: #141c2b;
@@ -194,26 +74,287 @@ html[data-theme="dark"] {
   --theme-elevation-1000: #ffffff;
   --theme-border-color: #222e42;
   --theme-text: #e8edf5;
+
+  --accessibility-outline: 2px solid #6ba3e3;
 }
 
-/* Chrome: give the sidebar and header the same card treatment as the panels,
-   so the shell and the content belong to one surface family. */
-html[data-theme="dark"] .nav {
-  background: #0e1522;
+/* ------------------------------------------------------------------- type -- */
+
+:root {
+  /* Plus Jakarta Sans, loaded by the layout and matching the public site. */
+  --font-body: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --style-radius-s: 7px;
+  --style-radius-m: 10px;
+  --style-radius-l: 14px;
+
+  /*
+   * Payload's default horizontal gutter is three base units, which on a wide
+   * screen leaves a directory table floating in the middle of the display with
+   * inches of nothing either side. A data-heavy panel wants the width.
+   */
+  --gutter-h: calc(var(--base) * 1.2);
+  --nav-width: 252px;
+}
+
+/* ------------------------------------------------------------------- nav -- */
+
+.nav {
+  background: var(--theme-elevation-0);
   border-inline-end: 1px solid var(--theme-elevation-100);
 }
-html[data-theme="dark"] .app-header,
-html[data-theme="dark"] .step-nav {
-  background: transparent;
+.nav__scroll {
+  padding-inline: 0.55rem;
 }
-html[data-theme="dark"] .nav__link {
+.nav__link,
+.ep-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.65rem;
+  margin-block-end: 2px;
   border-radius: 8px;
-  margin-inline: 0.4rem;
-  padding-inline: 0.6rem;
+  font-size: 0.87rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--theme-elevation-700);
+  transition: background-color 0.13s ease, color 0.13s ease;
 }
-html[data-theme="dark"] .nav-group__label {
-  font-size: 0.66rem;
-  letter-spacing: 0.16em;
+.nav__link:hover,
+.ep-nav__link:hover {
+  background: var(--theme-elevation-50);
+  color: var(--theme-elevation-1000);
+  text-decoration: none;
+}
+.nav__link--active,
+.nav__link[aria-current="page"] {
+  background: var(--color-success-50);
+  color: var(--color-success-800);
+  font-weight: 600;
+}
+/* Payload marks the active item with a bar that sits outside the new radius. */
+.nav__link-indicator {
+  display: none;
+}
+.nav-group__label,
+.ep-nav__label {
+  margin: 1rem 0 0.4rem;
+  padding-inline: 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
   text-transform: uppercase;
   color: var(--theme-elevation-400);
+}
+.ep-nav__label {
+  margin-block-start: 0.35rem;
+}
+.ep-nav {
+  margin-block-end: 0.35rem;
+}
+.ep-nav__brand {
+  display: block;
+  padding: 0.15rem 0.65rem 0.9rem;
+  margin-block-end: 0.4rem;
+  border-block-end: 1px solid var(--theme-elevation-100);
+}
+.ep-nav__brand img {
+  display: block;
+  height: 24px;
+  width: auto;
+}
+/* The reversed lock-up on dark, the blue one on light. */
+html[data-theme="light"] .ep-nav__brand-dark,
+html[data-theme="dark"] .ep-nav__brand-light {
+  display: none;
+}
+.ep-nav__link svg {
+  flex: none;
+  opacity: 0.8;
+}
+
+/* The nav header held a bare icon against the breadcrumb, which read as a
+   stray graphic. Give it room and a divider so it reads as a masthead. */
+.nav__header {
+  padding: 0.9rem 0.95rem 0.75rem;
+  border-block-end: 1px solid var(--theme-elevation-100);
+  margin-block-end: 0.5rem;
+}
+.nav__controls {
+  gap: 0.4rem;
+}
+
+/* --------------------------------------------------------------- app chrome -- */
+
+.app-header {
+  background: var(--theme-bg);
+  border-block-end: 1px solid var(--theme-elevation-100);
+}
+.step-nav {
+  font-size: 0.82rem;
+}
+/* The breadcrumb led with the brand mark, duplicating the sidebar two inches
+   away. The trail should start at the section you are actually in. */
+.step-nav a:first-child .graphic-icon,
+.step-nav__home svg,
+.step-nav__home img {
+  display: none;
+}
+.step-nav__home::before {
+  content: "Admin";
+  color: var(--theme-elevation-500);
+}
+
+/* ---------------------------------------------------------------- buttons -- */
+
+.btn--style-primary {
+  --btn-color: #ffffff;
+  background-color: var(--color-success-600);
+  border-color: var(--color-success-600);
+  border-radius: var(--style-radius-m);
+}
+.btn--style-primary:not(.btn--disabled):not([disabled]):hover {
+  background-color: var(--color-success-700);
+  border-color: var(--color-success-700);
+}
+html[data-theme="dark"] .btn--style-primary {
+  --btn-color: #071830;
+}
+.btn--style-secondary {
+  border-radius: var(--style-radius-m);
+}
+
+/* ------------------------------------------------------------ login views -- */
+
+.template-minimal {
+  min-height: 100vh;
+}
+html[data-theme="light"] .template-minimal {
+  background:
+    radial-gradient(110% 70% at 12% 0%, rgb(34 96 183 / 0.10), transparent 60%),
+    linear-gradient(165deg, #f1f6fd 0%, #ffffff 60%);
+}
+html[data-theme="dark"] .template-minimal {
+  background:
+    radial-gradient(110% 70% at 12% 0%, rgb(34 96 183 / 0.22), transparent 60%),
+    linear-gradient(165deg, #0a1424 0%, var(--theme-bg) 60%);
+}
+.template-minimal__wrap {
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 16px;
+  padding: 44px 40px;
+  box-shadow:
+    0 1px 2px rgb(11 20 32 / 0.04),
+    0 18px 40px -18px rgb(11 20 32 / 0.22);
+}
+html[data-theme="dark"] .template-minimal__wrap {
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6);
+}
+.template-minimal__wrap .graphic-logo,
+.template-minimal__wrap > a:first-child {
+  display: block;
+  margin-bottom: 30px;
+}
+
+/* ------------------------------------------------------- lists and tables -- */
+
+/* The list view is where most of the working day happens, so it gets the same
+   card treatment as the dashboard rather than sitting on the raw background. */
+.collection-list__wrap .table,
+.table {
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-l);
+  overflow: hidden;
+  background: var(--theme-elevation-0);
+}
+.table table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.table thead th {
+  background: var(--theme-elevation-50);
+  border-block-end: 1px solid var(--theme-elevation-100);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-500);
+  padding-block: 0.75rem;
+}
+.table tbody td {
+  border-block-end: 1px solid var(--theme-elevation-100);
+  padding-block: 0.7rem;
+  font-size: 0.87rem;
+}
+.table tbody tr:last-child td {
+  border-block-end: 0;
+}
+.table tbody tr:hover td {
+  background: var(--theme-elevation-50);
+}
+.cell-updatedAt,
+.cell-createdAt {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--theme-elevation-500);
+}
+
+.list-controls {
+  margin-block-end: 0.9rem;
+}
+.list-controls__wrap,
+.search-filter input {
+  border-radius: var(--style-radius-m);
+}
+.search-filter input {
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-100);
+  height: 42px;
+}
+
+/* -------------------------------------------------------------- documents -- */
+
+.doc-header__title,
+.collection-list__page-heading {
+  letter-spacing: -0.03em;
+}
+.doc-tabs__tabs {
+  border-block-end: 1px solid var(--theme-elevation-100);
+}
+.doc-tab__link {
+  border-radius: 8px 8px 0 0;
+}
+.field-type input,
+.field-type textarea,
+.field-type .rs__control {
+  border-radius: var(--style-radius-s);
+  background: var(--theme-elevation-0);
+  border-color: var(--theme-elevation-150);
+}
+.field-type input:focus,
+.field-type textarea:focus,
+.field-type .rs__control--is-focused {
+  border-color: var(--color-success-500);
+  box-shadow: 0 0 0 3px rgb(34 96 183 / 0.14);
+}
+.field-description {
+  color: var(--theme-elevation-500);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------- password resets -- */
+
+/*
+ * Hide "Forgot password?" on the login screen. There is no email adapter, so
+ * the flow could only ever claim to have sent a message. Resets are done by a
+ * super admin from the user's record instead; /admin/forgot redirects to the
+ * login page (see next.config.ts).
+ */
+.template-minimal a[href$="/forgot"] {
+  display: none;
 }

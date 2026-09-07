@@ -275,13 +275,23 @@ export async function Dashboard() {
           note="Each one is a school somebody wanted"
           empty="Nothing yet."
           tone="warn"
-          rows={gaps.map((g) => ({ key: String(g.query), label: String(g.query), value: nf.format(Number(g.n ?? 0)) }))}
+          rows={gaps.map((g) => ({
+            key: String(g.query),
+            label: String(g.query),
+            value: nf.format(Number(g.n ?? 0)),
+            href: `/admin/analytics?q=${encodeURIComponent(String(g.query))}`,
+          }))}
         />
         <List
           title="Most visited pages"
           note="Last 7 days"
           empty="Nothing yet."
-          rows={topPages.map((p) => ({ key: String(p.path), label: String(p.path), value: nf.format(Number(p.n ?? 0)) }))}
+          rows={topPages.map((p) => ({
+            key: String(p.path),
+            label: String(p.path),
+            value: nf.format(Number(p.n ?? 0)),
+            href: `/admin/analytics?page=${encodeURIComponent(String(p.path))}`,
+          }))}
         />
         <List
           title="Where visitors came from"
@@ -378,14 +388,14 @@ function Traffic({ days }: { days: Array<{ day: string; views: number; visitors:
         aria-label={`Page views and visitors over ${days.length} days`}>
         <defs>
           <linearGradient id="ep-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3d8ce0" stopOpacity="0.32" />
-            <stop offset="100%" stopColor="#3d8ce0" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--ep-a)" stopOpacity="0.30" />
+            <stop offset="100%" stopColor="var(--ep-a)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={area} fill="url(#ep-fill)" />
-        <path d={line("views")} fill="none" stroke="#3d8ce0" strokeWidth="2"
+        <path d={line("views")} fill="none" stroke="var(--ep-a)" strokeWidth="2"
           strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        <path d={line("visitors")} fill="none" stroke="#1fa97e" strokeWidth="2"
+        <path d={line("visitors")} fill="none" stroke="var(--ep-b)" strokeWidth="2"
           strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       </svg>
       <figcaption className="ep-chart__axis">
@@ -405,8 +415,8 @@ function Donut({ primary, secondary }: { primary: number; secondary: number }) {
   return (
     <svg className="ep-donut" viewBox="0 0 140 140" role="img"
       aria-label={`${primary} primary and ${secondary} secondary schools`}>
-      <circle cx="70" cy="70" r="54" fill="none" stroke="#1fa97e" strokeWidth="16" />
-      <circle cx="70" cy="70" r="54" fill="none" stroke="#3d8ce0" strokeWidth="16"
+      <circle cx="70" cy="70" r="54" fill="none" stroke="var(--ep-b)" strokeWidth="16" />
+      <circle cx="70" cy="70" r="54" fill="none" stroke="var(--ep-a)" strokeWidth="16"
         strokeDasharray={`${share} ${C - share}`} strokeDashoffset={C / 4} strokeLinecap="butt" />
       <text x="70" y="66" className="ep-donut__n">{Math.round((primary / total) * 100)}%</text>
       <text x="70" y="84" className="ep-donut__t">primary</text>
@@ -425,7 +435,7 @@ function List({
   note: string;
   empty: string;
   tone?: "warn";
-  rows: Array<{ key: string; label: string; value: string }>;
+  rows: Array<{ key: string; label: string; value: string; href?: string }>;
 }) {
   return (
     <section className={tone ? `ep-panel ep-panel--${tone}` : "ep-panel"}>
@@ -439,7 +449,7 @@ function List({
         <ul className="ep-rows">
           {rows.map((r) => (
             <li key={r.key}>
-              <span>{r.label}</span>
+              {r.href ? <Link href={r.href}>{r.label}</Link> : <span>{r.label}</span>}
               <em>{r.value}</em>
             </li>
           ))}
