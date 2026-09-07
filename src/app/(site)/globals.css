@@ -41,23 +41,27 @@
    * colour appears on the site it means careers — badge, filter, hub, CTA.
    *
    * Violet, and it has to be. This was indigo while the brand was green, but
-   * indigo against a blue brand is the one pairing that breaks the rule the
-   * two badges exist to enforce: Verified carries the brand, Career signals
-   * does not, and at chip size a reader must never have to work out which is
-   * which. Violet stays clearly apart from the brand at a glance, carries no
-   * warning connotation the way orange did, and leaves gold free for trust
-   * and caution cues.
+   * indigo against a blue brand breaks the rule the two badges exist to
+   * enforce: Verified carries the brand, Career signals does not, and at chip
+   * size a reader must never have to work out which is which.
+   *
+   * The step matters as much as the hue. The first violet chosen here, #6041c4,
+   * measured ΔE 9.8 from brand-600 in normal vision and 2.4 for deuteranopes —
+   * which is to say the two badges were the same colour for a reader with the
+   * commonest form of colour blindness, and close to it for everyone else. It
+   * looked distinct and was not. This step measures ΔE 18.1 normal and 10.5
+   * protan against the same blue, and clears white text at 4.99:1.
    */
-  --color-career-950: #1d1140;
-  --color-career-900: #2a1a5e;
-  --color-career-800: #38237c;
-  --color-career-700: #492e99;
-  --color-career-600: #6041c4;
-  --color-career-500: #7f63da;
-  --color-career-400: #a48ee8;
-  --color-career-200: #d4c8f6;
-  --color-career-100: #ebe4fc;
-  --color-career-50: #f7f4fe;
+  --color-career-950: #200a4d;
+  --color-career-900: #2f1070;
+  --color-career-800: #3e1793;
+  --color-career-700: #5320bd;
+  --color-career-600: #8a3ffc;
+  --color-career-500: #a06bfd;
+  --color-career-400: #bb95fe;
+  --color-career-200: #ded0ff;
+  --color-career-100: #efe6ff;
+  --color-career-50: #f9f5ff;
 
   --color-gold-700: #8a6316;
   --color-gold-600: #a97b1e;
@@ -174,15 +178,15 @@ body {
   .banner-brand {
     background:
       radial-gradient(115% 90% at 10% 0%, rgb(60 133 214 / 0.50), transparent 58%),
-      radial-gradient(90% 85% at 92% 6%, rgb(96 65 196 / 0.26), transparent 55%),
+      radial-gradient(90% 85% at 92% 6%, rgb(138 63 252 / 0.24), transparent 55%),
       linear-gradient(150deg, #071830 0%, #0e2a53 50%, #123258 100%);
   }
 
   .banner-career {
     background:
-      radial-gradient(120% 100% at 82% 4%, rgb(127 99 218 / 0.45), transparent 62%),
+      radial-gradient(120% 100% at 82% 4%, rgb(160 107 253 / 0.42), transparent 62%),
       radial-gradient(100% 90% at 4% 14%, rgb(60 133 214 / 0.32), transparent 58%),
-      linear-gradient(150deg, #150f33 0%, #241a55 48%, #122d52 100%);
+      linear-gradient(150deg, #170d3a 0%, #281563 48%, #122d52 100%);
   }
 
   /* A hairline grid, barely visible, to stop large banners reading as flat. */

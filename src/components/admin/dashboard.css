@@ -1,126 +1,332 @@
 /*
- * Admin dashboard.
+ * Eduplana admin — dashboard.
  *
- * Built on Payload's own theme tokens rather than a fixed palette, so the
- * whole surface inverts correctly in dark mode. Shares its visual language
- * with the Analytics view: soft-edged cards on the elevation tokens, brand
- * blue reserved for figures, and a hairline accent so a number reads as a
- * number rather than as a box with text in it.
+ * Two constraints shape everything here. It lives inside Payload's shell, so
+ * surfaces are taken from Payload's own elevation tokens and the whole view
+ * inverts correctly in its dark theme rather than hardcoding a light palette.
+ * And it is a register, not a marketing page: figures are set in mono, which
+ * gives counts the quality of a roll being read rather than a number being
+ * sold, and keeps 37 columns of digits in vertical alignment.
+ *
+ * Colour carries meaning and nothing else. Blue is the directory — anything we
+ * hold. Gold is attention — anything waiting on a person. There is no third
+ * hue, because there is no third meaning.
  */
-.eduplana-dash {
-  margin-block-end: 2.5rem;
-}
+.ep-dash {
+  --ep-blue: #2260b7;
+  --ep-blue-soft: #dcebfa;
+  --ep-gold-ink: #8a6316;
+  --ep-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-/* As a full view (rather than a block above the stock dashboard) it owns the
-   page gutter Payload would otherwise have provided. */
-.eduplana-dash--view {
   padding: calc(var(--base) * 1.25) calc(var(--base) * 2) calc(var(--base) * 3);
-  max-width: 1400px;
+  max-width: 1500px;
+}
+html[data-theme="dark"] .ep-dash {
+  /* Stepped for the dark surface rather than flipped: the light-mode blue is
+     too dark to read against Payload's dark elevation. */
+  --ep-blue: #6ba3e3;
+  --ep-blue-soft: #143a70;
+  --ep-gold-ink: #d9a441;
 }
 
-.eduplana-dash__head {
+/* ------------------------------------------------------------------- head -- */
+
+.ep-dash__head {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  margin-block-end: 1.75rem;
+  gap: 1.25rem;
+  padding-block-end: 1.4rem;
+  border-block-end: 1px solid var(--theme-elevation-100);
 }
-.eduplana-dash__head h2 {
+.ep-dash__eyebrow {
   margin: 0;
-  font-size: 1.6rem;
-  letter-spacing: -0.02em;
+  font-family: var(--ep-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-400);
 }
-.eduplana-dash__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+.ep-dash__title h2 {
+  margin: 0.3rem 0 0;
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
 }
-/* Payload's .btn carries its own margins inside forms; neutralise here. */
-.eduplana-dash__actions .btn {
-  margin: 0;
+.ep-dash__sub {
+  margin: 0.45rem 0 0;
+  font-size: 0.92rem;
+  color: var(--theme-elevation-500);
 }
-
-/* ------------------------------------------------------------------ stats -- */
-
-.eduplana-dash__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
-  gap: 0.85rem;
-  margin: 0 0 2rem;
-  padding: 0;
-  list-style: none;
-}
-.eduplana-dash__stats li {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 1.15rem 1.25rem;
-  border: 1px solid var(--theme-elevation-100);
-  border-radius: var(--style-radius-l);
-  background: var(--theme-elevation-0);
-  overflow: hidden;
-}
-.eduplana-dash__stats li::before {
-  content: "";
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  height: 3px;
-  background: var(--color-success-500);
-}
-.eduplana-dash__value {
-  font-size: 1.9rem;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  color: var(--color-success-600);
-  font-variant-numeric: tabular-nums;
-}
-.eduplana-dash__label {
-  font-size: 0.8rem;
+.ep-dash__sub b {
+  font-family: var(--ep-mono);
   font-weight: 600;
   color: var(--theme-elevation-800);
 }
-.eduplana-dash__hint {
-  font-size: 0.75rem;
+.ep-dash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ep-dash__actions .btn {
+  margin: 0;
+}
+
+/* -------------------------------------------------------------- coverage -- */
+/* The signature. One series, one hue, no legend — the heading names it. */
+
+.ep-cov {
+  margin-block: 1.6rem 1.75rem;
+}
+.ep-cov__label h3 {
+  margin: 0;
+  font-size: 0.7rem;
+  font-family: var(--ep-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--theme-elevation-500);
 }
-
-/* ----------------------------------------------------------------- recent -- */
-
-.eduplana-dash__recent h3 {
-  margin: 0 0 0.85rem;
-  font-size: 1rem;
-  letter-spacing: -0.01em;
+.ep-cov__label p {
+  margin: 0.5rem 0 1.1rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  max-width: 46ch;
+  color: var(--theme-elevation-800);
 }
-.eduplana-dash__recent ul {
+.ep-cov__plot {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0;
+  padding: 0 0 0.2rem;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* A recessive baseline, so the short bars read as small rather than absent. */
+  background-image: linear-gradient(var(--theme-elevation-150), var(--theme-elevation-150));
+  background-size: 100% 1px;
+  background-position: 0 132px;
+  background-repeat: no-repeat;
+}
+.ep-cov__col {
+  flex: 1 1 0;
+  min-width: 26px;
+}
+.ep-cov__col a {
+  display: grid;
+  grid-template-rows: 132px auto auto;
+  align-items: end;
+  justify-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  border-radius: 4px;
+  padding-block-end: 0.15rem;
+}
+.ep-cov__bar {
+  width: 100%;
+  align-self: end;
+  border-radius: 4px 4px 0 0;
+  transition: background-color 0.14s ease;
+}
+/* States carrying real coverage take the full hue; those under fifty schools
+   stay quiet. The threshold is the same one named in the sentence above, so
+   the two-tone split shows the finding rather than decorating the chart. */
+.ep-cov__bar {
+  background: var(--ep-blue);
+}
+.ep-cov__col--thin .ep-cov__bar {
+  background: var(--ep-blue-soft);
+}
+.ep-cov__code {
+  font-family: var(--ep-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  color: var(--theme-elevation-400);
+}
+.ep-cov__n {
+  font-family: var(--ep-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--theme-elevation-800);
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+.ep-cov__col a:hover .ep-cov__bar,
+.ep-cov__col a:focus-visible .ep-cov__bar {
+  background: var(--ep-blue);
+}
+.ep-cov__col a:hover .ep-cov__n,
+.ep-cov__col a:focus-visible .ep-cov__n {
+  opacity: 1;
+}
+.ep-cov__col a:focus-visible {
+  outline: 2px solid var(--ep-blue);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------------- cards -- */
+
+.ep-dash__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 1rem;
+}
+.ep-card {
+  padding: 1.35rem 1.45rem 1.5rem;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-l);
+  background: var(--theme-elevation-0);
+}
+.ep-card--wide {
+  margin-block-start: 1rem;
+}
+.ep-card h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.ep-card__note {
+  margin: 0.3rem 0 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--theme-elevation-500);
+}
+.ep-card__sub {
+  margin: 1.2rem 0 0.5rem;
+  font-family: var(--ep-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-400);
+}
+.ep-card__sub--gold {
+  margin-block-start: 0;
+  color: var(--ep-gold-ink);
+}
+
+/* ------------------------------------------------------------- work list -- */
+
+.ep-work {
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--theme-elevation-100);
-  border-radius: var(--style-radius-l);
-  overflow: hidden;
 }
-.eduplana-dash__recent li {
+.ep-work__row + .ep-work__row {
+  border-block-start: 1px solid var(--theme-elevation-100);
+}
+.ep-work__row a {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 0.7rem;
+  padding: 0.72rem 0.3rem;
+  margin-inline: -0.3rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+}
+.ep-work__row a:hover {
+  background: var(--theme-elevation-50);
+}
+.ep-work__row em {
+  grid-row: span 2;
+  font-family: var(--ep-mono);
+  font-style: normal;
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ep-blue);
+}
+.ep-work__row--gold em {
+  color: var(--ep-gold-ink);
+}
+.ep-work__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.ep-work__note {
+  font-size: 0.78rem;
+  color: var(--theme-elevation-500);
+}
+
+/* ------------------------------------------------------------- row lists -- */
+
+.ep-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ep-rows li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.42rem 0;
+  font-size: 0.87rem;
+}
+.ep-rows li + li {
+  border-block-start: 1px solid var(--theme-elevation-100);
+}
+.ep-rows li > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ep-rows em {
+  flex: none;
+  font-family: var(--ep-mono);
+  font-style: normal;
+  font-weight: 600;
+  color: var(--theme-elevation-600);
+}
+.ep-empty {
+  margin: 0;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: var(--theme-elevation-500);
+}
+
+/* ---------------------------------------------------------------- recent -- */
+
+.ep-recent {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ep-recent li {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.8rem 1.1rem;
-  background: var(--theme-elevation-0);
-  transition: background-color 0.12s ease;
+  padding: 0.6rem 0;
 }
-.eduplana-dash__recent li:hover {
-  background: var(--theme-elevation-50);
-}
-.eduplana-dash__recent li + li {
+.ep-recent li + li {
   border-block-start: 1px solid var(--theme-elevation-100);
 }
-.eduplana-dash__meta {
-  font-size: 0.8rem;
-  color: var(--theme-elevation-500);
-  font-variant-numeric: tabular-nums;
+.ep-recent__meta {
+  font-family: var(--ep-mono);
+  font-size: 0.74rem;
+  color: var(--theme-elevation-400);
+}
+
+@media (max-width: 640px) {
+  .ep-dash {
+    padding-inline: var(--base);
+  }
+  .ep-dash__title h2 {
+    font-size: 1.7rem;
+  }
+  .ep-cov__col {
+    min-width: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ep-dash * {
+    transition-duration: 0.01ms !important;
+  }
 }

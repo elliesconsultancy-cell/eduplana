@@ -150,6 +150,13 @@ backend sets once a human has confirmed a school's details. The two badges use
 different colours and shapes so they can never be read as the same thing — do
 not merge them.
 
+The violet step is measured, not chosen by eye. The first one tried here,
+`#6041c4`, sat ΔE 9.8 from the brand blue in normal vision and 2.4 for
+deuteranopes — the two badges were effectively the same colour for the commonest
+form of colour blindness, and close to it for everyone else. It looked distinct
+and was not. `#8a3ffc` measures ΔE 18.1 normal and 10.5 protan against the same
+blue. Re-check with a CVD validator before changing either hue.
+
 Tuning the bar is a one-line change (`STRONG_THRESHOLD`); adding an indicator
 means adding an entry to `SIGNALS` with the substrings it matches.
 
@@ -291,6 +298,14 @@ opens their record, types a new password and passes it on. That is why the
 "Forgot password?" link is gone: no email adapter is configured, so it could
 only ever claim to have sent a message. `/admin/forgot` redirects to the login
 page.
+
+**The dashboard** opens with coverage by state rather than a row of totals. A
+count of 7,375 is not something anyone can act on; the shape of the tail is —
+Lagos holds 1 in every 3 schools listed, and fifteen states have fewer than 50.
+The two-tone split in the chart marks exactly that sub-50 tail, so the picture
+and the sentence above it say the same thing. Figures are set in mono
+throughout: this is a register being read, not a number being sold, and it keeps
+37 columns of digits in vertical alignment.
 
 **Adding someone.** Sign in as super admin, then *Add a user* on the dashboard,
 or Users → Create New. You set their password on that form.
