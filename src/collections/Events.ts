@@ -14,11 +14,12 @@ import type { CollectionConfig } from "payload";
  *   view    a school profile opened, so "which schools do people actually
  *           look at" has an answer.
  *
- * Nothing identifying is stored: no IP, no cookie, no fingerprint, no visitor
- * id. That is a deliberate limit rather than an omission — it means the table
- * cannot be turned into a profile of a person, needs no consent banner under
- * the NDPR, and can be handed to anyone without a privacy review. The cost is
- * that "unique visitors" is not answerable here; Vercel already answers it.
+ * No cookie is set and no IP is stored. `visitor` is a hash of the address, the
+ * user agent and a salt that changes every day: it lets three page views by one
+ * person count as one visitor, and by tomorrow the same person hashes to
+ * something else, so the table cannot be assembled into a history of anybody.
+ * This is the approach privacy-first analytics tools use, and it is why none of
+ * this needs a consent banner under the NDPR.
  */
 export const Events: CollectionConfig = {
   slug: "events",
@@ -75,6 +76,31 @@ export const Events: CollectionConfig = {
       type: "number",
       index: true,
       admin: { description: "How many schools came back. Zero is the interesting case." },
+    },
+    {
+      name: "referrer",
+      type: "text",
+      index: true,
+      admin: { description: "Hostname only, never the full URL — google.com, not the query." },
+    },
+    {
+      name: "device",
+      type: "select",
+      index: true,
+      options: [
+        { label: "Phone", value: "phone" },
+        { label: "Tablet", value: "tablet" },
+        { label: "Computer", value: "computer" },
+      ],
+    },
+    {
+      name: "visitor",
+      type: "text",
+      index: true,
+      admin: {
+        description:
+          "A per-day anonymous token. Lets one person's three page views count as one visitor, and stops being linkable to them tomorrow.",
+      },
     },
   ],
   timestamps: true,

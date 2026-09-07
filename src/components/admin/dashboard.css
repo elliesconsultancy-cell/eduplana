@@ -1,258 +1,367 @@
 /*
- * Eduplana admin — dashboard.
+ * Eduplana admin — overview.
  *
- * Two constraints shape everything here. It lives inside Payload's shell, so
- * surfaces are taken from Payload's own elevation tokens and the whole view
- * inverts correctly in its dark theme rather than hardcoding a light palette.
- * And it is a register, not a marketing page: figures are set in mono, which
- * gives counts the quality of a roll being read rather than a number being
- * sold, and keeps 37 columns of digits in vertical alignment.
+ * A dark operations dashboard: deep navy canvas, panels raised one step above
+ * it, and colour used only where it means something. The two chart series are
+ * measured rather than picked — #3d8ce0 and #1fa97e clear a colour-vision check
+ * against this surface at ΔE 21 for deuteranopes, which the blue/violet pairing
+ * they replaced did not.
  *
- * Colour carries meaning and nothing else. Blue is the directory — anything we
- * hold. Gold is attention — anything waiting on a person. There is no third
- * hue, because there is no third meaning.
+ * Figures are set in mono. A directory is a register, and mono keeps columns of
+ * digits in alignment while giving counts the quality of a roll being read.
  */
-.ep-dash {
-  --ep-blue: #2260b7;
-  --ep-blue-soft: #dcebfa;
-  --ep-gold-ink: #8a6316;
+.ep {
+  --ep-a: #3d8ce0;
+  --ep-b: #1fa97e;
+  --ep-warn: #d9a441;
+  --ep-down: #e5686d;
   --ep-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --ep-gap: 0.9rem;
 
-  padding: calc(var(--base) * 1.25) calc(var(--base) * 2) calc(var(--base) * 3);
-  max-width: 1500px;
-}
-html[data-theme="dark"] .ep-dash {
-  /* Stepped for the dark surface rather than flipped: the light-mode blue is
-     too dark to read against Payload's dark elevation. */
-  --ep-blue: #6ba3e3;
-  --ep-blue-soft: #143a70;
-  --ep-gold-ink: #d9a441;
+  padding: calc(var(--base) * 1.1) calc(var(--base) * 1.75) calc(var(--base) * 3);
+  max-width: 1560px;
 }
 
-/* ------------------------------------------------------------------- head -- */
+/* -------------------------------------------------------------------- head -- */
 
-.ep-dash__head {
+.ep__head {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1.25rem;
-  padding-block-end: 1.4rem;
-  border-block-end: 1px solid var(--theme-elevation-100);
+  gap: 1rem;
+  margin-block-end: 1.4rem;
 }
-.ep-dash__eyebrow {
+.ep__eyebrow {
   margin: 0;
   font-family: var(--ep-mono);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--theme-elevation-400);
 }
-.ep-dash__title h2 {
-  margin: 0.3rem 0 0;
-  font-size: 2.1rem;
+.ep__head h2 {
+  margin: 0.32rem 0 0;
+  font-size: 1.85rem;
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1;
 }
-.ep-dash__sub {
-  margin: 0.45rem 0 0;
-  font-size: 0.92rem;
-  color: var(--theme-elevation-500);
-}
-.ep-dash__sub b {
-  font-family: var(--ep-mono);
-  font-weight: 600;
-  color: var(--theme-elevation-800);
-}
-.ep-dash__actions {
+.ep__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
 }
-.ep-dash__actions .btn {
-  margin: 0;
+.ep__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 9px;
+  background: var(--theme-elevation-0);
+  color: var(--theme-elevation-800);
+  font-size: 0.83rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+.ep__btn:hover {
+  border-color: var(--theme-elevation-300);
+  background: var(--theme-elevation-50);
+}
+.ep__btn--primary {
+  border-color: transparent;
+  background: var(--ep-a);
+  color: #06101d;
+}
+.ep__btn--primary:hover {
+  background: #5aa0e8;
+  border-color: transparent;
+}
+.ep__btn:focus-visible {
+  outline: 2px solid var(--ep-a);
+  outline-offset: 2px;
 }
 
-/* -------------------------------------------------------------- coverage -- */
-/* The signature. One series, one hue, no legend — the heading names it. */
+/* -------------------------------------------------------------------- kpis -- */
 
-.ep-cov {
-  margin-block: 1.6rem 1.75rem;
+.ep__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--ep-gap);
+  margin: 0 0 var(--ep-gap);
+  padding: 0;
+  list-style: none;
 }
-.ep-cov__label h3 {
-  margin: 0;
-  font-size: 0.7rem;
-  font-family: var(--ep-mono);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--theme-elevation-500);
+.ep-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.15rem 1.25rem 1.2rem;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 14px;
+  background: var(--theme-elevation-0);
 }
-.ep-cov__label p {
-  margin: 0.5rem 0 1.1rem;
-  font-size: 1.05rem;
-  line-height: 1.45;
-  max-width: 46ch;
+.ep-kpi__row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.ep-kpi__value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: var(--theme-elevation-1000);
+  font-variant-numeric: tabular-nums;
+}
+.ep-kpi--warn .ep-kpi__value {
+  color: var(--ep-warn);
+}
+.ep-kpi__label {
+  margin-block-start: 0.35rem;
+  font-size: 0.87rem;
+  font-weight: 600;
   color: var(--theme-elevation-800);
 }
-.ep-cov__plot {
+.ep-kpi__hint {
+  font-size: 0.74rem;
+  color: var(--theme-elevation-400);
+}
+.ep-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.16rem 0.42rem;
+  border-radius: 999px;
+  font-family: var(--ep-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.ep-chip--up {
+  background: color-mix(in srgb, var(--ep-b) 18%, transparent);
+  color: var(--ep-b);
+}
+.ep-chip--down {
+  background: color-mix(in srgb, var(--ep-down) 18%, transparent);
+  color: var(--ep-down);
+}
+
+/* ------------------------------------------------------------------ panels -- */
+
+.ep__row {
+  display: grid;
+  gap: var(--ep-gap);
+  margin-block-end: var(--ep-gap);
+  /* Panels size to their content. Stretching them to match the tallest sibling
+     leaves a short list sitting above several inches of nothing. */
+  align-items: start;
+}
+.ep__row--split {
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+}
+.ep__row--three {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+@media (max-width: 1020px) {
+  .ep__row--split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ep-panel {
+  padding: 1.2rem 1.3rem 1.35rem;
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: 14px;
+  background: var(--theme-elevation-0);
+  min-width: 0;
+}
+.ep-panel--warn {
+  border-color: color-mix(in srgb, var(--ep-warn) 34%, var(--theme-elevation-100));
+}
+.ep-panel__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+.ep-panel__top h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.ep-panel__top p {
+  margin: 0.22rem 0 0;
+  font-size: 0.78rem;
+  color: var(--theme-elevation-400);
+}
+
+.ep-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--theme-elevation-500);
+  white-space: nowrap;
+}
+.ep-legend__key {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-inline-start: 0.55rem;
+}
+.ep-legend__key:first-child {
+  margin-inline-start: 0;
+}
+.ep-legend__key--a { background: var(--ep-a); }
+.ep-legend__key--b { background: var(--ep-b); }
+.ep-legend__key--warn { background: var(--ep-warn); }
+
+/* ------------------------------------------------------------------- chart -- */
+
+.ep-chart {
+  margin: 0;
+}
+.ep-chart svg {
+  display: block;
+  width: 100%;
+  height: 150px;
+}
+.ep-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-block-start: 0.5rem;
+  font-family: var(--ep-mono);
+  font-size: 0.68rem;
+  color: var(--theme-elevation-400);
+}
+
+.ep-donut {
+  display: block;
+  width: 140px;
+  height: 140px;
+  margin: 0.2rem auto 0.9rem;
+}
+.ep-donut__n {
+  text-anchor: middle;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  fill: var(--theme-elevation-1000);
+}
+.ep-donut__t {
+  text-anchor: middle;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--theme-elevation-400);
+}
+.ep-legend-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ep-legend-rows li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.42rem 0;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-800);
+}
+.ep-legend-rows li + li {
+  border-block-start: 1px solid var(--theme-elevation-100);
+}
+.ep-legend-rows em {
+  margin-inline-start: auto;
+  font-family: var(--ep-mono);
+  font-style: normal;
+  font-weight: 600;
+}
+.ep-panel__foot {
+  margin: 0.9rem 0 0;
+  padding-block-start: 0.8rem;
+  border-block-start: 1px solid var(--theme-elevation-100);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--theme-elevation-400);
+}
+.ep-panel__foot a {
+  font-family: var(--ep-mono);
+  font-weight: 600;
+  color: var(--ep-warn);
+}
+
+/* ---------------------------------------------------------------- coverage -- */
+
+.ep-cov {
   display: flex;
   align-items: flex-end;
   gap: 2px;
   margin: 0;
-  padding: 0 0 0.2rem;
+  padding: 0;
   list-style: none;
   overflow-x: auto;
-  overflow-y: hidden;
-  /* A recessive baseline, so the short bars read as small rather than absent. */
   background-image: linear-gradient(var(--theme-elevation-150), var(--theme-elevation-150));
   background-size: 100% 1px;
-  background-position: 0 132px;
+  background-position: 0 118px;
   background-repeat: no-repeat;
 }
 .ep-cov__col {
   flex: 1 1 0;
-  min-width: 26px;
+  min-width: 24px;
 }
 .ep-cov__col a {
   display: grid;
-  grid-template-rows: 132px auto auto;
+  grid-template-rows: 118px auto auto;
   align-items: end;
   justify-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   text-decoration: none;
   border-radius: 4px;
-  padding-block-end: 0.15rem;
 }
 .ep-cov__bar {
   width: 100%;
   align-self: end;
-  border-radius: 4px 4px 0 0;
+  border-radius: 3px 3px 0 0;
+  background: var(--ep-a);
   transition: background-color 0.14s ease;
 }
-/* States carrying real coverage take the full hue; those under fifty schools
-   stay quiet. The threshold is the same one named in the sentence above, so
-   the two-tone split shows the finding rather than decorating the chart. */
-.ep-cov__bar {
-  background: var(--ep-blue);
-}
+/* The quiet tone marks exactly the sub-50 tail named in the sentence above, so
+   the split shows the finding rather than decorating the chart. */
 .ep-cov__col--thin .ep-cov__bar {
-  background: var(--ep-blue-soft);
+  background: var(--theme-elevation-200);
 }
 .ep-cov__code {
   font-family: var(--ep-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
+  font-size: 0.6rem;
   color: var(--theme-elevation-400);
 }
 .ep-cov__n {
   font-family: var(--ep-mono);
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   font-weight: 600;
-  color: var(--theme-elevation-800);
+  color: var(--theme-elevation-900);
   opacity: 0;
   transition: opacity 0.14s ease;
 }
 .ep-cov__col a:hover .ep-cov__bar,
 .ep-cov__col a:focus-visible .ep-cov__bar {
-  background: var(--ep-blue);
+  background: #6cb0f0;
 }
 .ep-cov__col a:hover .ep-cov__n,
 .ep-cov__col a:focus-visible .ep-cov__n {
   opacity: 1;
 }
 .ep-cov__col a:focus-visible {
-  outline: 2px solid var(--ep-blue);
+  outline: 2px solid var(--ep-a);
   outline-offset: 2px;
 }
 
-/* ----------------------------------------------------------------- cards -- */
-
-.ep-dash__cols {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-  gap: 1rem;
-}
-.ep-card {
-  padding: 1.35rem 1.45rem 1.5rem;
-  border: 1px solid var(--theme-elevation-100);
-  border-radius: var(--style-radius-l);
-  background: var(--theme-elevation-0);
-}
-.ep-card--wide {
-  margin-block-start: 1rem;
-}
-.ep-card h3 {
-  margin: 0;
-  font-size: 1.02rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-}
-.ep-card__note {
-  margin: 0.3rem 0 1.1rem;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: var(--theme-elevation-500);
-}
-.ep-card__sub {
-  margin: 1.2rem 0 0.5rem;
-  font-family: var(--ep-mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--theme-elevation-400);
-}
-.ep-card__sub--gold {
-  margin-block-start: 0;
-  color: var(--ep-gold-ink);
-}
-
-/* ------------------------------------------------------------- work list -- */
-
-.ep-work {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.ep-work__row + .ep-work__row {
-  border-block-start: 1px solid var(--theme-elevation-100);
-}
-.ep-work__row a {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-  column-gap: 0.7rem;
-  padding: 0.72rem 0.3rem;
-  margin-inline: -0.3rem;
-  border-radius: 6px;
-  text-decoration: none;
-  color: inherit;
-}
-.ep-work__row a:hover {
-  background: var(--theme-elevation-50);
-}
-.ep-work__row em {
-  grid-row: span 2;
-  font-family: var(--ep-mono);
-  font-style: normal;
-  font-size: 1.45rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ep-blue);
-}
-.ep-work__row--gold em {
-  color: var(--ep-gold-ink);
-}
-.ep-work__label {
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.ep-work__note {
-  font-size: 0.78rem;
-  color: var(--theme-elevation-500);
-}
-
-/* ------------------------------------------------------------- row lists -- */
+/* ------------------------------------------------------------------- lists -- */
 
 .ep-rows {
   margin: 0;
@@ -263,14 +372,15 @@ html[data-theme="dark"] .ep-dash {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.42rem 0;
-  font-size: 0.87rem;
+  gap: 0.8rem;
+  padding: 0.48rem 0;
+  font-size: 0.86rem;
 }
 .ep-rows li + li {
   border-block-start: 1px solid var(--theme-elevation-100);
 }
-.ep-rows li > span {
+.ep-rows li > span,
+.ep-rows li > a {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -280,53 +390,25 @@ html[data-theme="dark"] .ep-dash {
   font-family: var(--ep-mono);
   font-style: normal;
   font-weight: 600;
-  color: var(--theme-elevation-600);
-}
-.ep-empty {
-  margin: 0;
-  font-size: 0.83rem;
-  line-height: 1.5;
   color: var(--theme-elevation-500);
 }
-
-/* ---------------------------------------------------------------- recent -- */
-
-.ep-recent {
+.ep-blank {
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.ep-recent li {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.6rem 0;
-}
-.ep-recent li + li {
-  border-block-start: 1px solid var(--theme-elevation-100);
-}
-.ep-recent__meta {
-  font-family: var(--ep-mono);
-  font-size: 0.74rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
   color: var(--theme-elevation-400);
 }
 
 @media (max-width: 640px) {
-  .ep-dash {
+  .ep {
     padding-inline: var(--base);
   }
-  .ep-dash__title h2 {
-    font-size: 1.7rem;
-  }
-  .ep-cov__col {
-    min-width: 22px;
+  .ep__head h2 {
+    font-size: 1.5rem;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .ep-dash * {
+  .ep * {
     transition-duration: 0.01ms !important;
   }
 }

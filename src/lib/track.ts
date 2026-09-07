@@ -11,9 +11,15 @@ import config from "@payload-config";
  * parent looking for a school should never see it, and a page must never fail
  * because a counter could not be written.
  */
+type Common = {
+  referrer?: string | null;
+  device?: "phone" | "tablet" | "computer" | null;
+  visitor?: string | null;
+};
+
 type Event =
-  | { type: "search"; path: string; query: string | null; filters: string | null; results: number }
-  | { type: "view"; path: string; slug: string };
+  | ({ type: "search"; path: string; query: string | null; filters: string | null; results: number } & Common)
+  | ({ type: "view"; path: string; slug: string | null } & Common);
 
 /**
  * Returns a promise so a caller that can afford to wait may await it.
@@ -37,6 +43,9 @@ export function record(event: Event): Promise<void> {
           query: event.type === "search" ? event.query : null,
           filters: event.type === "search" ? event.filters : null,
           results: event.type === "search" ? event.results : null,
+          referrer: event.referrer ?? null,
+          device: event.device ?? null,
+          visitor: event.visitor ?? null,
         },
         overrideAccess: true,
       });

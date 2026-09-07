@@ -305,9 +305,9 @@ export interface User {
    */
   name: string;
   /**
-   * Editors manage content. Admins additionally mark schools as verified. Super admins additionally manage accounts and passwords.
+   * Analysts read the dashboard and change nothing. Editors manage content. Admins additionally mark schools as verified. Super admins additionally manage accounts and passwords.
    */
-  role: 'super-admin' | 'admin' | 'editor';
+  role: 'super-admin' | 'admin' | 'editor' | 'analyst';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -354,6 +354,15 @@ export interface Event {
    * How many schools came back. Zero is the interesting case.
    */
   results?: number | null;
+  /**
+   * Hostname only, never the full URL — google.com, not the query.
+   */
+  referrer?: string | null;
+  device?: ('phone' | 'tablet' | 'computer') | null;
+  /**
+   * A per-day anonymous token. Lets one person's three page views count as one visitor, and stops being linkable to them tomorrow.
+   */
+  visitor?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -533,6 +542,9 @@ export interface EventsSelect<T extends boolean = true> {
   query?: T;
   filters?: T;
   results?: T;
+  referrer?: T;
+  device?: T;
+  visitor?: T;
   updatedAt?: T;
   createdAt?: T;
 }

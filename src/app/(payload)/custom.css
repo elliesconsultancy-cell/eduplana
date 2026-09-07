@@ -164,3 +164,56 @@ html[data-theme="dark"] .brand-lockup__light {
 .template-minimal a[href$="/forgot"] {
   display: none;
 }
+
+/* ------------------------------------------------------------- dark scale -- */
+
+/*
+ * Payload's dark theme is a neutral near-black. This restates it as a navy
+ * scale so the whole panel — collection lists, edit forms, the dashboard —
+ * reads as one dark product rather than a dark CMS with a dashboard bolted on.
+ *
+ * These are Payload's own tokens, so every component it ships picks the new
+ * values up without being restyled individually.
+ */
+html[data-theme="dark"] {
+  --theme-bg: #0b111c;
+  --theme-input-bg: #131b29;
+  --theme-elevation-0: #141c2b;
+  --theme-elevation-50: #182233;
+  --theme-elevation-100: #222e42;
+  --theme-elevation-150: #2a3850;
+  --theme-elevation-200: #33425c;
+  --theme-elevation-250: #3b4c68;
+  --theme-elevation-300: #46566f;
+  --theme-elevation-400: #6b7c96;
+  --theme-elevation-500: #8595ad;
+  --theme-elevation-600: #a3b1c6;
+  --theme-elevation-700: #bcc7d7;
+  --theme-elevation-800: #d5dde8;
+  --theme-elevation-900: #e8edf5;
+  --theme-elevation-1000: #ffffff;
+  --theme-border-color: #222e42;
+  --theme-text: #e8edf5;
+}
+
+/* Chrome: give the sidebar and header the same card treatment as the panels,
+   so the shell and the content belong to one surface family. */
+html[data-theme="dark"] .nav {
+  background: #0e1522;
+  border-inline-end: 1px solid var(--theme-elevation-100);
+}
+html[data-theme="dark"] .app-header,
+html[data-theme="dark"] .step-nav {
+  background: transparent;
+}
+html[data-theme="dark"] .nav__link {
+  border-radius: 8px;
+  margin-inline: 0.4rem;
+  padding-inline: 0.6rem;
+}
+html[data-theme="dark"] .nav-group__label {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--theme-elevation-400);
+}

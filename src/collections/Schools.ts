@@ -154,8 +154,13 @@ export const Schools: CollectionConfig = {
       if (req.user) return true;
       return { _status: { equals: "published" } };
     },
-    create: ({ req }) => Boolean(req.user),
-    update: ({ req }) => Boolean(req.user),
+    /*
+     * An analyst signs in to read the numbers, so they can see records but not
+     * change them. Enforced here rather than by hiding buttons: a hidden button
+     * is a suggestion, an access rule is the answer.
+     */
+    create: ({ req }) => Boolean(req.user) && req.user?.role !== "analyst",
+    update: ({ req }) => Boolean(req.user) && req.user?.role !== "analyst",
     // Deleting a school removes it from the public directory entirely;
     // editors unpublish instead.
     delete: isAdmin,

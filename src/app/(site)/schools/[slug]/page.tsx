@@ -47,7 +47,6 @@ import { summaryTeaser } from "@/lib/summary";
 import type { School } from "@/lib/types";
 import { asset, assetOrUndefined } from "@/lib/assets";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
-import { ViewBeacon } from "@/components/view-beacon";
 
 export async function generateMetadata({
   params,
@@ -161,7 +160,6 @@ export default async function SchoolPage({
 
   return (
     <article className="pb-4">
-      <ViewBeacon slug={school.slug} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schoolJsonLd) }}

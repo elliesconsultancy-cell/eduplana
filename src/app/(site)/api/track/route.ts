@@ -1,39 +1,52 @@
 import { NextResponse } from "next/server";
 import { record } from "@/lib/track";
+import { deviceOf, referrerHost, visitorToken } from "@/lib/visitor";
+import { SITE_URL } from "@/lib/site";
 
 /**
- * Records a school profile view.
+ * Records a page view.
  *
- * This exists as a beacon rather than a line in the page component because
- * profile pages are cached: the 500 richest are prerendered and the rest are
- * cached after the first visit, so server code runs once and every subsequent
- * reader is invisible to it. A request from the browser is the only way to
- * count the readers rather than the renders.
+ * A beacon rather than server-side logging because pages are cached: the
+ * richest 500 profiles are prerendered and the rest are cached after first
+ * visit, so server code runs once and every reader after that is invisible to
+ * it. A request from the browser counts readers rather than renders.
  *
- * No cookie, no id, no third party — the row records which school was opened
- * and when, and nothing about who opened it.
+ * The address and user agent are read here and immediately discarded into a
+ * day-scoped hash — see lib/visitor.ts. Nothing that could identify a person is
+ * written.
  */
-const SLUG = /^[a-z0-9][a-z0-9-]{0,120}$/;
+const PATH = /^\/[A-Za-z0-9\-/_]{0,180}$/;
 
 export async function POST(request: Request) {
   // Automated traffic would otherwise make a crawl look like an audience.
   const agent = request.headers.get("user-agent") ?? "";
-  if (/bot|crawler|spider|headless|preview|monitor|curl|wget/i.test(agent)) {
+  if (/bot|crawler|spider|headless|preview|monitor|curl|wget|lighthouse/i.test(agent)) {
     return NextResponse.json({ ok: true, recorded: false });
   }
 
-  let slug: unknown;
+  let body: { path?: unknown; slug?: unknown; referrer?: unknown };
   try {
-    ({ slug } = await request.json());
+    body = await request.json();
   } catch {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  if (typeof slug !== "string" || !SLUG.test(slug)) {
-    return NextResponse.json({ ok: false }, { status: 400 });
-  }
+  const path = typeof body.path === "string" && PATH.test(body.path) ? body.path : null;
+  if (!path) return NextResponse.json({ ok: false }, { status: 400 });
 
-  // Awaited on purpose — see the note in lib/track.ts.
-  await record({ type: "view", path: `/schools/${slug}`, slug });
+  const slug =
+    typeof body.slug === "string" && /^[a-z0-9][a-z0-9-]{0,120}$/.test(body.slug) ? body.slug : null;
+
+  // Awaited on purpose: work started after a response is sent is not
+  // guaranteed to finish on serverless. See the note in lib/track.ts.
+  await record({
+    type: "view",
+    path,
+    slug,
+    referrer: referrerHost(typeof body.referrer === "string" ? body.referrer : null, new URL(SITE_URL).hostname),
+    device: deviceOf(request.headers),
+    visitor: visitorToken(request.headers),
+  });
+
   return NextResponse.json({ ok: true, recorded: true });
 }

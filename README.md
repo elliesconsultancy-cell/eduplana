@@ -283,6 +283,7 @@ to. Three roles:
 | **super admin** | manages accounts: creates them, resets passwords, and is the only role that can grant super admin |
 | **admin** | full control of content, including the `verified` flag |
 | **editor** | writes and publishes content, but cannot assert verification |
+| **analyst** | reads the dashboard and changes nothing — for someone who needs the numbers without the keys |
 
 The admin/editor line exists because "verified" is a factual claim to the public
 that a human confirmed a school's details — not something to tick while tidying
@@ -299,7 +300,20 @@ opens their record, types a new password and passes it on. That is why the
 only ever claim to have sent a message. `/admin/forgot` redirects to the login
 page.
 
-**The dashboard** opens with coverage by state rather than a row of totals. A
+**The panel is dark, always.** Not a preference: it is a dashboard read for
+long stretches, and the panels, charts and elevation scale were drawn for a dark
+canvas. Leaving it switchable would mean maintaining a light version that
+nothing was designed for.
+
+**The dashboard** answers how many people came, what they searched for, and what
+the directory still needs — every figure from our own Postgres, with no
+third-party analytics account behind any of it. The two chart series are
+measured rather than picked: `#3d8ce0` and `#1fa97e` clear a colour-vision check
+against the dark surface at ΔE 21 for deuteranopes. Blue against violet, the
+first pairing tried, came out at 5.4 and would have been one colour to a
+sizeable share of readers.
+
+It also opens with coverage by state rather than a row of totals. A
 count of 7,375 is not something anyone can act on; the shape of the tail is —
 Lagos holds 1 in every 3 schools listed, and fifteen states have fewer than 50.
 The two-tone split in the chart marks exactly that sub-50 tail, so the picture

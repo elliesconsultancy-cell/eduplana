@@ -9,24 +9,22 @@ import "./dashboard.css";
 /**
  * The admin home.
  *
- * Payload's stock dashboard lists the collections, which the sidebar already
- * does two inches to the left. The useful question on landing is "what state is
- * the directory in, and what do people want from it" — so that is what this
- * answers, in that order.
- *
- * The opening element is coverage by state rather than a row of totals. The
- * single most actionable fact about a national directory is how unevenly it
- * covers the nation: a count of 7,375 tells you nothing you can act on, while
- * the shape of the tail tells you where to work next.
+ * Answers three questions in the order they get asked: how many people came,
+ * what were they looking for, and what does the directory still need. Every
+ * figure comes from our own Postgres — there is no third-party analytics
+ * account behind any of it, and nothing here needs a Vercel login to read.
  */
 interface Row {
   [key: string]: unknown;
 }
 
-/** Nigerian states as they appear on a form: three letters, FCT kept whole. */
-function code(state: string): string {
-  if (state.startsWith("FCT")) return "FCT";
-  return state.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+const code = (state: string) =>
+  state.startsWith("FCT") ? "FCT" : state.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+
+/** Percentage change against the previous window, or null when there is no base. */
+function delta(now: number, before: number): number | null {
+  if (!before) return now > 0 ? null : 0;
+  return Math.round(((now - before) / before) * 100);
 }
 
 export async function Dashboard() {
@@ -34,118 +32,227 @@ export async function Dashboard() {
   const db = payload.db as unknown as {
     drizzle: { execute: (q: unknown) => Promise<{ rows?: Row[] } | Row[]> };
   };
-  const query = async (q: unknown): Promise<Row[]> => {
+  const run = async (q: unknown): Promise<Row[]> => {
     try {
-      const result = await db.drizzle.execute(q);
-      return (Array.isArray(result) ? result : (result.rows ?? [])) as Row[];
+      const r = await db.drizzle.execute(q);
+      return (Array.isArray(r) ? r : (r.rows ?? [])) as Row[];
     } catch {
       return [];
     }
   };
 
   const { user } = await payload.auth({ headers: await nextHeaders() });
-  const isSuperAdmin = user && "role" in user && user.role === "super-admin";
+  const role = user && "role" in user ? (user.role as string) : undefined;
+  const canEdit = role !== "analyst";
+  const isSuperAdmin = role === "super-admin";
 
   const count = (where?: Where) =>
     payload.count({ collection: "schools", ...(where ? { where } : {}) });
 
-  const [total, drafts, verified, noPhotos, byState, gaps, opened, recent] = await Promise.all([
-    count(),
-    count({ _status: { equals: "draft" } }),
-    count({ verified: { equals: true } }),
-    count({ "images.logo": { exists: false } }),
-    query(sql`
-      select state, count(*)::int as n
-      from schools
-      where _status = 'published' and state is not null
-      group by state order by n desc
-    `),
-    query(sql`
-      select query, count(*)::int as n
-      from events
-      where type = 'search' and results = 0 and query is not null and query <> ''
-        and created_at > now() - interval '30 days'
-      group by 1 order by n desc limit 5
-    `),
-    query(sql`
-      select e.slug, count(*)::int as n, max(s.name) as name
-      from events e left join schools s on s.slug = e.slug
-      where e.type = 'view' and e.slug is not null
-        and e.created_at > now() - interval '30 days'
-      group by e.slug order by n desc limit 5
-    `),
-    payload.find({
-      collection: "schools",
-      limit: 5,
-      sort: "-updatedAt",
-      depth: 0,
-      draft: true,
-      select: { name: true, state: true, updatedAt: true, _status: true },
-    }),
-  ]);
+  const [totals, series, topPages, referrers, devices, byState, gaps, levels, unverified, recent] =
+    await Promise.all([
+      run(sql`
+        select
+          count(distinct visitor) filter (where created_at > now() - interval '7 days')::int as visitors,
+          count(distinct visitor) filter (where created_at between now() - interval '14 days' and now() - interval '7 days')::int as visitors_prev,
+          count(*) filter (where type = 'view' and created_at > now() - interval '7 days')::int as views,
+          count(*) filter (where type = 'view' and created_at between now() - interval '14 days' and now() - interval '7 days')::int as views_prev,
+          count(*) filter (where type = 'search' and created_at > now() - interval '7 days')::int as searches,
+          count(*) filter (where type = 'search' and created_at between now() - interval '14 days' and now() - interval '7 days')::int as searches_prev,
+          count(*) filter (where type = 'search' and results = 0 and created_at > now() - interval '7 days')::int as empty
+        from events
+      `),
+      run(sql`
+        select d::date as day,
+               coalesce(v.views, 0)::int as views,
+               coalesce(v.visitors, 0)::int as visitors
+        from generate_series(now()::date - interval '13 days', now()::date, interval '1 day') d
+        left join (
+          select created_at::date as day,
+                 count(*) filter (where type = 'view')::int as views,
+                 count(distinct visitor)::int as visitors
+          from events where created_at > now() - interval '14 days' group by 1
+        ) v on v.day = d::date
+        order by 1
+      `),
+      run(sql`
+        select path, count(*)::int as n from events
+        where type = 'view' and created_at > now() - interval '7 days'
+        group by 1 order by n desc limit 6
+      `),
+      run(sql`
+        select referrer, count(*)::int as n from events
+        where referrer is not null and created_at > now() - interval '7 days'
+        group by 1 order by n desc limit 5
+      `),
+      run(sql`
+        select device, count(distinct visitor)::int as n from events
+        where device is not null and created_at > now() - interval '7 days'
+        group by 1 order by n desc
+      `),
+      run(sql`
+        select state, count(*)::int as n from schools
+        where _status = 'published' and state is not null group by 1 order by n desc
+      `),
+      run(sql`
+        select query, count(*)::int as n from events
+        where type = 'search' and results = 0 and query is not null and query <> ''
+          and created_at > now() - interval '30 days'
+        group by 1 order by n desc limit 6
+      `),
+      run(sql`
+        select level, count(*)::int as n from schools
+        where _status = 'published' group by 1
+      `),
+      count({ verified: { equals: false } }),
+      payload.find({
+        collection: "schools",
+        limit: 5,
+        sort: "-updatedAt",
+        depth: 0,
+        draft: true,
+        select: { name: true, state: true, updatedAt: true },
+      }),
+    ]);
 
   const nf = new Intl.NumberFormat("en-NG");
+  const t = totals[0] ?? {};
+  const num = (k: string) => Number(t[k] ?? 0);
+
+  const days = series.map((r) => ({
+    day: String(r.day).slice(0, 10),
+    views: Number(r.views ?? 0),
+    visitors: Number(r.visitors ?? 0),
+  }));
+  const hasTraffic = days.some((d) => d.views > 0 || d.visitors > 0);
+
   const states = byState.map((r) => ({ state: String(r.state), n: Number(r.n ?? 0) }));
   const peak = Math.max(1, ...states.map((s) => s.n));
-  const published = states.reduce((sum, s) => sum + s.n, 0);
-  const largest = states[0];
   const thin = states.filter((s) => s.n < 50).length;
-  const share = largest && published ? Math.round(published / largest.n) : 0;
+  const published = states.reduce((a, s) => a + s.n, 0);
+  const share = states[0] && published ? Math.round(published / states[0].n) : 0;
+
+  const primary = Number(levels.find((l) => l.level === "primary")?.n ?? 0);
+  const secondary = Number(levels.find((l) => l.level === "secondary")?.n ?? 0);
+  const schools = primary + secondary;
 
   return (
-    <div className="ep-dash">
-      <header className="ep-dash__head">
-        <div className="ep-dash__title">
-          <p className="ep-dash__eyebrow">Eduplana</p>
-          <h2>The directory</h2>
-          <p className="ep-dash__sub">
-            <b>{nf.format(total.totalDocs)}</b> schools across 36 states and the FCT
-          </p>
+    <div className="ep">
+      <header className="ep__head">
+        <div>
+          <p className="ep__eyebrow">Eduplana</p>
+          <h2>Overview</h2>
         </div>
-        <nav className="ep-dash__actions" aria-label="Directory actions">
-          <Link className="btn btn--style-primary btn--size-small" href="/admin/collections/schools/create">
-            Add a school
+        <nav className="ep__actions" aria-label="Shortcuts">
+          {canEdit ? (
+            <Link className="ep__btn ep__btn--primary" href="/admin/collections/schools/create">
+              Add a school
+            </Link>
+          ) : null}
+          <Link className="ep__btn" href="/admin/collections/schools">
+            Schools
           </Link>
-          <Link className="btn btn--style-secondary btn--size-small" href="/admin/collections/schools">
-            Browse schools
-          </Link>
-          <Link className="btn btn--style-secondary btn--size-small" href="/admin/analytics">
+          <Link className="ep__btn" href="/admin/analytics">
             Analytics
           </Link>
           {isSuperAdmin ? (
-            <Link className="btn btn--style-secondary btn--size-small" href="/admin/collections/users">
+            <Link className="ep__btn" href="/admin/collections/users">
               People
             </Link>
           ) : null}
         </nav>
       </header>
 
-      {/* The signature: the shape of the directory, state by state. */}
-      {states.length > 0 ? (
-        <section className="ep-cov" aria-labelledby="ep-cov-h">
-          <div className="ep-cov__label">
-            <h3 id="ep-cov-h">Coverage by state</h3>
-            <p>
-              {largest ? (
-                <>
-                  {largest.state} holds 1 in every {share} schools listed.{" "}
-                  {thin > 0 ? (
-                    <>
-                      {thin} states have fewer than 50 — that tail is where the directory is
-                      thinnest.
-                    </>
-                  ) : null}
-                </>
-              ) : null}
+      <ul className="ep__kpis">
+        <Kpi
+          label="Visitors"
+          hint="last 7 days"
+          value={nf.format(num("visitors"))}
+          change={delta(num("visitors"), num("visitors_prev"))}
+        />
+        <Kpi
+          label="Page views"
+          hint="last 7 days"
+          value={nf.format(num("views"))}
+          change={delta(num("views"), num("views_prev"))}
+        />
+        <Kpi
+          label="Searches"
+          hint="last 7 days"
+          value={nf.format(num("searches"))}
+          change={delta(num("searches"), num("searches_prev"))}
+        />
+        <Kpi
+          label="Found nothing"
+          hint="searches with no results"
+          value={nf.format(num("empty"))}
+          tone="warn"
+        />
+      </ul>
+
+      <div className="ep__row ep__row--split">
+        <section className="ep-panel" aria-labelledby="ep-traffic">
+          <div className="ep-panel__top">
+            <div>
+              <h3 id="ep-traffic">Traffic</h3>
+              <p>Page views and visitors, 14 days</p>
+            </div>
+            <p className="ep-legend">
+              <span className="ep-legend__key ep-legend__key--a" /> Views
+              <span className="ep-legend__key ep-legend__key--b" /> Visitors
             </p>
           </div>
-          <ol className="ep-cov__plot">
+          {hasTraffic ? (
+            <Traffic days={days} />
+          ) : (
+            <p className="ep-blank">
+              No traffic recorded yet. Every page a visitor reaches is counted here from the moment
+              they arrive.
+            </p>
+          )}
+        </section>
+
+        <section className="ep-panel" aria-labelledby="ep-mix">
+          <div className="ep-panel__top">
+            <div>
+              <h3 id="ep-mix">The directory</h3>
+              <p>{nf.format(schools)} published records</p>
+            </div>
+          </div>
+          <Donut primary={primary} secondary={secondary} />
+          <ul className="ep-legend-rows">
+            <li>
+              <span className="ep-legend__key ep-legend__key--a" /> Primary <em>{nf.format(primary)}</em>
+            </li>
+            <li>
+              <span className="ep-legend__key ep-legend__key--b" /> Secondary{" "}
+              <em>{nf.format(secondary)}</em>
+            </li>
+          </ul>
+          <p className="ep-panel__foot">
+            <Link href="/admin/collections/schools?where[verified][equals]=false">
+              {nf.format(unverified.totalDocs)} unverified
+            </Link>{" "}
+            — no school has been confirmed with a human yet.
+          </p>
+        </section>
+      </div>
+
+      {states.length > 0 ? (
+        <section className="ep-panel" aria-labelledby="ep-cov">
+          <div className="ep-panel__top">
+            <div>
+              <h3 id="ep-cov">Coverage by state</h3>
+              <p>
+                {states[0].state} holds 1 in every {share} schools listed
+                {thin > 0 ? `, and ${thin} states have fewer than 50` : ""}.
+              </p>
+            </div>
+          </div>
+          <ol className="ep-cov">
             {states.map((s) => (
               <li
                 key={s.state}
-                /* The quiet tone marks exactly the tail the sentence above
-                   names, so the split encodes the finding rather than an
-                   arbitrary "top N". */
                 className={s.n < 50 ? "ep-cov__col ep-cov__col--thin" : "ep-cov__col"}
               >
                 <Link
@@ -162,118 +269,184 @@ export async function Dashboard() {
         </section>
       ) : null}
 
-      <div className="ep-dash__cols">
-        {/* A worklist, not a scoreboard: each row is something to go and do. */}
-        <section className="ep-card" aria-labelledby="ep-work-h">
-          <h3 id="ep-work-h">Needs a human</h3>
-          <p className="ep-card__note">Records a person still has to look at.</p>
-          <ul className="ep-work">
-            <Work
-              label="Unverified"
-              value={nf.format(total.totalDocs - verified.totalDocs)}
-              note="no school has been confirmed with a human yet"
-              href="/admin/collections/schools?where[verified][equals]=false"
-              tone="gold"
-            />
-            <Work
-              label="No logo"
-              value={nf.format(noPhotos.totalDocs)}
-              note="profile renders with initials instead"
-              href="/admin/collections/schools"
-            />
-            <Work
-              label="Unpublished drafts"
-              value={nf.format(drafts.totalDocs)}
-              note="edited but not yet live"
-              href="/admin/collections/schools?where[_status][equals]=draft"
-            />
-          </ul>
-        </section>
-
-        <section className="ep-card" aria-labelledby="ep-want-h">
-          <h3 id="ep-want-h">What people looked for</h3>
-          <p className="ep-card__note">
-            From the directory’s own search, over 30 days. <Link href="/admin/analytics">See all</Link>
-          </p>
-
-          <h4 className="ep-card__sub ep-card__sub--gold">Found nothing</h4>
-          {gaps.length ? (
-            <ol className="ep-rows">
-              {gaps.map((g) => (
-                <li key={String(g.query)}>
-                  <span>{String(g.query)}</span>
-                  <em>{nf.format(Number(g.n ?? 0))}</em>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="ep-empty">
-              Nothing yet. When a search comes back with no results it lands here — each row a
-              school somebody wanted and the directory does not carry.
-            </p>
-          )}
-
-          <h4 className="ep-card__sub">Most opened</h4>
-          {opened.length ? (
-            <ol className="ep-rows">
-              {opened.map((o) => (
-                <li key={String(o.slug)}>
-                  <span>{String(o.name ?? o.slug)}</span>
-                  <em>{nf.format(Number(o.n ?? 0))}</em>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="ep-empty">
-              Nothing yet. The schools people open most will rank here, which is the list worth
-              approaching first.
-            </p>
-          )}
-        </section>
+      <div className="ep__row ep__row--three">
+        <List
+          title="Searches that found nothing"
+          note="Each one is a school somebody wanted"
+          empty="Nothing yet."
+          tone="warn"
+          rows={gaps.map((g) => ({ key: String(g.query), label: String(g.query), value: nf.format(Number(g.n ?? 0)) }))}
+        />
+        <List
+          title="Most visited pages"
+          note="Last 7 days"
+          empty="Nothing yet."
+          rows={topPages.map((p) => ({ key: String(p.path), label: String(p.path), value: nf.format(Number(p.n ?? 0)) }))}
+        />
+        <List
+          title="Where visitors came from"
+          note="Referring site, last 7 days"
+          empty="No referrers yet — visitors have arrived directly."
+          rows={referrers.map((r) => ({ key: String(r.referrer), label: String(r.referrer), value: nf.format(Number(r.n ?? 0)) }))}
+        />
       </div>
 
-      <section className="ep-card ep-card--wide" aria-labelledby="ep-recent-h">
-        <h3 id="ep-recent-h">Recently edited</h3>
-        <ul className="ep-recent">
-          {recent.docs.map((d) => (
-            <li key={d.id}>
-              <Link href={`/admin/collections/schools/${d.id}`}>{d.name}</Link>
-              <span className="ep-recent__meta">
-                {d.state ? `${d.state} · ` : ""}
-                {new Date(d.updatedAt).toLocaleDateString("en-NG", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <div className="ep__row ep__row--split">
+        <List
+          title="Devices"
+          note="Visitors, last 7 days"
+          empty="Nothing yet."
+          rows={devices.map((d) => ({
+            key: String(d.device),
+            label: String(d.device).replace(/^./, (c) => c.toUpperCase()),
+            value: nf.format(Number(d.n ?? 0)),
+          }))}
+        />
+        <section className="ep-panel" aria-labelledby="ep-recent">
+          <div className="ep-panel__top">
+            <div>
+              <h3 id="ep-recent">Recently edited</h3>
+              <p>The last five records touched</p>
+            </div>
+          </div>
+          <ul className="ep-rows">
+            {recent.docs.map((d) => (
+              <li key={d.id}>
+                <Link href={`/admin/collections/schools/${d.id}`}>{d.name}</Link>
+                <em>
+                  {d.state ? `${d.state} · ` : ""}
+                  {new Date(d.updatedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short" })}
+                </em>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </div>
   );
 }
 
-function Work({
+function Kpi({
   label,
+  hint,
   value,
-  note,
-  href,
+  change,
   tone,
 }: {
   label: string;
+  hint: string;
   value: string;
-  note: string;
-  href: string;
-  tone?: "gold";
+  change?: number | null;
+  tone?: "warn";
 }) {
   return (
-    <li className={tone ? `ep-work__row ep-work__row--${tone}` : "ep-work__row"}>
-      <Link href={href}>
-        <em>{value}</em>
-        <span className="ep-work__label">{label}</span>
-        <span className="ep-work__note">{note}</span>
-      </Link>
+    <li className={tone ? `ep-kpi ep-kpi--${tone}` : "ep-kpi"}>
+      <div className="ep-kpi__row">
+        <span className="ep-kpi__value">{value}</span>
+        {typeof change === "number" ? (
+          <span className={`ep-chip ${change >= 0 ? "ep-chip--up" : "ep-chip--down"}`}>
+            {change >= 0 ? "▲" : "▼"} {Math.abs(change)}%
+          </span>
+        ) : null}
+      </div>
+      <span className="ep-kpi__label">{label}</span>
+      <span className="ep-kpi__hint">{hint}</span>
     </li>
+  );
+}
+
+/**
+ * Two series over fourteen days, drawn as SVG on the server.
+ *
+ * No charting library: this is one path per series and the page ships no extra
+ * JavaScript for it. Views and visitors share one axis — visitors are a subset
+ * of views, so the comparison is honest on a single scale.
+ */
+function Traffic({ days }: { days: Array<{ day: string; views: number; visitors: number }> }) {
+  const W = 640;
+  const H = 150;
+  const peak = Math.max(1, ...days.flatMap((d) => [d.views, d.visitors]));
+  const x = (i: number) => (i / Math.max(1, days.length - 1)) * W;
+  const y = (v: number) => H - (v / peak) * (H - 10);
+  const line = (key: "views" | "visitors") =>
+    days.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d[key]).toFixed(1)}`).join(" ");
+  const area = `${line("views")} L ${W} ${H} L 0 ${H} Z`;
+
+  return (
+    <figure className="ep-chart">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img"
+        aria-label={`Page views and visitors over ${days.length} days`}>
+        <defs>
+          <linearGradient id="ep-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#3d8ce0" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="#3d8ce0" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#ep-fill)" />
+        <path d={line("views")} fill="none" stroke="#3d8ce0" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        <path d={line("visitors")} fill="none" stroke="#1fa97e" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <figcaption className="ep-chart__axis">
+        <span>{days[0]?.day.slice(5)}</span>
+        <span>{days[days.length - 1]?.day.slice(5)}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+/** Primary against secondary. One ring, two arcs, labelled beside it. */
+function Donut({ primary, secondary }: { primary: number; secondary: number }) {
+  const total = Math.max(1, primary + secondary);
+  const C = 2 * Math.PI * 54;
+  const share = (primary / total) * C;
+
+  return (
+    <svg className="ep-donut" viewBox="0 0 140 140" role="img"
+      aria-label={`${primary} primary and ${secondary} secondary schools`}>
+      <circle cx="70" cy="70" r="54" fill="none" stroke="#1fa97e" strokeWidth="16" />
+      <circle cx="70" cy="70" r="54" fill="none" stroke="#3d8ce0" strokeWidth="16"
+        strokeDasharray={`${share} ${C - share}`} strokeDashoffset={C / 4} strokeLinecap="butt" />
+      <text x="70" y="66" className="ep-donut__n">{Math.round((primary / total) * 100)}%</text>
+      <text x="70" y="84" className="ep-donut__t">primary</text>
+    </svg>
+  );
+}
+
+function List({
+  title,
+  note,
+  rows,
+  empty,
+  tone,
+}: {
+  title: string;
+  note: string;
+  empty: string;
+  tone?: "warn";
+  rows: Array<{ key: string; label: string; value: string }>;
+}) {
+  return (
+    <section className={tone ? `ep-panel ep-panel--${tone}` : "ep-panel"}>
+      <div className="ep-panel__top">
+        <div>
+          <h3>{title}</h3>
+          <p>{note}</p>
+        </div>
+      </div>
+      {rows.length ? (
+        <ul className="ep-rows">
+          {rows.map((r) => (
+            <li key={r.key}>
+              <span>{r.label}</span>
+              <em>{r.value}</em>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="ep-blank">{empty}</p>
+      )}
+    </section>
   );
 }

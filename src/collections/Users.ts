@@ -3,11 +3,14 @@ import type { CollectionConfig } from "payload";
 /**
  * Everyone who can sign into the admin panel.
  *
- * Three roles:
+ * Four roles:
  *   super-admin — manages people: creates accounts, resets passwords, and is
  *                 the only role that can grant super-admin to anyone else
  *   admin       — full control of content, including the `verified` flag
  *   editor      — writes and publishes content, but cannot assert verification
+ *   analyst     — reads the numbers and changes nothing. For somebody who needs
+ *                 the dashboard without needing the keys: no edit rights, and
+ *                 nothing to accidentally break.
  *
  * The admin/editor split exists because "verified" is a factual claim to the
  * public that a human confirmed a school's details. It must not be something
@@ -141,13 +144,14 @@ export const Users: CollectionConfig = {
         { label: "Super admin", value: SUPER_ADMIN },
         { label: "Admin", value: "admin" },
         { label: "Editor", value: "editor" },
+        { label: "Analyst", value: "analyst" },
       ],
       // Nobody can promote themselves; the hook above enforces the same rule
       // for the super-admin value specifically.
       access: { update: ({ req }) => req.user?.role === SUPER_ADMIN },
       admin: {
         description:
-          "Editors manage content. Admins additionally mark schools as verified. Super admins additionally manage accounts and passwords.",
+          "Analysts read the dashboard and change nothing. Editors manage content. Admins additionally mark schools as verified. Super admins additionally manage accounts and passwords.",
       },
     },
   ],

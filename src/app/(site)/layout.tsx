@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { CompareTray } from "@/components/compare-tray";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PageBeacon } from "@/components/page-beacon";
 import { ShortlistProvider } from "@/components/shortlist-provider";
 import {
   FOUNDERS,
@@ -164,6 +165,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           * is about a kilobyte rather than fifty — which matters when most of the
           * audience is on a phone paying for data by the megabyte.
           */}
+        <PageBeacon />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -30,6 +30,14 @@ export default buildConfig({
     meta: {
       titleSuffix: " · Eduplana admin",
     },
+    /*
+     * Dark, always. Not a preference: the admin is a dashboard read for long
+     * stretches, and the panels, charts and elevation scale below are designed
+     * for a dark canvas. Leaving the theme switchable would mean maintaining
+     * two versions of that design, and the light one would be the worse of the
+     * two because nothing here was drawn for it.
+     */
+    theme: "dark",
     components: {
       // Same artwork as the public site, so signing in does not feel like
       // leaving the product.
