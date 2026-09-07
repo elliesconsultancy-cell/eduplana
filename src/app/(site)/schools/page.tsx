@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { FilterPanel } from "@/components/filter-panel";
 import { SchoolCard } from "@/components/school-card";
 import { facetsFor, search } from "@/lib/schools";
+import { describeFilters, record } from "@/lib/track";
 import type { Level, SearchFilters, SortKey } from "@/lib/types";
 
 const PAGE_SIZE = 24;
@@ -66,6 +67,25 @@ export default async function SchoolsPage({
 
   const results = await search(filters);
   const facets = facetsFor(results);
+
+  /*
+   * Record the search, but only the first page of one.
+   *
+   * Paging through results is the same search, and counting each page would
+   * make popular queries look far more popular than they are. A query that
+   * returned nothing is the row worth having: it names a school somebody
+   * wanted and the directory does not list.
+   */
+  if (page === 1 && (filters.q || describeFilters(filters as Record<string, unknown>))) {
+    record({
+      type: "search",
+      path: "/schools",
+      query: filters.q?.trim().toLowerCase() || null,
+      filters: describeFilters(filters as Record<string, unknown>),
+      results: results.length,
+    });
+  }
+
   const start = (page - 1) * PAGE_SIZE;
   const visible = results.slice(start, start + PAGE_SIZE);
   const totalPages = Math.ceil(results.length / PAGE_SIZE);

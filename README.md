@@ -239,12 +239,32 @@ megabyte, so a tracker heavier than the page it measures is a real cost.
 have to be switched on for the project in the Vercel dashboard; until then the
 scripts load and the dashboard stays empty.
 
-What this layer cannot answer is the question worth asking — which searches
-return nothing, and which schools people actually open. That needs logging in
-`/api/suggest` and the profile route, written to Postgres and surfaced in the
-admin. It is deliberately not a third-party script: it needs no cookie, no
-consent and no vendor, and it is the only analytics here that would inform what
-to build next.
+### Our own numbers, at `/admin/analytics`
+
+Vercel answers *how many people*. It cannot answer *what they were looking
+for* — behaviour lives in query strings and actions rather than URLs, and
+custom events are a Pro feature. The `events` collection covers that half:
+
+| Recorded | Where from |
+| --- | --- |
+| Every search, with how many results came back | server-side in `/schools`, which is dynamic |
+| Every school profile opened | a beacon to `/api/track` |
+
+The profile view needs a beacon rather than a line in the page component
+because profile pages are cached: server code runs once and every later reader
+is invisible to it. A request from the browser counts readers rather than
+renders.
+
+**Nothing identifying is stored** — no IP, cookie, fingerprint or visitor id.
+That is a deliberate limit: the table cannot become a profile of a person,
+needs no consent banner, and can be handed to anyone without a privacy review.
+The cost is that unique visitors is not answerable here, which is fine, because
+Vercel already answers it.
+
+The view aggregates in SQL rather than loading rows and counting in JavaScript;
+the alternative stops working the first month the table has real traffic in it.
+The panel worth opening first is **searches that found nothing** — each row is a
+school somebody wanted and the directory does not carry.
 
 ## The admin
 

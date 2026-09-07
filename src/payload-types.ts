@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     schools: School;
     users: User;
+    events: Event;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +79,7 @@ export interface Config {
   collectionsSelect: {
     schools: SchoolsSelect<false> | SchoolsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -327,6 +329,36 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  type: 'search' | 'view';
+  /**
+   * The page this happened on.
+   */
+  path?: string | null;
+  /**
+   * For a profile view, which school.
+   */
+  slug?: string | null;
+  /**
+   * For a search, what was typed. Lowercased and trimmed.
+   */
+  query?: string | null;
+  /**
+   * Filters applied alongside the query, as a readable summary.
+   */
+  filters?: string | null;
+  /**
+   * How many schools came back. Zero is the interesting case.
+   */
+  results?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -356,6 +388,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -485,6 +521,20 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  type?: T;
+  path?: T;
+  slug?: T;
+  query?: T;
+  filters?: T;
+  results?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

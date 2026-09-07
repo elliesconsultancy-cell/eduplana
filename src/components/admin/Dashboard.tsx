@@ -66,6 +66,9 @@ export async function Dashboard() {
           <Link className="btn btn--style-secondary btn--size-small" href="/admin/collections/schools">
             Browse all schools
           </Link>
+          <Link className="btn btn--style-secondary btn--size-small" href="/admin/analytics">
+            Analytics
+          </Link>
           {isSuperAdmin ? (
             <>
               <Link

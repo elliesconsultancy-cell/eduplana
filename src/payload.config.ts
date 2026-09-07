@@ -6,6 +6,7 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 import sharp from "sharp";
 
+import { Events } from "./collections/Events";
 import { Schools } from "./collections/Schools";
 import { Users } from "./collections/Users";
 
@@ -41,11 +42,20 @@ export default buildConfig({
       // actually arrive wanting.
       views: {
         dashboard: { Component: "@/components/admin/Dashboard#Dashboard" },
+        // Our own analytics, at /admin/analytics. Vercel reports how many
+        // people arrive; this reports what they were looking for, which is
+        // the half that changes what gets built next.
+        analytics: {
+          Component: "@/components/admin/Analytics#Analytics",
+          path: "/analytics",
+          exact: true,
+          meta: { title: "Analytics" },
+        },
       },
     },
   },
 
-  collections: [Schools, Users],
+  collections: [Schools, Users, Events],
 
   editor: lexicalEditor(),
 
