@@ -1,6 +1,8 @@
 import "server-only";
 
 import { cache } from "react";
+import primary from "@/data/schools.primary.json";
+import secondary from "@/data/schools.secondary.json";
 import { unstable_cache } from "next/cache";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -99,15 +101,32 @@ function toSchool(doc: SchoolDoc): School {
  * lines are array fields and come back regardless.
  */
 async function fetchPublished(): Promise<School[]> {
-  const payload = await getPayload({ config });
-  const { docs } = await payload.find({
-    collection: "schools",
-    where: { _status: { equals: "published" } },
-    pagination: false,
-    depth: 0,
-    overrideAccess: true,
-  });
-  return docs.map((doc) => toSchool(doc as unknown as SchoolDoc));
+  try {
+    const payload = await getPayload({ config });
+    const { docs } = await payload.find({
+      collection: "schools",
+      where: { _status: { equals: "published" } },
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+    });
+    return docs.map((doc) => toSchool(doc as unknown as SchoolDoc));
+  } catch (error) {
+    /*
+     * The site does not go dark because the database is unavailable.
+     *
+     * The JSON files were kept as the migration's rollback; this makes them a
+     * live fallback as well. Visitors get the last committed snapshot — stale
+     * by whatever has been edited since, which is a far better failure than
+     * every school page returning 500. The admin still needs the database and
+     * will still fail, which is correct: an editor should know.
+     */
+    console.error("[schools] database unavailable, serving the committed snapshot", error);
+    return [
+      ...(primary as unknown as School[]),
+      ...(secondary as unknown as School[]),
+    ];
+  }
 }
 
 /**
@@ -131,7 +150,21 @@ async function fetchPublished(): Promise<School[]> {
 const readVersion = unstable_cache(
   async () => crypto.randomUUID(),
   ["schools:version"],
-  { tags: [SCHOOLS_TAG], revalidate: 300 },
+  /*
+   * Invalidated by tag only — deliberately no `revalidate`.
+   *
+   * A five-minute refresh looked like a cheap safety net and was not: it
+   * re-read all 7,375 records, 9.5 MB, every five minutes in every running
+   * instance. That is 2.7 GB a day per instance against a 5 GB monthly
+   * allowance, and it exhausted the quota in about two days, taking the whole
+   * site down with it.
+   *
+   * The tag is invalidated by the schools collection's afterChange hook, which
+   * runs on every save, so the cache is refreshed exactly when the data
+   * changes and at no other time. If an invalidation is ever missed, saving
+   * any record clears it.
+   */
+  { tags: [SCHOOLS_TAG] },
 );
 
 interface Dataset {
