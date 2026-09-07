@@ -15,8 +15,17 @@ type Event =
   | { type: "search"; path: string; query: string | null; filters: string | null; results: number }
   | { type: "view"; path: string; slug: string };
 
-export function record(event: Event): void {
-  void (async () => {
+/**
+ * Returns a promise so a caller that can afford to wait may await it.
+ *
+ * That matters on serverless: work started after a response has been sent is
+ * not guaranteed to finish — the instance can be frozen first — so a route
+ * handler that fires and forgets loses rows. Render paths call this without
+ * awaiting, because there the write happens while the page is still being
+ * produced; `/api/track` awaits, since the browser is not waiting on it anyway.
+ */
+export function record(event: Event): Promise<void> {
+  return (async () => {
     try {
       const payload = await getPayload({ config });
       await payload.create({

@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  record({ type: "view", path: `/schools/${slug}`, slug });
+  // Awaited on purpose — see the note in lib/track.ts.
+  await record({ type: "view", path: `/schools/${slug}`, slug });
   return NextResponse.json({ ok: true, recorded: true });
 }
