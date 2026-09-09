@@ -42,7 +42,7 @@ npm run lint                 # eslint
 | Compare | Up to 4 schools on identical rows |
 | Career signals | Every school read for 8 career indicators; 1,486 clear the bar |
 | Autocomplete | Type-ahead on name and town, on the homepage and in the filter panel |
-| Insights archive | 54 infographics and 29 reports, filterable by topic |
+| Insights archive | 54 infographics and 30 reports, filterable by topic |
 | Mobile | Sticky filter drawer, card results, large touch targets |
 
 ## Layout

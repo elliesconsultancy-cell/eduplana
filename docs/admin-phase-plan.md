@@ -50,7 +50,7 @@ schools                    one row per school — scalar fields as columns
   schools_rels             relationships (e.g. gallery → media)
 media                      new uploads: R2 key, mime, size, alt, focal point
 infographics               the 54 archive charts (title, topic, year, media)
-reports                    the 29 PDFs (title, topic, year, file)
+reports                    the 30 PDFs (title, topic, year, file)
 pages / globals            homepage sections, banners, footer, site settings
 payload_migrations, payload_preferences, *_versions   Payload internals
 ```
