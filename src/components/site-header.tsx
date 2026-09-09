@@ -39,7 +39,7 @@ const NAV: NavEntry[] = [
     ],
   },
   {
-    label: "Insights",
+    label: "Foundation",
     items: [
       { href: "/insights/infographics", label: "Infographics", hint: "Education data, visualised" },
       { href: "/insights/reports", label: "Reports & data", hint: "Budget analyses and datasets" },
