@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDownToLine, FileText } from "lucide-react";
-import { asset } from "@/lib/assets";
+import Link from "next/link";
+import { ArrowRight, FileText } from "lucide-react";
+import { AssetImage } from "@/components/asset-image";
 
 interface Doc {
   slug: string;
@@ -11,6 +12,8 @@ interface Doc {
   file: string;
   topic: string;
   size: string;
+  pages?: number;
+  cover?: string;
 }
 
 const TOPIC_TONES: Record<string, string> = {
@@ -67,20 +70,30 @@ export function DocumentList({ items }: { items: Doc[] }) {
       <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((doc) => (
           <li key={doc.slug} className="h-full">
-            <a
-              href={asset(doc.file)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href={`/insights/reports/${doc.slug}`}
               className="group flex h-full flex-col rounded-2xl bg-white p-5 shadow-card ring-1 ring-ink-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lift hover:ring-brand-200"
             >
               <span className="flex items-start justify-between gap-3">
-                <span
-                  aria-hidden
-                  className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white"
-                >
-                  <FileText size={20} strokeWidth={2.2} />
-                </span>
-                <ArrowDownToLine
+                {/* The first page, which says more about a budget table than an
+                    icon ever could. */}
+                {doc.cover ? (
+                  <AssetImage
+                    path={doc.cover}
+                    alt=""
+                    width={720}
+                    height={1018}
+                    className="h-16 w-12 shrink-0 rounded-md border border-ink-200 object-cover object-top"
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"
+                  >
+                    <FileText size={20} strokeWidth={2.2} />
+                  </span>
+                )}
+                <ArrowRight
                   size={16}
                   strokeWidth={2.3}
                   aria-hidden
@@ -105,10 +118,11 @@ export function DocumentList({ items }: { items: Doc[] }) {
                 </span>
                 <span className="text-[11px] font-medium text-ink-400">
                   PDF · {doc.size}
+                  {doc.pages ? ` · ${doc.pages} pages` : ""}
                   {doc.year ? ` · ${doc.year}` : ""}
                 </span>
               </span>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>

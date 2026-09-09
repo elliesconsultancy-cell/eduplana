@@ -32,6 +32,20 @@ export interface Document {
   bytes: number;
   file: string;
   topic: Topic;
+  /** Page count, read from the file itself. */
+  pages?: number;
+  /** The first page, rendered — see scripts/build-report-previews.mjs. */
+  cover?: string;
+  /**
+   * Written by hand, and absent on most of the archive.
+   *
+   * Generating one from the document's opening text was tried and abandoned:
+   * the budget PDFs open with classification codes, and every Eduplana report
+   * opens with the same boilerplate about the organisation, so one paragraph
+   * ended up describing a dozen unrelated documents. A page without this shows
+   * the cover and the facts, which are at least true.
+   */
+  description?: string;
 }
 
 const INFOGRAPHICS = manifest.infographics as Infographic[];
@@ -53,6 +67,18 @@ export function allDocuments(): Document[] {
 
 export function infographic(slug: string): Infographic | undefined {
   return INFOGRAPHICS.find((i) => i.slug === slug);
+}
+
+export function document(slug: string): Document | undefined {
+  return DOCUMENTS.find((d) => d.slug === slug);
+}
+
+/** Same topic first, then the rest of the archive by recency. */
+export function relatedDocuments(doc: Document, limit = 3): Document[] {
+  const others = DOCUMENTS.filter((d) => d.slug !== doc.slug);
+  const sameTopic = others.filter((d) => d.topic === doc.topic).sort(byRecency);
+  const rest = others.filter((d) => d.topic !== doc.topic).sort(byRecency);
+  return [...sameTopic, ...rest].slice(0, limit);
 }
 
 export function topics(): Array<{ topic: Topic; count: number }> {

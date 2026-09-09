@@ -548,7 +548,9 @@
       "year": 2006,
       "bytes": 364206,
       "file": "/insights/documents/2006-fg-education-budget.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 137,
+      "cover": "/insights/covers/2006-fg-education-budget.webp"
     },
     {
       "slug": "2009-fg-education-budget",
@@ -556,7 +558,9 @@
       "year": 2009,
       "bytes": 383584,
       "file": "/insights/documents/2009-fg-education-budget.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 71,
+      "cover": "/insights/covers/2009-fg-education-budget.webp"
     },
     {
       "slug": "2011-fg-education-budget",
@@ -564,7 +568,9 @@
       "year": 2011,
       "bytes": 135123,
       "file": "/insights/documents/2011-fg-education-budget.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 12,
+      "cover": "/insights/covers/2011-fg-education-budget.webp"
     },
     {
       "slug": "2012-fg-education-budget",
@@ -572,7 +578,9 @@
       "year": 2012,
       "bytes": 3871240,
       "file": "/insights/documents/2012-fg-education-budget.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 594,
+      "cover": "/insights/covers/2012-fg-education-budget.webp"
     },
     {
       "slug": "2013-fg-education-budget",
@@ -580,7 +588,9 @@
       "year": 2013,
       "bytes": 3777340,
       "file": "/insights/documents/2013-fg-education-budget.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 511,
+      "cover": "/insights/covers/2013-fg-education-budget.webp"
     },
     {
       "slug": "2013-reconciled-projectss",
@@ -588,7 +598,9 @@
       "year": 2013,
       "bytes": 171851,
       "file": "/insights/documents/2013-reconciled-projectss.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 12,
+      "cover": "/insights/covers/2013-reconciled-projectss.webp"
     },
     {
       "slug": "2014-fg-education-budget",
@@ -596,7 +608,9 @@
       "year": 2014,
       "bytes": 2883604,
       "file": "/insights/documents/2014-fg-education-budget.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 293,
+      "cover": "/insights/covers/2014-fg-education-budget.webp"
     },
     {
       "slug": "2014-ubec-constituency-projects",
@@ -604,7 +618,9 @@
       "year": 2014,
       "bytes": 300094,
       "file": "/insights/documents/2014-ubec-constituency-projects.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 2,
+      "cover": "/insights/covers/2014-ubec-constituency-projects.webp"
     },
     {
       "slug": "2015-ubec-constituency-projects",
@@ -612,7 +628,9 @@
       "year": 2015,
       "bytes": 299947,
       "file": "/insights/documents/2015-ubec-constituency-projects.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 1,
+      "cover": "/insights/covers/2015-ubec-constituency-projects.webp"
     },
     {
       "slug": "2017-proposed-education-allocation",
@@ -620,7 +638,9 @@
       "year": 2017,
       "bytes": 1427522,
       "file": "/insights/documents/2017-proposed-education-allocation.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 3,
+      "cover": "/insights/covers/2017-proposed-education-allocation.webp"
     },
     {
       "slug": "2020-education-budget",
@@ -628,7 +648,9 @@
       "year": 2020,
       "bytes": 1572601,
       "file": "/insights/documents/2020-education-budget.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 16,
+      "cover": "/insights/covers/2020-education-budget.webp"
     },
     {
       "slug": "2022-education-budget-extracted",
@@ -636,7 +658,9 @@
       "year": 2022,
       "bytes": 2378072,
       "file": "/insights/documents/2022-education-budget-extracted.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 341,
+      "cover": "/insights/covers/2022-education-budget-extracted.webp"
     },
     {
       "slug": "asuu",
@@ -644,7 +668,9 @@
       "year": null,
       "bytes": 941823,
       "file": "/insights/documents/asuu.pdf",
-      "topic": "Accountability"
+      "topic": "Accountability",
+      "pages": 51,
+      "cover": "/insights/covers/asuu.webp"
     },
     {
       "slug": "bad-classrooms-in-nigeria-analysis-infographics",
@@ -652,7 +678,9 @@
       "year": null,
       "bytes": 737243,
       "file": "/insights/documents/bad-classrooms-in-nigeria-analysis-infographics.pdf",
-      "topic": "Access"
+      "topic": "Access",
+      "pages": 24,
+      "cover": "/insights/covers/bad-classrooms-in-nigeria-analysis-infographics.webp"
     },
     {
       "slug": "comparative-basic-education-dataset-anambra-state",
@@ -660,7 +688,9 @@
       "year": null,
       "bytes": 734882,
       "file": "/insights/documents/comparative-basic-education-dataset-anambra-state.pdf",
-      "topic": "States"
+      "topic": "States",
+      "pages": 11,
+      "cover": "/insights/covers/comparative-basic-education-dataset-anambra-state.webp"
     },
     {
       "slug": "covid19-personal-discovery",
@@ -668,7 +698,9 @@
       "year": null,
       "bytes": 579651,
       "file": "/insights/documents/covid19-personal-discovery.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 13,
+      "cover": "/insights/covers/covid19-personal-discovery.webp"
     },
     {
       "slug": "eduplana-homegrown-school-feeding-programme-report",
@@ -676,7 +708,9 @@
       "year": null,
       "bytes": 737485,
       "file": "/insights/documents/eduplana-homegrown-school-feeding-programme-report.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 16,
+      "cover": "/insights/covers/eduplana-homegrown-school-feeding-programme-report.webp"
     },
     {
       "slug": "ekiti-basic-education-report-1",
@@ -684,7 +718,9 @@
       "year": null,
       "bytes": 7076585,
       "file": "/insights/documents/ekiti-basic-education-report-1.pdf",
-      "topic": "States"
+      "topic": "States",
+      "pages": 16,
+      "cover": "/insights/covers/ekiti-basic-education-report-1.webp"
     },
     {
       "slug": "fts-recruitment-for-2013-2015",
@@ -692,7 +728,9 @@
       "year": 2013,
       "bytes": 394798,
       "file": "/insights/documents/fts-recruitment-for-2013-2015.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 1,
+      "cover": "/insights/covers/fts-recruitment-for-2013-2015.webp"
     },
     {
       "slug": "hesreport-2017-edition",
@@ -700,7 +738,9 @@
       "year": 2017,
       "bytes": 1929525,
       "file": "/insights/documents/hesreport-2017-edition.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 21,
+      "cover": "/insights/covers/hesreport-2017-edition.webp"
     },
     {
       "slug": "ikorodu-lagos-min",
@@ -708,7 +748,9 @@
       "year": null,
       "bytes": 2825111,
       "file": "/insights/documents/ikorodu-lagos-min.pdf",
-      "topic": "States"
+      "topic": "States",
+      "pages": 19,
+      "cover": "/insights/covers/ikorodu-lagos-min.webp"
     },
     {
       "slug": "lagos-budget-education",
@@ -716,7 +758,9 @@
       "year": null,
       "bytes": 242555,
       "file": "/insights/documents/lagos-budget-education.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 1,
+      "cover": "/insights/covers/lagos-budget-education.webp"
     },
     {
       "slug": "report-2",
@@ -724,7 +768,9 @@
       "year": null,
       "bytes": 1047848,
       "file": "/insights/documents/report-2.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 16,
+      "cover": "/insights/covers/report-2.webp"
     },
     {
       "slug": "roles-and-responsibilities-of-the-departments-of-federal-ministry-of-education",
@@ -732,7 +778,9 @@
       "year": null,
       "bytes": 758979,
       "file": "/insights/documents/roles-and-responsibilities-of-the-departments-of-federal-ministry-of-education.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 35,
+      "cover": "/insights/covers/roles-and-responsibilities-of-the-departments-of-federal-ministry-of-education.webp"
     },
     {
       "slug": "summary-of-fts-recruitment-from-2006-2015",
@@ -740,7 +788,9 @@
       "year": 2006,
       "bytes": 395758,
       "file": "/insights/documents/summary-of-fts-recruitment-from-2006-2015.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 1,
+      "cover": "/insights/covers/summary-of-fts-recruitment-from-2006-2015.webp"
     },
     {
       "slug": "ubec-2019-report",
@@ -748,7 +798,9 @@
       "year": 2019,
       "bytes": 4613552,
       "file": "/insights/documents/ubec-2019-report.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 41,
+      "cover": "/insights/covers/ubec-2019-report.webp"
     },
     {
       "slug": "unity-schools-report-1",
@@ -756,7 +808,9 @@
       "year": null,
       "bytes": 2591254,
       "file": "/insights/documents/unity-schools-report-1.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 30,
+      "cover": "/insights/covers/unity-schools-report-1.webp"
     },
     {
       "slug": "sdg4report",
@@ -764,7 +818,9 @@
       "year": null,
       "bytes": 9142205,
       "file": "/insights/documents/sdg4report.pdf",
-      "topic": "Access"
+      "topic": "Access",
+      "pages": 17,
+      "cover": "/insights/covers/sdg4report.webp"
     },
     {
       "slug": "state-education-fund-report-compressed",
@@ -772,7 +828,9 @@
       "year": null,
       "bytes": 4437396,
       "file": "/insights/documents/state-education-fund-report-compressed.pdf",
-      "topic": "Budget"
+      "topic": "Budget",
+      "pages": 47,
+      "cover": "/insights/covers/state-education-fund-report-compressed.webp"
     },
     {
       "slug": "understanding-the-2023-2027-girl-child-education-plan",
@@ -780,7 +838,10 @@
       "year": 2024,
       "bytes": 765931,
       "file": "/insights/documents/understanding-the-2023-2027-girl-child-education-plan.pdf",
-      "topic": "Access"
+      "topic": "Access",
+      "pages": 29,
+      "cover": "/insights/covers/understanding-the-2023-2027-girl-child-education-plan.webp",
+      "description": "Eduplana's reading of the Federal Government's 2023–2027 Girl Child Education Plan: what the plan sets out to do about girls' access to schooling, and the strategies it proposes to get there. Published August 2024."
     }
   ]
 }

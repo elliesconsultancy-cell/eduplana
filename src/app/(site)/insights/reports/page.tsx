@@ -17,7 +17,7 @@ export default function ReportsPage() {
     <>
       <PageBanner
         title="Reports & data"
-        standfirst={`${documents.length} budget analyses, state datasets and research reports, going back to the earliest federal education budgets we could obtain. Every file downloads as a PDF.`}
+        standfirst={`${documents.length} budget analyses, state datasets and research reports, going back to the earliest federal education budgets we could obtain. Open any one to see what it covers before you download it.`}
       />
       <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <DocumentList items={documents} />

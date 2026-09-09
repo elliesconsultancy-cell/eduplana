@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { allSchools } from "@/lib/schools";
-import { allInfographics } from "@/lib/insights";
+import { allDocuments, allInfographics } from "@/lib/insights";
 import { absoluteUrl } from "@/lib/site";
 
 /**
@@ -40,5 +40,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.3,
   }));
 
-  return [...staticPages, ...schools, ...infographics];
+  // Each report has its own address now, so each one is worth indexing.
+  const reports: MetadataRoute.Sitemap = allDocuments().map((doc) => ({
+    url: absoluteUrl(`/insights/reports/${doc.slug}`),
+    changeFrequency: "yearly",
+    priority: 0.4,
+  }));
+
+  return [...staticPages, ...schools, ...infographics, ...reports];
 }

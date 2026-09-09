@@ -42,7 +42,7 @@ npm run lint                 # eslint
 | Compare | Up to 4 schools on identical rows |
 | Career signals | Every school read for 8 career indicators; 1,486 clear the bar |
 | Autocomplete | Type-ahead on name and town, on the homepage and in the filter panel |
-| Insights archive | 54 infographics and 30 reports, filterable by topic |
+| Insights archive | 54 infographics and 30 reports, filterable by topic, each report with its own page |
 | Mobile | Sticky filter drawer, card results, large touch targets |
 
 ## Layout
@@ -351,6 +351,23 @@ ten or more other schools is refused outright — that is what a directory or
 agency line looks like, and it is how the last bad number in the data was found.
 The bar sits above the largest genuine school group, which lists nine campuses
 on one head-office line.
+
+### Report pages
+
+Every report has an address of its own at `/insights/reports/<slug>`, so a link
+can be shared without sending someone to a PDF on the asset domain. The page
+carries the cover, the facts and the download.
+
+The cover is the document's first page, rendered by
+`scripts/build-report-previews.mjs` along with the page count. That script also
+used to generate a summary from the opening text, and that was removed: the
+budget PDFs open with classification codes, and every Eduplana report opens with
+the same paragraph about the organisation, so one blurb ended up describing a
+dozen unrelated documents while describing none of them.
+
+Descriptions are written by hand into `description` on the manifest entry. Most
+reports do not have one yet, and a page without it shows the cover and the
+facts rather than filler.
 
 ## Known limitations
 
