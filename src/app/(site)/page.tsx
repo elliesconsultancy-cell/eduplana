@@ -142,14 +142,13 @@ function Hero({
       <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-10 pt-14 sm:px-6 sm:pb-12 sm:pt-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
         <div>
           <h1 className="font-display tracking-display text-[2.15rem] font-extrabold leading-[1.06] text-white sm:text-[3.4rem]">
-            Plan quality education
-            <br className="hidden sm:block" /> for your child
+            Find and compare
+            <br className="hidden sm:block" /> trusted private schools
           </h1>
 
           <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-white/85 sm:text-[17px]">
-            The right school is a partner in your child’s education, not just a place to send
-            them. Compare every school in Nigeria on fees, curriculum, class sizes and facilities —
-            and see what each one publishes about{" "}
+            Every private school we can find in Nigeria, side by side on fees, curriculum, class
+            sizes and facilities. We also read what each one publishes about{" "}
             <span className="font-semibold text-career-200">career education</span>, so you choose
             for the job after the exam, not just the exam.
           </p>

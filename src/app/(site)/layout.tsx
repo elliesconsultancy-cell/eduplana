@@ -33,12 +33,13 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Eduplana — Find and compare schools in Nigeria",
+    default: "Eduplana — Find and compare private schools in Nigeria",
     template: "%s · Eduplana",
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [
+    "private schools in Nigeria",
     "schools in Nigeria",
     "school fees Nigeria",
     "primary schools Nigeria",
@@ -61,13 +62,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: "en_NG",
     url: SITE_URL,
-    title: "Eduplana — Find and compare schools in Nigeria",
+    title: "Eduplana — Find and compare private schools in Nigeria",
     description: SITE_DESCRIPTION,
     images: [{ url: "/brand/og-card.png", width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Eduplana — Find and compare schools in Nigeria",
+    title: "Eduplana — Find and compare private schools in Nigeria",
     description: SITE_DESCRIPTION,
     images: ["/brand/og-card.png"],
   },

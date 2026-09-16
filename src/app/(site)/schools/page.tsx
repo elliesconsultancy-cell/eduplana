@@ -45,7 +45,7 @@ export async function generateMetadata({
   const title = bits.length ? `Schools in ${bits.join(", ")}` : "Find schools";
   return {
     title,
-    description: `Search schools across Nigeria. ${title}.`,
+    description: `Search private schools across Nigeria. ${title}.`,
     /*
      * Every filter combination is its own URL, which is what makes a search
      * shareable — but it also means thousands of near-identical pages competing

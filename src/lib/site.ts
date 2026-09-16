@@ -18,7 +18,7 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.edupla
 export const SITE_NAME = "Eduplana";
 
 export const SITE_DESCRIPTION =
-  "Search 7,000+ primary and secondary schools in Nigeria. Compare fees, curriculum, class sizes and facilities, and find a school partner for your child.";
+  "Find and compare private schools across Nigeria — 7,375 primary and secondary listings, side by side on fees, curriculum, class sizes and facilities.";
 
 /**
  * Profiles Google can use to tie the site, the organisation and the social
