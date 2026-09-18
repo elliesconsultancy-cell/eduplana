@@ -73,11 +73,23 @@ const NOT_A_SCHOOL_ADDRESS = [
   /^[0-9a-f]{16,}@/i,
 ];
 
+/**
+ * Stricter than Payload's own email check, which accepts a leading dot in the
+ * local part. One address arrived as ".goldenlineschoolltd@gmail.com" — a full
+ * stop picked up from the label beside it on the page — and it is a valid-
+ * looking address that bounces.
+ */
+const WELL_FORMED_EMAIL =
+  /^[a-z0-9]([a-z0-9._%+-]*[a-z0-9])?@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+
 const validateEmail = (value: unknown) => {
   if (value == null || value === "") return true;
   const email = String(value).trim().toLowerCase();
   if (ABSENCE_MARKERS.test(email)) {
     return "Leave this empty if the school\u2019s address is unknown.";
+  }
+  if (!WELL_FORMED_EMAIL.test(email)) {
+    return "That is not a usable address \u2014 check for a stray full stop or space at either end.";
   }
   if (NOT_A_SCHOOL_ADDRESS.some((pattern) => pattern.test(email))) {
     return "That address belongs to a website builder or a tracking service rather than to the school. Leave it empty instead.";
