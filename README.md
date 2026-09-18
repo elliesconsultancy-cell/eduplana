@@ -98,6 +98,7 @@ the app reads them any more. Each file is a flat JSON array of records shaped li
   "address": "Meadow Hall Way, …",
   "busStop": "…",                     // nearest landmark
   "phone": "08073000554",             // the school's own line, not the directory's
+  "email": "info@meadowhallschool.org", // the school's own address, or null
   "admissionsOfficer": "Ms.Winnie Oragwu",
   "admissionsRole": "Admissions Manager",
   "website": "https://www.meadowhallschool.org",
@@ -203,6 +204,32 @@ no genuine number could be established the field is `null` — "not provided"
 beats a wrong number, which is worse than silence because someone acts on it.
 The named admissions contact is stored alongside it, since it tells a parent who
 they are about to reach.
+
+### Email addresses
+
+3,709 of 7,375 records carry one, 2,406 of them distinct. They came from two
+passes: the bulk from the listing the records were built from, the rest by
+reading the schools' own websites for a published contact address.
+
+Two filters did more work than anything else.
+
+The listing generates a placeholder address for schools that never supplied one
+— the same substitution pattern as the shared phone lines — so those were
+discarded on the domain label rather than against a fixed list of hosts. An
+exact-match rule is no good here: the same placeholder has shipped under several
+spellings, and each new one slips past until somebody notices.
+
+Reading the sites themselves brought its own contamination, which is the more
+interesting failure. A page's contact address sits alongside addresses that
+belong to the page's plumbing, and those look exactly as valid: a Wix
+error-reporting key, Automattic's privacy-policy address, and two theme
+placeholders that shipped with the template and were never edited. Twelve
+records picked one of those up. `validateEmail` in the schools collection now
+rejects that whole class on save, so the same crawl cannot reintroduce them.
+
+As with phones, an address that could not be established is `null`. A parent who
+emails the wrong school gets no reply and no explanation, which is worse than
+seeing nothing there at all.
 
 ## Search
 

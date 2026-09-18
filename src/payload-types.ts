@@ -212,6 +212,10 @@ export interface School {
    */
   phone?: string | null;
   /**
+   * The school’s own enquiry address. Leave empty if unknown — never a directory or agency address.
+   */
+  email?: string | null;
+  /**
    * Named contact for admissions enquiries, e.g. “Ms Winnie Oragwu”. Shown beside the number so a parent knows who they are about to reach.
    */
   admissionsOfficer?: string | null;
@@ -464,6 +468,7 @@ export interface SchoolsSelect<T extends boolean = true> {
   address?: T;
   busStop?: T;
   phone?: T;
+  email?: T;
   admissionsOfficer?: T;
   admissionsRole?: T;
   website?: T;

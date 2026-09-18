@@ -57,6 +57,35 @@ const noPlaceholder = (value: unknown) => {
  */
 const SHARED_PHONE_LIMIT = 10;
 
+/**
+ * Addresses that belong to a website's plumbing rather than to a school.
+ *
+ * Crawling schools' own sites for a contact address collected, among the real
+ * ones, a Wix error-reporting key, Automattic's privacy-policy address, and two
+ * theme placeholders that shipped with the template and were never edited. All
+ * of them look like valid email and none of them reach a school.
+ */
+const NOT_A_SCHOOL_ADDRESS = [
+  /@(sentry\.|[\w.-]*\.sentry\.|wixpress\.com|automattic\.com|wordpress\.(com|org))/i,
+  /@(wix|squarespace|godaddy|cloudflare|jquery|googleapis|gravatar)\.com/i,
+  /^(john@doe|jane@doe|test@test|admin@admin|user@example|email@email)/i,
+  /@(yoursite|yourdomain|example|domain|mysite|sitename|yourwebsite|test|email)\./i,
+  /^[0-9a-f]{16,}@/i,
+];
+
+const validateEmail = (value: unknown) => {
+  if (value == null || value === "") return true;
+  const email = String(value).trim().toLowerCase();
+  if (ABSENCE_MARKERS.test(email)) {
+    return "Leave this empty if the school\u2019s address is unknown.";
+  }
+  if (NOT_A_SCHOOL_ADDRESS.some((pattern) => pattern.test(email))) {
+    return "That address belongs to a website builder or a tracking service rather than to the school. Leave it empty instead.";
+  }
+  return true;
+};
+
+
 const validatePhone = async (
   value: unknown,
   { req, id }: { req?: PayloadRequest; id?: number | string },
@@ -267,6 +296,15 @@ export const Schools: CollectionConfig = {
               admin: {
                 description:
                   "The school\u2019s own line. Leave empty if unknown \u2014 never a directory or agency number.",
+              },
+            },
+            {
+              name: "email",
+              type: "email",
+              validate: validateEmail,
+              admin: {
+                description:
+                  "The school\u2019s own enquiry address. Leave empty if unknown \u2014 never a directory or agency address.",
               },
             },
             {

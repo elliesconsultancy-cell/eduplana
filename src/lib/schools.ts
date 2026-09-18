@@ -60,6 +60,7 @@ function toSchool(doc: SchoolDoc): School {
     address: (doc.address as string | null) ?? null,
     busStop: (doc.busStop as string | null) ?? null,
     phone: (doc.phone as string | null) ?? null,
+    email: (doc.email as string | null) ?? null,
     admissionsOfficer: (doc.admissionsOfficer as string | null) ?? null,
     admissionsRole: (doc.admissionsRole as string | null) ?? null,
     website: (doc.website as string | null) ?? null,

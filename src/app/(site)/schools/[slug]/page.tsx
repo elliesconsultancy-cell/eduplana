@@ -17,6 +17,7 @@ import {
   Globe,
   GraduationCap,
   Info,
+  Mail,
   MapPin,
   Phone,
   Signpost,
@@ -143,6 +144,7 @@ export default async function SchoolPage({
     url: absoluteUrl(`/schools/${school.slug}`),
     ...(summary ? { description: summary } : {}),
     ...(school.phone ? { telephone: school.phone } : {}),
+    ...(school.email ? { email: school.email } : {}),
     ...(school.website ? { sameAs: [school.website] } : {}),
     ...(school.yearFounded ? { foundingDate: String(school.yearFounded) } : {}),
     ...(assetOrUndefined(school.images.gallery[0]?.full ?? school.images.logo)
@@ -529,6 +531,20 @@ function ContactAside({
           className="font-semibold text-brand-800 hover:underline"
         >
           {phone}
+        </a>
+      ),
+    });
+  }
+  if (school.email) {
+    rows.push({
+      icon: Mail,
+      label: "Email",
+      node: (
+        <a
+          href={`mailto:${school.email}`}
+          className="font-semibold text-brand-800 hover:underline break-all"
+        >
+          {school.email}
         </a>
       ),
     });

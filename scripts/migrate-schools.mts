@@ -59,6 +59,7 @@ function toPayload(r: School) {
     address: r.address ?? null,
     busStop: r.busStop ?? null,
     phone: r.phone ?? null,
+    email: r.email ?? null,
     admissionsOfficer: r.admissionsOfficer ?? null,
     admissionsRole: r.admissionsRole ?? null,
     website: r.website ?? null,
