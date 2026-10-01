@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AdminViewServerProps } from "payload";
 import { DefaultTemplate } from "@payloadcms/next/templates";
+import { BadgeCheck, Mail, MailOpen, MessageSquareReply } from "lucide-react";
 
 import { NIGERIAN_STATE_NAMES } from "@/collections/Schools";
 import { allSchools } from "@/lib/schools";
@@ -73,6 +74,8 @@ export async function Outreach(props: AdminViewServerProps) {
       searchParams={searchParams}
       user={initPageResult.req.user ?? undefined}
       visibleEntities={initPageResult.visibleEntities}
+      // Payload passes header actions only to its own views.
+      viewActions={payload.config.admin.components?.actions}
     >
       <PageContainer>
         <PageHeader
@@ -112,16 +115,18 @@ export async function Outreach(props: AdminViewServerProps) {
 
         <Grid cols={4} label="Outreach so far">
           <StatCard
+            icon={<Mail size={22} />}
             label="Inboxes emailed"
             value={nf.format(emailed.size)}
             hint={`of ${nf.format(inboxes.size - optedOut.size)} we can reach`}
           />
           <StatCard
+            icon={<MailOpen size={22} />}
             label="Schools that opened the link"
             value={nf.format(reached(["opened", "submitted", "approved"]))}
           />
-          <StatCard label="Schools that replied" value={nf.format(reached(["submitted", "approved"]))} />
-          <StatCard label="Approved and verified" value={nf.format(reached(["approved"]))} />
+          <StatCard icon={<MessageSquareReply size={22} />} label="Schools that replied" value={nf.format(reached(["submitted", "approved"]))} />
+          <StatCard icon={<BadgeCheck size={22} />} label="Approved and verified" value={nf.format(reached(["approved"]))} />
         </Grid>
 
         <Grid cols="wide">

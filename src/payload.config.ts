@@ -41,6 +41,8 @@ export default buildConfig({
      * reads its colours from Payload's tokens, so neither is an afterthought.
      */
     theme: "all",
+    // Initials and first name instead of a Gravatar silhouette.
+    avatar: { Component: "@/components/admin/Avatar#Avatar" },
     components: {
       // Same artwork as the public site, so signing in does not feel like
       // leaving the product.
@@ -48,9 +50,16 @@ export default buildConfig({
         Logo: "@/components/admin/Logo#Logo",
         Icon: "@/components/admin/Icon#Icon",
       },
-      // Payload builds the sidebar from collections, so custom views are
-      // otherwise reachable only by typing the URL.
-      beforeNavLinks: ["@/components/admin/NavLinks#NavLinks"],
+      // Our own sidebar: always present on a desktop, foldable to icons, and
+      // holding the custom screens alongside the collections. See SideNav.tsx.
+      Nav: "@/components/admin/SideNav#SideNav",
+      // The header's right side: find a school, switch theme, and the bell for
+      // submissions waiting on a reviewer.
+      actions: [
+        "@/components/admin/HeaderSearch#HeaderSearch",
+        "@/components/admin/ThemeToggle#ThemeToggle",
+        "@/components/admin/Notifications#Notifications",
+      ],
       // Replaces the stock "here are your collections" dashboard, which
       // repeats the sidebar, with live counts and the two actions people
       // actually arrive wanting.

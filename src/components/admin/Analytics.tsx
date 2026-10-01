@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import type { AdminViewServerProps } from "payload";
 import { DefaultTemplate } from "@payloadcms/next/templates";
+import { Eye, Search, SearchX, Users } from "lucide-react";
 
 import { Bars, Card, DataList, Grid, PageContainer, PageHeader, StatCard, nf, type ListRow } from "./ui";
 
@@ -59,6 +60,8 @@ export async function Analytics(props: AdminViewServerProps) {
       searchParams={searchParams}
       user={initPageResult.req.user ?? undefined}
       visibleEntities={initPageResult.visibleEntities}
+      // Payload passes header actions only to its own views.
+      viewActions={payload.config.admin.components?.actions}
     >
       {page ? (
         <PageDetail path={page} run={run} />
@@ -123,10 +126,11 @@ async function Overview({ run }: { run: (q: unknown) => Promise<Row[]> }) {
       <PageHeader title="Analytics" sub={`Everything visitors did, over ${DAYS} days. Every row opens.`} />
 
       <Grid cols={4} label="Headline figures">
-        <StatCard label="Visitors" value={nf.format(n("visitors"))} hint="counted once per day each" />
-        <StatCard label="Page views" value={nf.format(n("views"))} hint="pages opened" />
-        <StatCard label="Searches" value={nf.format(n("searches"))} hint="queries run" />
-        <StatCard label="Found nothing" value={nf.format(n("empty"))} hint="searches with no results" tone="warn" />
+        <StatCard icon={<Users size={22} />} label="Visitors" value={nf.format(n("visitors"))} hint="Each counted once a day" />
+        <StatCard icon={<Eye size={22} />} label="Page views" value={nf.format(n("views"))} hint="Pages opened" />
+        <StatCard icon={<Search size={22} />} label="Searches" value={nf.format(n("searches"))} hint="Queries run" />
+        <StatCard icon={<SearchX size={22} />} label="Searches that found nothing" value={nf.format(n("empty"))}
+          hint="Each is a school someone wanted" tone="warn" />
       </Grid>
 
       <Grid cols={2}>
@@ -145,7 +149,7 @@ async function Overview({ run }: { run: (q: unknown) => Promise<Row[]> }) {
       </Grid>
 
       <Grid cols={3}>
-        <Card title="Searches that found nothing" note="Each one is a school somebody wanted" tone="warn">
+        <Card title="Searches that found nothing" note="Each one is a school somebody wanted">
           <DataList rows={listRows(gaps, "query", searchLink, "×")} empty="No empty searches yet." />
         </Card>
         <Card title="Most searched" note="What people type most often">

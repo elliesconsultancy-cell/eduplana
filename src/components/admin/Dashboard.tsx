@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { headers as nextHeaders } from "next/headers";
 import { sql } from "drizzle-orm";
-import { getPayload, type Where } from "payload";
+import { getPayload } from "payload";
 import config from "@payload-config";
+import { Eye, Plus, Search, SearchX, Send, Users } from "lucide-react";
 
 import {
-  Bars,
   Card,
   DataList,
+  FigureStrip,
+  Gauge,
   Grid,
   Legend,
+  Meters,
   PageContainer,
   PageHeader,
   StatCard,
@@ -21,10 +24,14 @@ import {
 /**
  * The admin home.
  *
- * Answers three questions in the order they get asked: how many people came,
- * what were they looking for, and what does the directory still need. Every
- * figure comes from our own Postgres; nothing here depends on a third-party
- * analytics account, and none of it needs a Vercel login to read.
+ * Answers, in order: how many people came this week, how much of the directory
+ * has been confirmed by the schools themselves, where the listings are thin,
+ * and what is waiting on somebody. Every figure comes from our own Postgres —
+ * nothing here needs a Vercel login to read.
+ *
+ * The verified gauge is the one large element on purpose. It is the number the
+ * business exists to move: a listing a parent can trust because its school
+ * checked it.
  */
 interface Row {
   [key: string]: unknown;
@@ -35,12 +42,29 @@ const code = (state: string) =>
 
 /** Percentage change against the previous window, or null when there is no base. */
 function delta(now: number, before: number): number | null {
-  if (!before) return now > 0 ? null : 0;
+  if (!before) return null;
   return Math.round(((now - before) / before) * 100);
 }
 
+function greeting(name: string | undefined): string {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Africa/Lagos" }).format(new Date()),
+  );
+  const part = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const first = name?.split(/\s+/)[0];
+  return first ? `${part}, ${first}` : part;
+}
+
+const when = (iso: string) => {
+  const mins = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  if (mins < 60) return `${Math.max(1, mins)} min ago`;
+  if (mins < 60 * 24) return `${Math.round(mins / 60)} h ago`;
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Africa/Lagos" });
+};
+
 const pageLink = (path: string) => `/admin/analytics?page=${encodeURIComponent(path)}`;
 const searchLink = (q: string) => `/admin/analytics?q=${encodeURIComponent(q)}`;
+const KIND = { update: "Corrections", confirm: "Confirmed as correct", removal: "Asked to be removed" } as const;
 
 export async function Dashboard() {
   const payload = await getPayload({ config });
@@ -59,12 +83,9 @@ export async function Dashboard() {
   const { user } = await payload.auth({ headers: await nextHeaders() });
   const role = user && "role" in user ? (user.role as string) : undefined;
   const canEdit = role !== "analyst";
-  const isSuperAdmin = role === "super-admin";
+  const name = user && "name" in user ? (user.name as string | undefined) : undefined;
 
-  const count = (where?: Where) =>
-    payload.count({ collection: "schools", ...(where ? { where } : {}) });
-
-  const [totals, series, topPages, referrers, devices, byState, gaps, levels, unverified, recent] =
+  const [totals, series, topPages, referrers, devices, byState, gaps, directory, funnel, pending, recent] =
     await Promise.all([
       run(sql`select
         count(distinct visitor) filter (where created_at > now() - interval '7 days')::int as visitors,
@@ -73,7 +94,8 @@ export async function Dashboard() {
         count(*) filter (where type = 'view' and created_at between now() - interval '14 days' and now() - interval '7 days')::int as views_prev,
         count(*) filter (where type = 'search' and created_at > now() - interval '7 days')::int as searches,
         count(*) filter (where type = 'search' and created_at between now() - interval '14 days' and now() - interval '7 days')::int as searches_prev,
-        count(*) filter (where type = 'search' and results = 0 and created_at > now() - interval '7 days')::int as empty
+        count(*) filter (where type = 'search' and results = 0 and created_at > now() - interval '7 days')::int as empty,
+        count(*) filter (where type = 'search' and results = 0 and created_at between now() - interval '14 days' and now() - interval '7 days')::int as empty_prev
         from events`),
       run(sql`select d::date as day, coalesce(v.views, 0)::int as views, coalesce(v.visitors, 0)::int as visitors
         from generate_series(now()::date - interval '13 days', now()::date, interval '1 day') d
@@ -97,23 +119,42 @@ export async function Dashboard() {
         where type = 'search' and results = 0 and query is not null and query <> ''
           and created_at > now() - interval '30 days'
         group by 1 order by n desc limit 6`),
-      run(sql`select level, count(*)::int as n from schools where _status = 'published' group by 1`),
-      count({ verified: { equals: false } }),
+      run(sql`select count(*)::int as total,
+        count(*) filter (where verified)::int as verified,
+        count(*) filter (where level = 'primary')::int as primary,
+        count(*) filter (where level = 'secondary')::int as secondary
+        from schools where _status = 'published'`),
+      run(sql`select
+        count(distinct email) filter (where sends > 0)::int as emailed,
+        count(*) filter (where status in ('opened', 'submitted', 'approved'))::int as opened,
+        count(*) filter (where status in ('submitted', 'approved'))::int as replied,
+        count(*) filter (where status = 'approved')::int as approved
+        from school_contacts`),
+      payload
+        .find({
+          collection: "school-submissions",
+          where: { status: { equals: "pending" } },
+          sort: "-createdAt",
+          limit: 5,
+          depth: 0,
+          select: { schoolName: true, kind: true, createdAt: true, contactName: true },
+        })
+        .catch(() => ({ docs: [], totalDocs: 0 })),
       payload.find({
         collection: "schools",
         limit: 6,
         sort: "-updatedAt",
         depth: 0,
         draft: true,
-        select: { name: true, state: true, updatedAt: true },
+        select: { name: true, state: true, level: true, updatedAt: true },
       }),
     ]);
 
   const t = totals[0] ?? {};
-  const num = (k: string) => Number(t[k] ?? 0);
+  const num = (row: Row | undefined, k: string) => Number(row?.[k] ?? 0);
 
   const days = series.map((r) => ({
-    day: String(r.day).slice(0, 10),
+    day: String(r.day instanceof Date ? r.day.toISOString() : r.day).slice(0, 10),
     a: Number(r.views ?? 0),
     b: Number(r.visitors ?? 0),
   }));
@@ -122,12 +163,13 @@ export async function Dashboard() {
   const states = byState.map((r) => ({ state: String(r.state), n: Number(r.n ?? 0) }));
   const peak = Math.max(1, ...states.map((s) => s.n));
   const thin = states.filter((s) => s.n < 50).length;
-  const published = states.reduce((a, s) => a + s.n, 0);
-  const share = states[0] && published ? Math.round(published / states[0].n) : 0;
+  const placed = states.reduce((a, s) => a + s.n, 0);
+  const share = states[0] && placed ? Math.round(placed / states[0].n) : 0;
 
-  const primary = Number(levels.find((l) => l.level === "primary")?.n ?? 0);
-  const secondary = Number(levels.find((l) => l.level === "secondary")?.n ?? 0);
-  const schools = primary + secondary;
+  const d = directory[0];
+  const total = num(d, "total");
+  const verified = num(d, "verified");
+  const f = funnel[0];
 
   const rows = (list: Row[], key: string, href?: (v: string) => string): ListRow[] =>
     list.map((r) => ({
@@ -140,75 +182,61 @@ export async function Dashboard() {
   return (
     <PageContainer>
       <PageHeader
-        title="Overview"
-        sub="Traffic, searches and the state of the directory."
+        title={greeting(name)}
+        sub="Here is how Eduplana did over the last seven days, and what needs you."
         actions={
-          <>
-            {canEdit ? (
+          canEdit ? (
+            <>
+              <Link className="ad-btn" href="/admin/outreach">
+                <Send size={17} aria-hidden /> Email schools
+              </Link>
               <Link className="ad-btn ad-btn--primary" href="/admin/collections/schools/create">
-                Add a school
+                <Plus size={18} aria-hidden /> Add a school
               </Link>
-            ) : null}
-            <Link className="ad-btn" href="/admin/collections/schools">
-              Schools
-            </Link>
-            <Link className="ad-btn" href="/admin/analytics">
-              Analytics
-            </Link>
-            {isSuperAdmin ? (
-              <Link className="ad-btn" href="/admin/collections/users">
-                People
-              </Link>
-            ) : null}
-          </>
+            </>
+          ) : null
         }
       />
 
-      <Grid cols={4} label="Headline figures">
-        <StatCard label="Visitors" hint="last 7 days" value={nf.format(num("visitors"))}
-          change={delta(num("visitors"), num("visitors_prev"))} />
-        <StatCard label="Page views" hint="last 7 days" value={nf.format(num("views"))}
-          change={delta(num("views"), num("views_prev"))} />
-        <StatCard label="Searches" hint="last 7 days" value={nf.format(num("searches"))}
-          change={delta(num("searches"), num("searches_prev"))} />
-        <StatCard label="Found nothing" hint="searches with no results"
-          value={nf.format(num("empty"))} tone="warn" />
+      <Grid cols={4} label="This week">
+        <StatCard icon={<Users size={22} />} label="Visitors" value={nf.format(num(t, "visitors"))}
+          change={delta(num(t, "visitors"), num(t, "visitors_prev"))}
+          hint={delta(num(t, "visitors"), num(t, "visitors_prev")) == null ? "Last 7 days" : "Against the week before"} href="/admin/analytics" />
+        <StatCard icon={<Eye size={22} />} label="Page views" value={nf.format(num(t, "views"))}
+          change={delta(num(t, "views"), num(t, "views_prev"))}
+          hint={delta(num(t, "views"), num(t, "views_prev")) == null ? "Last 7 days" : "Against the week before"} href="/admin/analytics" />
+        <StatCard icon={<Search size={22} />} label="Searches" value={nf.format(num(t, "searches"))}
+          change={delta(num(t, "searches"), num(t, "searches_prev"))}
+          hint={delta(num(t, "searches"), num(t, "searches_prev")) == null ? "Last 7 days" : "Against the week before"} href="/admin/analytics" />
+        <StatCard icon={<SearchX size={22} />} label="Searches that found nothing" value={nf.format(num(t, "empty"))}
+          tone="warn" hint="Each is a school someone wanted" href="/admin/analytics" />
       </Grid>
 
       <Grid cols="wide">
-        <Card
-          title="Traffic"
-          note="Page views and visitors, 14 days"
-          aside={<Legend a="Views" b="Visitors" />}
-        >
+        <Card title="Traffic" note="Page views and visitors per day, last 14 days"
+          aside={<Legend a="Page views" b="Visitors" />}>
           {hasTraffic ? (
-            <TrendChart days={days} label="Page views and visitors over 14 days" />
+            <TrendChart days={days} label="Page views and visitors per day over the last 14 days" />
           ) : (
-            <p className="ad-empty">
-              No traffic recorded yet. Every page a visitor reaches is counted from the moment they
-              arrive.
-            </p>
+            <div className="ad-empty">No visits recorded in the last 14 days.</div>
           )}
         </Card>
 
-        <Card
-          title="The directory"
-          note={`${nf.format(schools)} published records`}
-          foot={
-            <>
-              <Link href="/admin/collections/schools?where[verified][equals]=false">
-                {nf.format(unverified.totalDocs)} unverified
-              </Link>{" "}
-              — no school has been confirmed with a human yet.
-            </>
-          }
-        >
-          <Donut primary={primary} secondary={secondary} />
-          <DataList
-            empty=""
-            rows={[
-              { key: "p", label: "Primary", value: nf.format(primary) },
-              { key: "s", label: "Secondary", value: nf.format(secondary) },
+        <Card title="Verified by schools" note="Listings their own school has confirmed" flush>
+          <Gauge value={verified} total={total} label="Listings verified by their school" />
+          <p className="ad-gauge-copy">
+            {verified === 0
+              ? "No school has confirmed its listing yet. Each one that replies to outreach moves this."
+              : `${nf.format(verified)} of ${nf.format(total)} listings have been checked by the school itself.`}
+          </p>
+          <FigureStrip
+            items={[
+              { label: "Emailed", value: nf.format(num(f, "emailed")), href: "/admin/collections/school-contacts" },
+              { label: "Opened", value: nf.format(num(f, "opened")),
+                href: "/admin/collections/school-contacts?where[status][in]=opened,submitted,approved" },
+              { label: "Replied", value: nf.format(num(f, "replied")), href: "/admin/collections/school-submissions" },
+              { label: "Verified", value: nf.format(verified),
+                href: "/admin/collections/schools?where[verified][equals]=true" },
             ]}
           />
         </Card>
@@ -218,21 +246,28 @@ export async function Dashboard() {
         <Grid cols={2}>
           <div style={{ gridColumn: "1 / -1" }}>
             <Card
-              title="Coverage by state"
-              note={`${states[0].state} holds 1 in every ${share} schools listed${
-                thin > 0 ? `, and ${thin} states have fewer than 50` : ""
-              }.`}
+              title="Listings by state"
+              note={`${states[0].state} holds 1 in every ${share} listings${
+                thin > 0 ? `; ${thin} states have fewer than 50, shown in grey` : ""
+              }. Select a state to see its schools.`}
+              aside={
+                <span className="ad-pill">
+                  {nf.format(num(d, "primary"))} primary · {nf.format(num(d, "secondary"))} secondary
+                </span>
+              }
             >
               <ol className="ad-cov">
                 {states.map((s) => (
                   <li key={s.state} className={s.n < 50 ? "ad-cov__col ad-cov__col--thin" : "ad-cov__col"}>
                     <Link
                       href={`/admin/collections/schools?where[state][equals]=${encodeURIComponent(s.state)}`}
-                      title={`${s.state}: ${nf.format(s.n)} schools`}
+                      aria-label={`${s.state}: ${nf.format(s.n)} schools`}
                     >
                       <span className="ad-cov__bar" style={{ height: `${Math.max(2, (s.n / peak) * 100)}%` }} />
                       <span className="ad-cov__code">{code(s.state)}</span>
-                      <span className="ad-cov__n">{nf.format(s.n)}</span>
+                      <span className="ad-cov__n" aria-hidden>
+                        {s.state} · {nf.format(s.n)}
+                      </span>
                     </Link>
                   </li>
                 ))}
@@ -243,59 +278,93 @@ export async function Dashboard() {
       ) : null}
 
       <Grid cols={3}>
-        <Card title="Searches that found nothing" note="Each one is a school somebody wanted" tone="warn">
-          <DataList rows={rows(gaps, "query", searchLink)} empty="Nothing yet." />
+        <Card
+          title="Waiting for review"
+          note="Changes schools have sent in"
+          aside={pending.totalDocs > 0 ? <span className="ad-pill ad-pill--warn">{pending.totalDocs}</span> : null}
+          foot={
+            pending.totalDocs > 0 ? (
+              <Link href="/admin/collections/school-submissions?where[status][equals]=pending">
+                Review all {nf.format(pending.totalDocs)}
+              </Link>
+            ) : undefined
+          }
+        >
+          <DataList
+            rows={pending.docs.map((s) => ({
+              key: String(s.id),
+              label: String(s.schoolName ?? "A school"),
+              sub: `${KIND[s.kind as keyof typeof KIND] ?? "Changes"}${s.contactName ? `, from ${s.contactName}` : ""}`,
+              value: when(String(s.createdAt)),
+              href: `/admin/collections/school-submissions/${s.id}`,
+            }))}
+            empty={<>Nothing waiting. When a school sends in changes, they appear here.</>}
+          />
+        </Card>
+        <Card title="Searches that found nothing" note="Last 30 days. Each is a school somebody wanted">
+          <DataList rows={rows(gaps, "query", searchLink)} empty="Every search found something." />
         </Card>
         <Card title="Most visited pages" note="Last 7 days">
-          <DataList rows={rows(topPages, "path", pageLink)} empty="Nothing yet." />
-        </Card>
-        <Card title="Where visitors came from" note="Referring site, last 7 days">
-          <DataList rows={rows(referrers, "referrer")} empty="No referrers — visitors arrived directly." />
+          <DataList rows={rows(topPages, "path", pageLink)} empty="No page views yet this week." />
         </Card>
       </Grid>
 
-      <Grid cols={2}>
-        <Card title="Devices" note="Visitors, last 7 days">
-          <DataList
-            rows={devices.map((d) => ({
-              key: String(d.device),
-              label: String(d.device).replace(/^./, (c) => c.toUpperCase()),
-              value: nf.format(Number(d.n ?? 0)),
-            }))}
-            empty="Nothing yet."
+      <Grid cols="wide-left">
+        <Card title="Where visitors come from" note="Visitors by referring site and device, last 7 days">
+          <Meters
+            rows={referrers.map((r) => ({ key: String(r.referrer), label: String(r.referrer), n: Number(r.n ?? 0) }))}
+            empty="No referrers this week: visitors typed the address or used a bookmark."
           />
+          {devices.length ? (
+            <div style={{ marginTop: "var(--ad-5)" }}>
+              <Meters
+                rows={devices.map((r) => ({
+                  key: `d-${String(r.device)}`,
+                  label: String(r.device).replace(/^./, (c) => c.toUpperCase()),
+                  n: Number(r.n ?? 0),
+                }))}
+                empty=""
+              />
+            </div>
+          ) : null}
         </Card>
-        <Card title="Recently edited" note="The last six records touched">
-          <DataList
-            rows={recent.docs.map((d) => ({
-              key: String(d.id),
-              label: String(d.name),
-              value: new Date(d.updatedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short" }),
-              href: `/admin/collections/schools/${d.id}`,
-            }))}
-            empty="Nothing edited yet."
-          />
+        <Card
+          title="Recently edited"
+          note="The last six listings changed"
+          aside={
+            <Link className="ad-btn ad-btn--small" href="/admin/collections/schools">
+              All schools
+            </Link>
+          }
+        >
+          <div className="ad-table-wrap">
+            <table className="ad-table">
+              <thead>
+                <tr>
+                  <th scope="col">School</th>
+                  <th scope="col">State</th>
+                  <th scope="col">Level</th>
+                  <th scope="col">Edited</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent.docs.map((s) => (
+                  <tr key={String(s.id)}>
+                    <th scope="row">
+                      <Link href={`/admin/collections/schools/${s.id}`}>{String(s.name)}</Link>
+                    </th>
+                    <td>{s.state ? String(s.state) : "—"}</td>
+                    <td>
+                      <span className="ad-pill">{s.level === "primary" ? "Primary" : "Secondary"}</span>
+                    </td>
+                    <td className="ad-table__muted">{when(String(s.updatedAt))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       </Grid>
     </PageContainer>
   );
 }
-
-/** Primary against secondary. One ring, two arcs, labelled beside it. */
-function Donut({ primary, secondary }: { primary: number; secondary: number }) {
-  const total = Math.max(1, primary + secondary);
-  const C = 2 * Math.PI * 52;
-  const share = (primary / total) * C;
-  return (
-    <svg className="ad-donut" viewBox="0 0 132 132" role="img"
-      aria-label={`${primary} primary and ${secondary} secondary schools`}>
-      <circle cx="66" cy="66" r="52" fill="none" stroke="var(--ad-series-2)" strokeWidth="15" />
-      <circle cx="66" cy="66" r="52" fill="none" stroke="var(--ad-accent)" strokeWidth="15"
-        strokeDasharray={`${share} ${C - share}`} strokeDashoffset={C / 4} />
-      <text x="66" y="63" className="ad-donut__n">{Math.round((primary / total) * 100)}%</text>
-      <text x="66" y="80" className="ad-donut__t">primary</text>
-    </svg>
-  );
-}
-
-export { Bars };

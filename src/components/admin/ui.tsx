@@ -4,13 +4,15 @@ import type { ReactNode } from "react";
 import "./ui.css";
 
 /**
- * Shared admin primitives.
+ * Shared admin primitives: page frame, cards, stats, lists, meters, the gauge.
  *
- * The dashboard and the analytics screens previously each defined their own
- * card, stat, list and chart markup, which is why the same component had
- * different padding depending on which page you were looking at. These are the
- * single definitions; both screens compose from here.
+ * Every admin screen composes from these, so a card has one padding and one
+ * radius wherever it appears. Charts with a hover layer live in charts.tsx
+ * (they need the browser) and are re-exported here so screens import from one
+ * place.
  */
+
+export { Bars, TrendChart } from "./charts";
 
 export const nf = new Intl.NumberFormat("en-NG");
 
@@ -33,10 +35,10 @@ export function PageHeader({
 }) {
   return (
     <header className="ad-head">
-      <div>
+      <div className="ad-head__text">
         {back ? (
-          <Link className="ad-head__eyebrow" href={back.href}>
-            ← {back.label}
+          <Link className="ad-head__back" href={back.href}>
+            {back.label}
           </Link>
         ) : null}
         <h1>{title}</h1>
@@ -56,7 +58,7 @@ export function Grid({
   children,
   label,
 }: {
-  cols: 2 | 3 | 4 | "wide";
+  cols: 2 | 3 | 4 | "wide" | "wide-left";
   children: ReactNode;
   label?: string;
 }) {
@@ -75,6 +77,7 @@ export function Card({
   aside,
   foot,
   tone,
+  flush,
   children,
 }: {
   title?: string;
@@ -82,26 +85,44 @@ export function Card({
   aside?: ReactNode;
   foot?: ReactNode;
   tone?: "warn";
+  /** Content runs to the card's edges (tables, the gauge's footer strip). */
+  flush?: boolean;
   children: ReactNode;
 }) {
   const id = title ? `ad-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}` : undefined;
   return (
     <section
-      className={tone ? `ad-card ad-card--${tone}` : "ad-card"}
+      className={["ad-card", tone && `ad-card--${tone}`, flush && "ad-card--flush"].filter(Boolean).join(" ")}
       aria-labelledby={id}
     >
       {title ? (
         <div className="ad-card__head">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--ad-4)" }}>
+          <div>
             <h2 id={id}>{title}</h2>
-            {aside}
+            {note ? <p className="ad-card__note">{note}</p> : null}
           </div>
-          {note ? <p className="ad-card__note">{note}</p> : null}
+          {aside ? <div className="ad-card__aside">{aside}</div> : null}
         </div>
       ) : null}
-      {children}
-      {foot ? <div className="ad-card__foot ad-card__foot--rule">{foot}</div> : null}
+      <div className="ad-card__body">{children}</div>
+      {foot ? <div className="ad-card__foot">{foot}</div> : null}
     </section>
+  );
+}
+
+/** Up or down against the previous period, as a pill. */
+export function Delta({ change }: { change: number | null | undefined }) {
+  if (typeof change !== "number") return null;
+  const up = change >= 0;
+  return (
+    <span className={`ad-delta ${up ? "ad-delta--up" : "ad-delta--down"}`}>
+      <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden>
+        <path d={up ? "M6 10V2M2.5 5.5 6 2l3.5 3.5" : "M6 2v8M2.5 6.5 6 10l3.5-3.5"} fill="none"
+          stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <span className="u-sr-only">{up ? "up" : "down"} </span>
+      {Math.abs(change)}%
+    </span>
   );
 }
 
@@ -111,28 +132,35 @@ export function StatCard({
   hint,
   change,
   tone,
+  icon,
+  href,
 }: {
   label: string;
   value: string;
   hint?: string;
   change?: number | null;
   tone?: "warn";
+  icon?: ReactNode;
+  href?: string;
 }) {
-  return (
-    <div className={tone ? `ad-card ad-stat ad-stat--${tone}` : "ad-card ad-stat"}>
-      <p className="ad-stat__row">
-        <span className="ad-stat__value">{value}</span>
-        {typeof change === "number" ? (
-          <span className={`ad-chip ${change >= 0 ? "ad-chip--up" : "ad-chip--down"}`}>
-            <span aria-hidden>{change >= 0 ? "▲" : "▼"}</span>
-            <span className="u-sr-only">{change >= 0 ? "up" : "down"} </span>
-            {Math.abs(change)}%
-          </span>
-        ) : null}
-      </p>
+  const body = (
+    <>
+      {icon ? <span className="ad-stat__icon" aria-hidden>{icon}</span> : null}
       <span className="ad-stat__label">{label}</span>
+      <span className="ad-stat__row">
+        <span className="ad-stat__value">{value}</span>
+        <Delta change={change} />
+      </span>
       {hint ? <span className="ad-stat__hint">{hint}</span> : null}
-    </div>
+    </>
+  );
+  const cls = ["ad-card", "ad-stat", tone && `ad-stat--${tone}`].filter(Boolean).join(" ");
+  return href ? (
+    <Link className={`${cls} ad-stat--link`} href={href}>
+      {body}
+    </Link>
+  ) : (
+    <div className={cls}>{body}</div>
   );
 }
 
@@ -144,96 +172,121 @@ export interface ListRow {
   value: string;
   href?: string;
   external?: boolean;
+  /** A second line under the label. */
+  sub?: string;
 }
 
-export function DataList({ rows, empty }: { rows: ListRow[]; empty: string }) {
-  if (!rows.length) return <p className="ad-empty">{empty}</p>;
+export function DataList({ rows, empty }: { rows: ListRow[]; empty: ReactNode }) {
+  if (!rows.length) return <div className="ad-empty">{empty}</div>;
   return (
     <ol className="ad-list">
-      {rows.map((r) => (
-        <li key={r.key}>
-          {r.href ? (
-            r.external ? (
-              <a className="ad-list__label" href={r.href} target="_blank" rel="noreferrer">
-                {r.label}
-              </a>
-            ) : (
-              <Link className="ad-list__label" href={r.href}>
-                {r.label}
-              </Link>
-            )
-          ) : (
+      {rows.map((r) => {
+        const label = (
+          <>
             <span className="ad-list__label">{r.label}</span>
-          )}
-          <em className="ad-list__value">{r.value}</em>
-        </li>
-      ))}
+            {r.sub ? <span className="ad-list__sub">{r.sub}</span> : null}
+          </>
+        );
+        return (
+          <li key={r.key}>
+            {r.href ? (
+              r.external ? (
+                <a className="ad-list__main" href={r.href} target="_blank" rel="noreferrer">
+                  {label}
+                </a>
+              ) : (
+                <Link className="ad-list__main" href={r.href}>
+                  {label}
+                </Link>
+              )
+            ) : (
+              <span className="ad-list__main">{label}</span>
+            )}
+            <span className="ad-list__value">{r.value}</span>
+          </li>
+        );
+      })}
     </ol>
   );
 }
 
-/* ----------------------------------------------------------------- charts -- */
-
-/** One series over N days. No legend: the card heading names it. */
-export function Bars({ rows, label }: { rows: Array<{ day: string; n: number }>; label: string }) {
-  const peak = Math.max(1, ...rows.map((r) => r.n));
+/** Label, count and a bar showing its share of the largest. */
+export function Meters({
+  rows,
+  empty,
+}: {
+  rows: Array<{ key: string; label: string; n: number; href?: string }>;
+  empty: ReactNode;
+}) {
+  if (!rows.length) return <div className="ad-empty">{empty}</div>;
+  const total = rows.reduce((a, r) => a + r.n, 0) || 1;
   return (
-    <figure className="ad-chart">
-      <div className="ad-bars" role="img" aria-label={label}>
-        {rows.map((r) => (
-          <span key={r.day} style={{ height: `${(r.n / peak) * 100}%` }} title={`${r.day}: ${r.n}`} />
-        ))}
-      </div>
-      <figcaption className="ad-chart__axis">
-        <span>{rows[0]?.day.slice(5)}</span>
-        <span>{rows[rows.length - 1]?.day.slice(5)}</span>
-      </figcaption>
-    </figure>
+    <ul className="ad-meters">
+      {rows.map((r) => {
+        const share = Math.round((r.n / total) * 100);
+        return (
+          <li key={r.key}>
+            <span className="ad-meters__top">
+              {r.href ? (
+                <Link href={r.href} className="ad-meters__label">{r.label}</Link>
+              ) : (
+                <span className="ad-meters__label">{r.label}</span>
+              )}
+              <span className="ad-meters__n">
+                {nf.format(r.n)} <span>{share}%</span>
+              </span>
+            </span>
+            <span className="ad-meters__track" aria-hidden>
+              <span className="ad-meters__fill" style={{ width: `${Math.max(2, share)}%` }} />
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
-/**
- * Two series over N days, drawn server-side.
- *
- * No charting library: one path per series, and the page ships no extra
- * JavaScript for it. Both series share one axis because visitors are a subset
- * of views, so a single scale is the honest comparison.
- */
-export function TrendChart({
-  days,
-  label,
-}: {
-  days: Array<{ day: string; a: number; b: number }>;
-  label: string;
-}) {
-  const W = 640;
-  const H = 160;
-  const peak = Math.max(1, ...days.flatMap((d) => [d.a, d.b]));
-  const x = (i: number) => (i / Math.max(1, days.length - 1)) * W;
-  const y = (v: number) => H - (v / peak) * (H - 12);
-  const line = (k: "a" | "b") =>
-    days.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d[k]).toFixed(1)}`).join(" ");
+/* ------------------------------------------------------------------ gauge -- */
 
+/**
+ * A half-circle showing one share of a whole. Used for a single headline
+ * proportion, never for comparisons — those are bars.
+ */
+export function Gauge({ value, total, label }: { value: number; total: number; label: string }) {
+  const share = total > 0 ? value / total : 0;
+  const pct = share * 100;
+  const R = 90;
+  const len = Math.PI * R;
+  const shown = pct > 0 && pct < 1 ? "<1" : String(Math.round(pct));
   return (
-    <figure className="ad-chart">
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label={label}>
-        <defs>
-          <linearGradient id="ad-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--ad-accent)" stopOpacity="0.26" />
-            <stop offset="100%" stopColor="var(--ad-accent)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={`${line("a")} L ${W} ${H} L 0 ${H} Z`} fill="url(#ad-fill)" />
-        <path d={line("a")} fill="none" stroke="var(--ad-accent)" strokeWidth="2"
-          strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        <path d={line("b")} fill="none" stroke="var(--ad-series-2)" strokeWidth="2"
-          strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    <div className="ad-gauge">
+      <svg viewBox="0 0 220 124" role="img" aria-label={`${label}: ${shown}%`}>
+        <path d="M20 110 A90 90 0 0 1 200 110" className="ad-gauge__track" pathLength={len} />
+        {/* No fill at zero: a zero-length dash with round caps still paints a dot at each end. */}
+        {share > 0 ? (
+          <path d="M20 110 A90 90 0 0 1 200 110" className="ad-gauge__fill" pathLength={len}
+            strokeDasharray={`${Math.max(3, share * len)} ${len * 2}`} />
+        ) : null}
       </svg>
-      <figcaption className="ad-chart__axis">
-        <span>{days[0]?.day.slice(5)}</span>
-        <span>{days[days.length - 1]?.day.slice(5)}</span>
-      </figcaption>
-    </figure>
+      <p className="ad-gauge__value">
+        {shown}
+        <span>%</span>
+      </p>
+    </div>
+  );
+}
+
+/** A row of figures under a card, separated by hairlines: the gauge's funnel. */
+export function FigureStrip({ items }: { items: Array<{ label: string; value: string; href?: string }> }) {
+  return (
+    <dl className="ad-strip">
+      {items.map((i) => (
+        <div key={i.label}>
+          <dt>{i.label}</dt>
+          <dd>{i.href ? <Link href={i.href}>{i.value}</Link> : i.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
