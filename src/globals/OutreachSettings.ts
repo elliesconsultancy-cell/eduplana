@@ -3,23 +3,23 @@ import type { GlobalConfig } from "payload";
 const isAdmin = ({ req }: { req: { user?: { role?: string } | null } }) =>
   req.user?.role === "admin" || req.user?.role === "super-admin";
 
-export const DEFAULT_SUBJECT = "{school} on Eduplana: please check your listing";
+export const DEFAULT_SUBJECT = "How {school} appears to parents on Eduplana";
 
 export const DEFAULT_BODY = `Dear {school} team,
 
-We are Eduplana (www.eduplana.org), a free directory that helps parents in Nigeria find and compare private schools on fees, curriculum, facilities and more.
+Eduplana (www.eduplana.org) is an education management platform built for Nigerian schools. Its school directory, Eduplana Schoolsbase, lists more than 7,000 private schools. Parents use it to find schools in their city, compare up to four side by side on fees, curriculum, class sizes and facilities, and contact the school directly.
 
-{school} is already listed on Eduplana, based on information your school has published. Parents use these listings to decide which schools to shortlist and visit, so we want to make sure yours is accurate and complete.
+{school} is already on Schoolsbase. This is how parents see it today:
 
 {listing}
 
-Could you take two minutes to check it? The button below opens a private page where you can review and correct your details, including fees, contact information, facilities and photographs, without creating an account.
+Families choose which schools to visit from what they read here, so it matters that it is right. If anything is missing or out of date, such as your fees, contact details, facilities or photographs, you can correct it in a few minutes. No account is needed, and nothing changes until we have checked it.
 
 {link}
 
-If everything is already correct, you can confirm it with one click and we will mark your listing as verified.
+If everything is already correct, one click confirms it and your listing earns a Verified badge that parents can see.
 
-Thank you, and do reply to this email if you have any questions.
+Our goal is to help schools grow their enrolment from a digital platform, and an accurate listing is the first step.
 
 Warm regards,
 The Eduplana team`;
