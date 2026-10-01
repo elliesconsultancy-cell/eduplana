@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BadgeCheck,
   ArrowRight,
   BarChart3,
   Building2,
@@ -14,6 +13,7 @@ import {
   Route,
   Search,
   Settings2,
+  Sparkles,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -108,7 +108,7 @@ export default async function HomePage() {
         careerCount={careerCount}
       />
       <PopularLocations counts={counts} />
-      <VerifiedSchools schools={verifiedSchools.slice(0, 6)} total={featured.length} />
+      <FeaturedSchools featured={verifiedSchools.slice(0, 6)} />
       <ManagementPillars />
       <Heritage archive={archive} />
       <Doors />
@@ -275,58 +275,43 @@ function PopularLocations({ counts }: { counts: Map<string, number> }) {
 }
 
 /**
- * The schools Eduplana has confirmed, on a dark band of their own. The landing
- * page recommends only these: a suggestion from us should be one we can stand
- * behind.
+ * The landing page features verified schools only — a recommendation from us
+ * should be one we can stand behind — laid out like the rest of the page
+ * rather than on a band of its own. The cards themselves mark them out.
  */
-function VerifiedSchools({
-  schools,
-  total,
-}: {
-  schools: React.ComponentProps<typeof SchoolCard>["school"][];
-  total: number;
-}) {
-  if (schools.length === 0) return null;
+function FeaturedSchools({ featured }: { featured: React.ComponentProps<typeof SchoolCard>["school"][] }) {
+  if (featured.length === 0) return null;
 
   return (
-    <section className="relative isolate overflow-hidden bg-brand-950">
-      <div
-        aria-hidden
-        className="absolute -left-40 -top-40 -z-10 size-[520px] rounded-full bg-brand-600/30 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="absolute -bottom-48 right-0 -z-10 size-[460px] rounded-full bg-brand-500/20 blur-3xl"
-      />
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-2xl">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1.5 pr-3 text-sm font-semibold text-white ring-1 ring-white/15">
-              <BadgeCheck size={18} strokeWidth={2.2} aria-hidden className="fill-white text-brand-800" />
-              Verified by Eduplana
-            </p>
-            <h2 className="font-display mt-4 text-[1.75rem] leading-tight text-white sm:text-[2.25rem]">
-              Schools that have confirmed their details with us
-            </h2>
-            <p className="mt-3 leading-relaxed text-white/70">
-              Each of these schools has checked its listing with Eduplana, so the phone number and
-              email you see are the ones the school gave us.
-            </p>
-          </div>
-          <Link
-            href="/schools?verified=1"
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-brand-900 transition-colors hover:bg-brand-50"
-          >
-            See all {total} verified listings
-            <ArrowRight size={15} strokeWidth={2.4} aria-hidden />
-          </Link>
+    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <div className="flex flex-wrap items-end justify-between gap-6">
+        <div className="max-w-2xl">
+          <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-600">
+            <Sparkles size={13} strokeWidth={2.6} aria-hidden />
+            Featured schools
+          </p>
+          <h2 className="font-display mt-3 text-[1.75rem] leading-tight text-ink-950 sm:text-[2.25rem]">
+            Explore top schools near you
+          </h2>
+          <p className="mt-3 leading-relaxed text-ink-600">
+            Finding the right fit does not have to be hard. Start with these schools, or browse the
+            full directory to find one that matches your child&rsquo;s goals as well as your
+            family&rsquo;s budget.
+          </p>
         </div>
+        <Link
+          href="/schools"
+          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-ink-200 bg-white px-5 py-2.5 text-sm font-semibold text-ink-800 transition-colors hover:border-ink-300 hover:bg-ink-50"
+        >
+          Explore directory
+          <ArrowRight size={15} strokeWidth={2.4} aria-hidden />
+        </Link>
+      </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {schools.map((school, index) => (
-            <SchoolCard key={school.id} school={school} priority={index < 3} />
-          ))}
-        </div>
+      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {featured.map((school, index) => (
+          <SchoolCard key={school.id} school={school} priority={index < 3} />
+        ))}
       </div>
     </section>
   );

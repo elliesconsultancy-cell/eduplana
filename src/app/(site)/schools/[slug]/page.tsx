@@ -169,19 +169,15 @@ export default async function SchoolPage({
       />
       <ProfileBar school={school} tel={tel} />
 
-      {school.verified ? (
-        // A verified page opens on a brand wash rather than plain white: the
-        // difference should register before a word of it is read.
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[480px] bg-gradient-to-b from-brand-100/80 via-brand-50/70 to-transparent"
-        />
-      ) : null}
+      {school.verified ? <VerifiedHero school={school} phone={phone} tel={tel} /> : null}
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Breadcrumb school={school} />
-        <Masthead school={school} />
-        {school.verified ? <VerifiedPanel school={school} tel={tel} /> : null}
+        {school.verified ? null : (
+          <>
+            <Breadcrumb school={school} />
+            <Masthead school={school} />
+          </>
+        )}
 
         {school.images.gallery.length > 0 ? (
           <div className="mt-7">
@@ -314,12 +310,13 @@ function ProfileBar({ school, tel }: { school: School; tel: string | null }) {
   );
 }
 
-function Breadcrumb({ school }: { school: School }) {
+function Breadcrumb({ school, tone = "light" }: { school: School; tone?: "light" | "dark" }) {
+  const dark = tone === "dark";
   return (
     <nav aria-label="Breadcrumb" className="pt-6">
-      <ol className="flex flex-wrap items-center gap-1 text-sm text-ink-500">
+      <ol className={`flex flex-wrap items-center gap-1 text-sm ${dark ? "text-white/60" : "text-ink-500"}`}>
         <li>
-          <Link href="/schools" className="hover:text-brand-700">
+          <Link href="/schools" className={dark ? "hover:text-white" : "hover:text-brand-700"}>
             Schools
           </Link>
         </li>
@@ -329,7 +326,7 @@ function Breadcrumb({ school }: { school: School }) {
             <li>
               <Link
                 href={`/schools?state=${encodeURIComponent(school.state)}`}
-                className="hover:text-brand-700"
+                className={dark ? "hover:text-white" : "hover:text-brand-700"}
               >
                 {school.state}
               </Link>
@@ -337,7 +334,7 @@ function Breadcrumb({ school }: { school: School }) {
           </>
         ) : null}
         <ChevronRight size={14} aria-hidden className="text-ink-300" />
-        <li className="truncate font-medium text-ink-800">{school.name}</li>
+        <li className={`truncate font-medium ${dark ? "text-white/90" : "text-ink-800"}`}>{school.name}</li>
       </ol>
     </nav>
   );
@@ -534,43 +531,152 @@ function AtAGlance({ school }: { school: School }) {
 }
 
 /**
- * What "verified" means, said once and plainly, on the pages that have earned
- * it. Dark rather than tinted so it reads as a seal, not one more card; the
- * claim is limited to what was actually checked.
+ * The header a verified school earns: full width, on the brand's darkest blue
+ * with the school's own photograph behind it, the name large in white beside a
+ * check, the ways to reach the school one tap away, and the facts a parent
+ * checks first laid out underneath. Unverified pages keep the plain masthead,
+ * so the difference is visible the moment either page opens.
  */
-function VerifiedPanel({ school, tel }: { school: School; tel: string | null }) {
+function VerifiedHero({ school, phone, tel }: { school: School; phone: string | null; tel: string | null }) {
+  const photo = school.images.gallery[0];
+  const words = school.name.trim().split(/\s+/);
+  const last = words.pop();
+  const facts = [
+    {
+      label: "Fees per term",
+      value: school.fee.min == null && school.fee.max == null ? null : formatFee(school),
+    },
+    { label: "Curriculum", value: school.curricula.slice(0, 3).join(", ") || null },
+    { label: "Day or boarding", value: boardingLabel(school) },
+    {
+      label: school.maxClassSize ? "Largest class" : "Level",
+      value: school.maxClassSize
+        ? `${school.maxClassSize} pupils`
+        : school.level === "primary"
+          ? "Primary"
+          : "Secondary",
+    },
+  ];
+
   return (
-    <section
-      aria-label="Verified by Eduplana"
-      className="relative mt-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-700 text-white shadow-lift"
-    >
+    <section className="relative isolate overflow-hidden bg-brand-950 text-white">
+      {photo ? (
+        <AssetImage
+          path={photo.full}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="-z-20 object-cover object-center opacity-70"
+        />
+      ) : null}
       <div
         aria-hidden
-        className="absolute -right-10 -top-16 size-56 rounded-full bg-brand-500/25 blur-2xl"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-950 via-brand-950/80 to-brand-950/30 sm:bg-gradient-to-r sm:from-brand-950 sm:via-brand-950/85 sm:to-brand-950/25"
       />
-      <div className="relative flex flex-wrap items-center gap-4 p-5 sm:gap-5 sm:p-6">
-        <span
-          aria-hidden
-          className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/20"
-        >
-          <BadgeCheck size={32} strokeWidth={2} className="fill-white text-brand-800" />
-        </span>
-        <div className="min-w-0 flex-1 basis-64">
-          <p className="font-display text-lg leading-tight sm:text-xl">Verified by Eduplana</p>
-          <p className="mt-1 max-w-xl text-[14px] leading-relaxed text-white/75">
-            {school.name} has confirmed this listing with us, and the contact details on this
-            page were checked with the school directly.
-          </p>
+      <div aria-hidden className="absolute -right-24 -top-32 -z-10 size-[420px] rounded-full bg-brand-500/25 blur-3xl" />
+
+      <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6 sm:pb-10">
+        <Breadcrumb school={school} tone="dark" />
+
+        <div className="mt-8 flex flex-wrap items-end gap-x-8 gap-y-6">
+          <div className="flex min-w-0 flex-1 basis-[28rem] items-start gap-5">
+            {school.images.logo ? (
+              <AssetImage
+                path={school.images.logo}
+                alt=""
+                width={128}
+                height={128}
+                priority
+                className="size-20 shrink-0 rounded-2xl bg-white object-contain p-2.5 shadow-[0_12px_30px_-10px_rgb(0_0_0/0.5)] sm:size-24"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-white/10 py-1 pl-1.5 pr-3 text-[13px] font-semibold text-white ring-1 ring-white/20 backdrop-blur">
+                <BadgeCheck size={17} strokeWidth={2.2} aria-hidden className="fill-white text-brand-800" />
+                Verified school
+              </p>
+              <h1 className="font-display tracking-display mt-3 text-[2rem] leading-[1.08] text-white sm:text-[2.9rem]">
+                {words.length ? `${words.join(" ")} ` : ""}
+                <span className="whitespace-nowrap">
+                  {last}
+                  <BadgeCheck
+                    aria-label="Verified by Eduplana"
+                    strokeWidth={2.2}
+                    className="ml-2 inline-block size-8 -translate-y-1 fill-white align-middle text-brand-700 sm:size-10"
+                  />
+                </span>
+              </h1>
+              {school.tagline ? <p className="mt-2 text-[16px] text-brand-200">{school.tagline}</p> : null}
+              <p className="mt-2.5 flex items-center gap-1.5 text-white/75">
+                <MapPin size={16} strokeWidth={2.2} aria-hidden className="shrink-0" />
+                {locationLabel(school)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2.5">
+            {tel ? (
+              <a
+                href={tel}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-brand-900 transition-colors hover:bg-brand-50"
+              >
+                <Phone size={16} strokeWidth={2.4} aria-hidden />
+                {phone ? `Call ${phone}` : "Call the school"}
+              </a>
+            ) : null}
+            {school.email ? (
+              <a
+                href={`mailto:${school.email}`}
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-3 text-sm font-bold text-white ring-1 ring-white/25 transition-colors hover:bg-white/20"
+              >
+                <Mail size={16} strokeWidth={2.4} aria-hidden />
+                Email
+              </a>
+            ) : null}
+            {school.website ? (
+              <a
+                href={school.website}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-3 text-sm font-bold text-white ring-1 ring-white/25 transition-colors hover:bg-white/20"
+              >
+                <Globe size={16} strokeWidth={2.4} aria-hidden />
+                Website
+              </a>
+            ) : null}
+          </div>
         </div>
-        {tel ? (
-          <a
-            href={tel}
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-brand-900 transition-colors hover:bg-brand-50"
-          >
-            <Phone size={15} strokeWidth={2.5} aria-hidden />
-            Call the school
-          </a>
-        ) : null}
+
+        <dl className="mt-8 grid grid-cols-2 overflow-hidden rounded-2xl bg-white/[0.07] ring-1 ring-white/15 backdrop-blur-sm lg:grid-cols-4">
+          {facts.map((f, i) => (
+            <div
+              key={f.label}
+              className={`px-5 py-4 ${i % 2 ? "border-l border-white/10" : ""} ${i >= 2 ? "border-t border-white/10 lg:border-t-0" : ""} ${
+                i === 2 ? "lg:border-l" : ""
+              }`}
+            >
+              <dt className="text-[12px] font-medium text-white/60">{f.label}</dt>
+              <dd className={`mt-1 font-display text-[17px] leading-snug ${f.value ? "text-white" : "text-white/40"}`}>
+                {f.value ?? "Not published"}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <p className="text-[13px] leading-relaxed text-white/60">
+            <BadgeCheck
+              size={15}
+              strokeWidth={2.2}
+              aria-hidden
+              className="mr-1.5 inline-block -translate-y-px fill-white/80 align-middle text-brand-900"
+            />
+            {school.name} has confirmed this listing with Eduplana, and its contact details were checked
+            with the school directly.
+          </p>
+          <CareerBadge school={school} size="sm" />
+        </div>
       </div>
     </section>
   );
