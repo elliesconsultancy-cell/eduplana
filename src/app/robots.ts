@@ -21,7 +21,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/admin/", "/payload-api/", "/compare", "/shortlist"],
+      disallow: ["/admin", "/admin/", "/payload-api/", "/compare", "/shortlist", "/manage", "/unsubscribe"],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
     host: absoluteUrl("/").replace(/\/$/, ""),

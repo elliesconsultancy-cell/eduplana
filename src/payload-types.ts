@@ -68,8 +68,11 @@ export interface Config {
   blocks: {};
   collections: {
     schools: School;
+    'school-submissions': SchoolSubmission;
+    'school-contacts': SchoolContact;
     users: User;
     events: Event;
+    'access-links': AccessLink;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,8 +81,11 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     schools: SchoolsSelect<false> | SchoolsSelect<true>;
+    'school-submissions': SchoolSubmissionsSelect<false> | SchoolSubmissionsSelect<true>;
+    'school-contacts': SchoolContactsSelect<false> | SchoolContactsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    'access-links': AccessLinksSelect<false> | AccessLinksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -89,8 +95,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'outreach-settings': OutreachSetting;
+  };
+  globalsSelect: {
+    'outreach-settings': OutreachSettingsSelect<false> | OutreachSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -297,6 +307,56 @@ export interface School {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Changes schools have sent in. Open one to compare it with the live listing, then set the status to Approved or Rejected and save.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "school-submissions".
+ */
+export interface SchoolSubmission {
+  id: number;
+  /**
+   * Approving publishes these changes and marks the school verified.
+   */
+  status: 'pending' | 'approved' | 'rejected' | 'superseded';
+  /**
+   * For the team. Not sent to the school.
+   */
+  reviewNote?: string | null;
+  kind: 'update' | 'confirm' | 'removal';
+  school: string;
+  schoolName?: string | null;
+  schoolSlug?: string | null;
+  contactName?: string | null;
+  contactRole?: string | null;
+  contactEmail?: string | null;
+  /**
+   * Anything the school wanted to tell us.
+   */
+  message?: string | null;
+  changes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  before?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  reviewedBy?: (number | null) | User;
+  reviewedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Accounts that can sign in. Passwords cannot be read back — set a new one here if somebody is locked out.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -330,6 +390,33 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * Every school we have emailed, and how far it has got. Updated automatically.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "school-contacts".
+ */
+export interface SchoolContact {
+  id: number;
+  school: string;
+  name?: string | null;
+  email: string;
+  status: 'none' | 'sent' | 'opened' | 'submitted' | 'approved';
+  /**
+   * Asked not to be emailed again. Never contacted while this is set.
+   */
+  optedOut?: boolean | null;
+  sends?: number | null;
+  firstSentAt?: string | null;
+  lastSentAt?: string | null;
+  /**
+   * First time the link was opened. Some email security filters open links to scan them, so this can be early.
+   */
+  openedAt?: string | null;
+  submittedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -372,6 +459,32 @@ export interface Event {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "access-links".
+ */
+export interface AccessLink {
+  id: number;
+  tokenHash: string;
+  email: string;
+  /**
+   * Ids of the listings this link opens.
+   */
+  schools:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  expiresAt: string;
+  purpose: 'outreach' | 'requested';
+  lastUsedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -399,12 +512,24 @@ export interface PayloadLockedDocument {
         value: string | School;
       } | null)
     | ({
+        relationTo: 'school-submissions';
+        value: number | SchoolSubmission;
+      } | null)
+    | ({
+        relationTo: 'school-contacts';
+        value: number | SchoolContact;
+      } | null)
+    | ({
         relationTo: 'users';
         value: number | User;
       } | null)
     | ({
         relationTo: 'events';
         value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'access-links';
+        value: number | AccessLink;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -514,6 +639,46 @@ export interface SchoolsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "school-submissions_select".
+ */
+export interface SchoolSubmissionsSelect<T extends boolean = true> {
+  status?: T;
+  reviewNote?: T;
+  kind?: T;
+  school?: T;
+  schoolName?: T;
+  schoolSlug?: T;
+  contactName?: T;
+  contactRole?: T;
+  contactEmail?: T;
+  message?: T;
+  changes?: T;
+  before?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "school-contacts_select".
+ */
+export interface SchoolContactsSelect<T extends boolean = true> {
+  school?: T;
+  name?: T;
+  email?: T;
+  status?: T;
+  optedOut?: T;
+  sends?: T;
+  firstSentAt?: T;
+  lastSentAt?: T;
+  openedAt?: T;
+  submittedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -550,6 +715,20 @@ export interface EventsSelect<T extends boolean = true> {
   referrer?: T;
   device?: T;
   visitor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "access-links_select".
+ */
+export interface AccessLinksSelect<T extends boolean = true> {
+  tokenHash?: T;
+  email?: T;
+  schools?: T;
+  expiresAt?: T;
+  purpose?: T;
+  lastUsedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -592,6 +771,45 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * The email schools receive. Placeholders: {school} is the school's name, {location} its town and state, and {link} its private link. A footer saying why they received it, with an unsubscribe link, is always added.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outreach-settings".
+ */
+export interface OutreachSetting {
+  id: number;
+  /**
+   * Shown as the sender.
+   */
+  fromName: string;
+  /**
+   * Must be an @eduplana.org address. Replies come back here.
+   */
+  fromEmail: string;
+  subject: string;
+  body: string;
+  /**
+   * Most emails sent in any 24 hours. Resend's free plan allows 100 a day across everything, including the Gmail send-as addresses, so this leaves headroom. A new domain that sends hundreds at once gets marked as spam — ramp up slowly.
+   */
+  dailyLimit: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outreach-settings_select".
+ */
+export interface OutreachSettingsSelect<T extends boolean = true> {
+  fromName?: T;
+  fromEmail?: T;
+  subject?: T;
+  body?: T;
+  dailyLimit?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

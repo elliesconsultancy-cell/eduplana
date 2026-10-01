@@ -6,9 +6,13 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 import sharp from "sharp";
 
+import { AccessLinks } from "./collections/AccessLinks";
 import { Events } from "./collections/Events";
+import { SchoolContacts } from "./collections/SchoolContacts";
 import { Schools } from "./collections/Schools";
+import { SchoolSubmissions } from "./collections/SchoolSubmissions";
 import { Users } from "./collections/Users";
+import { OutreachSettings } from "./globals/OutreachSettings";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -61,11 +65,20 @@ export default buildConfig({
           exact: true,
           meta: { title: "Analytics" },
         },
+        // Emailing schools to check their listings, at /admin/outreach.
+        outreach: {
+          Component: "@/components/admin/Outreach#Outreach",
+          path: "/outreach",
+          exact: true,
+          meta: { title: "Outreach" },
+        },
       },
     },
   },
 
-  collections: [Schools, Users, Events],
+  collections: [Schools, SchoolSubmissions, SchoolContacts, Users, Events, AccessLinks],
+
+  globals: [OutreachSettings],
 
   editor: lexicalEditor(),
 

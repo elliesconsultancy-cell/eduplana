@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 /**
- * The two destinations Payload's nav has no idea about.
+ * The destinations Payload's nav has no idea about.
  *
  * Payload builds its sidebar from collections, so a custom view — the
  * dashboard, the analytics screen — is reachable only by typing the URL or by
@@ -21,6 +21,7 @@ const LINKS = [
     path: "M3 3h7v7H3zM14 3h7v4h-7zM14 11h7v10h-7zM3 14h7v7H3z",
   },
   { href: "/admin/analytics", label: "Analytics", path: "M4 20V10M10 20V4M16 20v-7M22 20H2" },
+  { href: "/admin/outreach", label: "Outreach", path: "M3 6h18v12H3zM3 7l9 6 9-6" },
 ];
 
 export function NavLinks() {

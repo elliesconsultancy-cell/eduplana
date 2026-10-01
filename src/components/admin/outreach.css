@@ -1,0 +1,100 @@
+/* The outreach screen. Spacing and colour come from ui.css. */
+.or-banner {
+  margin: 0 0 var(--ad-5);
+  padding: var(--ad-3) var(--ad-4);
+  border-radius: var(--ad-radius-sm);
+  font-weight: 600;
+}
+.or-banner--ok {
+  background: var(--theme-success-100, #e3f4ec);
+  color: var(--theme-success-800, #0b5a3c);
+}
+.or-banner--warn {
+  background: var(--theme-elevation-50);
+  border-left: 3px solid var(--ad-danger);
+  color: var(--ad-ink);
+}
+.or-mail {
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-sm);
+  padding: var(--ad-4);
+}
+.or-mail__meta {
+  margin: 0 0 var(--ad-2);
+  color: var(--ad-ink);
+  font-size: 0.88rem;
+}
+.or-mail__meta span {
+  display: inline-block;
+  width: 64px;
+  color: var(--ad-muted);
+}
+.or-mail__body {
+  margin: var(--ad-4) 0 0;
+  padding-top: var(--ad-4);
+  border-top: 1px solid var(--ad-border);
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ad-ink);
+}
+.or-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ad-3);
+  margin-bottom: var(--ad-4);
+}
+.or-form--quiet {
+  align-items: center;
+}
+.or-field {
+  display: grid;
+  gap: var(--ad-1);
+  font-size: 0.8rem;
+  color: var(--ad-muted);
+}
+.or-field select,
+.or-field input {
+  min-width: 120px;
+  padding: var(--ad-2) var(--ad-3);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--ad-radius-sm);
+  background: var(--ad-surface);
+  color: var(--ad-ink);
+  font: inherit;
+  font-size: 0.88rem;
+}
+.or-field input[type="number"] {
+  width: 110px;
+  min-width: 0;
+}
+.or-check {
+  display: flex;
+  align-items: center;
+  gap: var(--ad-2);
+  font-size: 0.86rem;
+  color: var(--ad-ink);
+}
+.or-count {
+  margin: 0 0 var(--ad-4);
+  color: var(--ad-ink);
+}
+.or-hint {
+  margin: 0;
+  color: var(--ad-muted);
+  font-size: 0.82rem;
+}
+.or-form + .or-hint {
+  margin-top: var(--ad-2);
+}
+.or-foot {
+  margin-top: var(--ad-5);
+  color: var(--ad-muted);
+  font-size: 0.86rem;
+}
+.ad-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

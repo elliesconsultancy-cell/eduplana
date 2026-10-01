@@ -68,6 +68,18 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "no-store, max-age=0" },
         ],
       },
+      {
+        // Last, so it overrides the site-wide Referrer-Policy above: later
+        // entries win. A school's private link is in the path. No-referrer means following
+        // a link off that page (to the school's own website, say) does not
+        // hand the link to whoever runs the destination.
+        source: "/manage/:path*",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "Cache-Control", value: "private, no-store" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
     ];
   },
 };

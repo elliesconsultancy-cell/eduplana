@@ -32,7 +32,7 @@ const isAdmin = ({ req }: { req: { user?: { role?: string } | null } }) =>
  * stops the rule eroding one record at a time — the alternative is auditing
  * the dataset again in six months.
  */
-const ABSENCE_MARKERS =
+export const ABSENCE_MARKERS =
   /^(not stated|not applicable|not available|not specified|not provided|n\/?a|unknown|tbd|tba|-+|\.+|_+)$/i;
 
 const noPlaceholder = (value: unknown) => {
@@ -82,7 +82,7 @@ const NOT_A_SCHOOL_ADDRESS = [
 const WELL_FORMED_EMAIL =
   /^[a-z0-9]([a-z0-9._%+-]*[a-z0-9])?@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
 
-const validateEmail = (value: unknown) => {
+export const validateEmail = (value: unknown) => {
   if (value == null || value === "") return true;
   const email = String(value).trim().toLowerCase();
   if (ABSENCE_MARKERS.test(email)) {
