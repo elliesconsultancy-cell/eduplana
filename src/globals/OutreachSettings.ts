@@ -11,7 +11,9 @@ We are Eduplana (www.eduplana.org), a free directory that helps parents in Niger
 
 {school} is already listed on Eduplana, based on information your school has published. Parents use these listings to decide which schools to shortlist and visit, so we want to make sure yours is accurate and complete.
 
-Could you take two minutes to check it? This private link lets you review and correct your details, including fees, contact information, facilities and photographs, without creating an account:
+{listing}
+
+Could you take two minutes to check it? The button below opens a private page where you can review and correct your details, including fees, contact information, facilities and photographs, without creating an account.
 
 {link}
 
@@ -47,7 +49,7 @@ export const OutreachSettings: GlobalConfig = {
   admin: {
     group: "Outreach",
     description:
-      "The email schools receive. Placeholders: {school} is the school's name, {location} its town and state, and {link} its private link. A footer saying why they received it, with an unsubscribe link, is always added.",
+      "The email schools receive. Placeholders: {school} is the school's name and {location} its town and state. A paragraph that is just {listing} becomes a panel linking to each of the school's pages on Eduplana; one that is just {link} becomes the button to their private edit page. The logo, and a footer saying why they received it with an unsubscribe link, are always added.",
   },
   access: {
     read: ({ req }) => Boolean(req.user),

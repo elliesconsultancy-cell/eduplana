@@ -12,6 +12,7 @@ import {
   sendTest,
   settings,
   splitAddresses,
+  testRecipients,
   type Audience,
 } from "@/lib/outreach/server";
 import { sendOne } from "@/lib/outreach/mail";
@@ -56,14 +57,19 @@ export async function POST(request: Request) {
     if (action === "test") {
       const inbox = (await recipients(filters))[0] ?? (await recipients({ audience: "new" }))[0];
       if (!inbox) throw new Error("There is no school to use as a sample.");
-      await sendTest(String(user.email), inbox);
-      back.searchParams.set("tested", "1");
+      const to = testRecipients(field("testTo"), String(user.email));
+      await sendTest(to, inbox);
+      back.searchParams.set("tested", to.join(", "));
     } else if (action === "test-general") {
-      const s = await settings(payload);
-      const m = generalMessage(s, String(user.email));
-      await sendOne({ ...m, subject: `[Test] ${m.subject}` });
-      back.searchParams.set("tested", "general");
       back.searchParams.set("tab", "addresses");
+      const to = testRecipients(field("testTo"), String(user.email));
+      const s = await settings(payload);
+      for (const address of to) {
+        const m = generalMessage(s, address);
+        await sendOne({ ...m, subject: `[Test] ${m.subject}` });
+      }
+      back.searchParams.set("tested", to.join(", "));
+      back.searchParams.set("testKind", "general");
     } else if (action === "send") {
       if (field("confirm") !== "yes") throw new Error("Tick the box to confirm you have checked a test email.");
       // Exactly the inboxes the preview listed — re-checked against the

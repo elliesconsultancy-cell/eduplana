@@ -188,3 +188,45 @@
   background: var(--ep-up-soft);
   color: var(--ep-up);
 }
+
+/* The email as it will arrive. */
+.or-mail__frame {
+  display: block;
+  width: 100%;
+  height: 720px;
+  margin-top: var(--ad-3);
+  border: 0;
+  border-radius: var(--ep-radius-s);
+  background: #f4f6fa;
+}
+.or-test {
+  display: grid;
+  gap: var(--ad-2);
+  margin-top: var(--ad-4);
+}
+.or-test__label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ep-ink-2);
+}
+.or-test__row {
+  display: flex;
+  gap: var(--ad-2);
+}
+.or-test__row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--ad-3);
+  border: 1px solid var(--ep-line-strong);
+  border-radius: var(--ep-radius-m);
+  background: var(--theme-input-bg);
+  color: var(--ep-ink);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.or-test__row input:focus {
+  outline: none;
+  border-color: var(--ep-brand);
+  box-shadow: 0 0 0 4px var(--ep-ring);
+}

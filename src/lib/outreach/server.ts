@@ -15,13 +15,14 @@ import {
   DEFAULT_SUBJECT,
 } from "@/globals/OutreachSettings";
 import {
-  complianceFooter,
+  blocksFrom,
+  listingFooter,
+  renderEmail,
   fill,
   oneClickUnsubscribeUrl,
   schoolNames,
   sendBatch,
   sendOne,
-  toHtml,
   unsubscribeUrl,
   type Message,
 } from "./mail";
@@ -154,7 +155,7 @@ export async function loadSchool(id: string): Promise<School | null> {
 
 export interface Inbox {
   email: string;
-  schools: Array<Pick<School, "id" | "name" | "area" | "state" | "level">>;
+  schools: Array<Pick<School, "id" | "name" | "area" | "state" | "level" | "slug">>;
 }
 
 export type Audience = "new" | "reminder";
@@ -207,7 +208,7 @@ export async function recipients(filters: Filters, known?: ContactRow[]): Promis
     if (!s.email) continue;
     const email = s.email.toLowerCase();
     const inbox = inboxes.get(email) ?? { email, schools: [] };
-    inbox.schools.push({ id: s.id, name: s.name, area: s.area, state: s.state, level: s.level });
+    inbox.schools.push({ id: s.id, name: s.name, area: s.area, state: s.state, level: s.level, slug: s.slug });
     inboxes.set(email, inbox);
   }
 
@@ -293,7 +294,7 @@ export async function planAddresses(raw: string[], includeSent = false, known?: 
   for (const s of await allSchools()) {
     if (!s.email) continue;
     const e = s.email.toLowerCase();
-    listings.set(e, [...(listings.get(e) ?? []), { id: s.id, name: s.name, area: s.area, state: s.state, level: s.level }]);
+    listings.set(e, [...(listings.get(e) ?? []), { id: s.id, name: s.name, area: s.area, state: s.state, level: s.level, slug: s.slug }]);
   }
 
   const seen = new Set<string>();
@@ -368,7 +369,7 @@ export async function inboxesFor(addresses: string[]): Promise<Inbox[]> {
     const e = s.email?.toLowerCase();
     if (!e || !wanted.has(e)) continue;
     const inbox = inboxes.get(e) ?? { email: e, schools: [] };
-    inbox.schools.push({ id: s.id, name: s.name, area: s.area, state: s.state, level: s.level });
+    inbox.schools.push({ id: s.id, name: s.name, area: s.area, state: s.state, level: s.level, slug: s.slug });
     inboxes.set(e, inbox);
   }
   return addresses.map((a) => inboxes.get(a)).filter((i): i is Inbox => Boolean(i));
@@ -404,46 +405,64 @@ export async function recentSends(limit = 12, payload?: Payload): Promise<Recent
 
 /* -------------------------------------------------------------- messages -- */
 
-function placeholders(inbox: Inbox, link: string) {
-  const first = inbox.schools[0];
+const place = (x: { area: string | null; state: string | null }) => [x.area, x.state].filter(Boolean).join(", ");
+
+/** Each school at the inbox, with its public page, for the listing panel. */
+function listing(inbox: Inbox) {
   return {
-    school: schoolNames(inbox.schools.map((s) => s.name)),
-    location: [first?.area, first?.state].filter(Boolean).join(", "),
-    link,
+    kind: "listing" as const,
+    schools: inbox.schools.map((x) => ({ name: x.name, place: place(x), url: `${SITE_URL}/schools/${x.slug}` })),
   };
 }
 
+function placeholders(inbox: Inbox, link: string) {
+  return {
+    school: schoolNames(inbox.schools.map((s) => s.name)),
+    location: place(inbox.schools[0] ?? { area: null, state: null }),
+    link,
+    listing: inbox.schools.map((x) => `${x.name}: ${SITE_URL}/schools/${x.slug}`).join("\n"),
+  };
+}
+
+export const REVIEW_LABEL = "Review and update your listing";
+
 export function outreachMessage(s: Settings, inbox: Inbox, link: string, to = inbox.email): Message {
   const values = placeholders(inbox, link);
-  const unsubscribe = unsubscribeUrl(inbox.email);
-  const body = `${fill(s.body, values)}\n\n${complianceFooter(inbox.email, unsubscribe)}`;
+  const blocks = blocksFrom(s.body, values, {
+    link: { href: link, label: inbox.schools.length > 1 ? "Review and update your listings" : REVIEW_LABEL },
+    listing: listing(inbox),
+  });
+  const { html, text } = renderEmail(
+    blocks,
+    listingFooter(inbox.email),
+    `Check how ${values.school} appears to parents on Eduplana.`,
+  );
   return {
     from: from(s),
     replyTo: s.fromEmail,
     to,
     subject: fill(s.subject, values),
-    text: body,
-    html: toHtml(body),
+    text,
+    html,
     unsubscribeUrl: oneClickUnsubscribeUrl(inbox.email),
   };
 }
 
 export function generalMessage(s: Settings, to: string): Message {
-  const unsubscribe = unsubscribeUrl(to);
-  const footer = [
-    "—",
-    `You are receiving this because ${to} was given to us as a contact address for a school. ` +
-      "If that is not right, or you would rather not hear from us, use the link below.",
-    `To stop receiving emails from us: ${unsubscribe}`,
-  ].join("\n");
-  const body = `${s.generalBody}\n\n${footer}`;
+  const blocks = blocksFrom(s.generalBody, {});
+  const { html, text } = renderEmail(blocks, {
+    reason:
+      `You are receiving this because ${to} was given to us as a contact address for a school. ` +
+      "If that is not right, or you would rather not hear from us, unsubscribe below.",
+    unsubscribe: unsubscribeUrl(to),
+  });
   return {
     from: from(s),
     replyTo: s.fromEmail,
     to,
     subject: s.generalSubject,
-    text: body,
-    html: toHtml(body),
+    text,
+    html,
     unsubscribeUrl: oneClickUnsubscribeUrl(to),
   };
 }
@@ -536,22 +555,42 @@ async function recordSent(payload: Payload, batch: Inbox[]) {
 }
 
 /** A real email to the person signed in, with a working link to a sample listing. */
-export async function sendTest(to: string, inbox: Inbox): Promise<void> {
+/** Most addresses a test goes to: enough for a small team, too few to be a send. */
+export const MAX_TEST_RECIPIENTS = 5;
+
+/** Valid, distinct test addresses from what was typed; the signed-in person if none. */
+export function testRecipients(raw: string | null, fallback: string): string[] {
+  const list = [...new Set(splitAddresses(raw ?? ""))].filter((e) => VALID.test(e));
+  return (list.length ? list : [fallback.toLowerCase()]).slice(0, MAX_TEST_RECIPIENTS);
+}
+
+/**
+ * Real emails to each test address, each with its own working link to a sample
+ * listing, marked [Test] in the subject. Every one counts against the day's
+ * limit, as it is a real send.
+ */
+export async function sendTest(to: string[], inbox: Inbox): Promise<number> {
   const payload = await db();
   const s = await settings(payload);
-  if ((await sentInLastDay(payload)) >= s.dailyLimit) {
-    throw new LimitError(`Today's limit of ${s.dailyLimit} emails has been reached.`);
+  if ((await sentInLastDay(payload)) + to.length > s.dailyLimit) {
+    throw new LimitError(`Sending ${to.length} test${to.length === 1 ? "" : "s"} would pass today's limit of ${s.dailyLimit}.`);
   }
-  const link = await issueLink(payload, to, inbox.schools.map((x) => x.id), "requested", 1);
-  const message = outreachMessage(s, inbox, manageUrl(link.token), to);
-  try {
-    await sendOne({ ...message, subject: `[Test] ${message.subject}` });
-  } catch (error) {
-    // A link whose email never left would still count against the day's limit.
-    await payload.delete({ collection: "access-links", id: link.id, overrideAccess: true });
-    throw error;
+  let sent = 0;
+  for (const address of to) {
+    const link = await issueLink(payload, address, inbox.schools.map((x) => x.id), "requested", 1);
+    const message = outreachMessage(s, inbox, manageUrl(link.token), address);
+    try {
+      await sendOne({ ...message, subject: `[Test] ${message.subject}` });
+      sent += 1;
+    } catch (error) {
+      // A link whose email never left would still count against the day's limit.
+      await payload.delete({ collection: "access-links", id: link.id, overrideAccess: true });
+      throw error;
+    }
   }
+  return sent;
 }
+
 
 /* ----------------------------------------------------- school-requested -- */
 
@@ -590,13 +629,21 @@ export async function requestLink(rawEmail: string): Promise<void> {
 
   const link = await issueLink(payload, email, schools.map((x) => x.id), "requested", REQUESTED_LINK_DAYS);
   const names = schoolNames(schools.map((x) => x.name));
-  const text = [
-    "Hello,",
-    `Here is your private link to review and update ${names} on Eduplana:`,
-    manageUrl(link.token),
-    `The link works for ${REQUESTED_LINK_DAYS * 24} hours. If you did not ask for it, you can ignore this email — nothing changes unless someone uses the link.`,
-    "Eduplana",
-  ].join("\n\n");
+  const inbox: Inbox = { email, schools: schools.map((x) => ({ id: x.id, name: x.name, area: x.area, state: x.state, level: x.level, slug: x.slug })) };
+  const { html, text } = renderEmail(
+    [
+      { kind: "p", text: "Hello," },
+      { kind: "p", text: `Here is your private link to review and update ${names} on Eduplana.` },
+      listing(inbox),
+      { kind: "button", href: manageUrl(link.token), label: schools.length > 1 ? "Review and update your listings" : REVIEW_LABEL },
+      {
+        kind: "p",
+        text: `The link works for ${REQUESTED_LINK_DAYS * 24} hours. If you did not ask for it, you can ignore this email: nothing changes unless someone uses the link.`,
+      },
+      { kind: "p", text: "The Eduplana team" },
+    ],
+    { reason: `You are receiving this because someone asked for a link to update the listings that use ${email}.`, unsubscribe: unsubscribeUrl(email) },
+  );
   try {
     await sendOne({
       from: from(s),
@@ -604,7 +651,7 @@ export async function requestLink(rawEmail: string): Promise<void> {
       to: email,
       subject: `Your link to update ${names} on Eduplana`,
       text,
-      html: toHtml(text),
+      html,
     });
   } catch (error) {
     await payload.delete({ collection: "access-links", id: link.id, overrideAccess: true });

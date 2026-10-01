@@ -7,6 +7,7 @@ import { NIGERIAN_STATE_NAMES } from "@/collections/Schools";
 import { allSchools } from "@/lib/schools";
 import {
   MAX_ADDRESSES,
+  MAX_TEST_RECIPIENTS,
   contacts,
   generalMessage,
   outreachMessage,
@@ -161,8 +162,8 @@ export async function Outreach(props: AdminViewServerProps) {
         ) : null}
         {tested ? (
           <p className="or-banner or-banner--ok" role="status">
-            Test sent to {me?.email}.
-            {tested === "general" ? "" : " Its link works for a day, so you can try the whole journey."}
+            Test sent to {tested === "1" ? me?.email : tested}.
+            {one(searchParams, "testKind") === "general" ? "" : " Each link works for a day, so you can try the whole journey."}
           </p>
         ) : null}
         {error ? (
@@ -300,28 +301,11 @@ export async function Outreach(props: AdminViewServerProps) {
                 </Link>
               }
             >
-              {preview ? (
-                <div className="or-mail">
-                  <p className="or-mail__meta">
-                    <span>From</span> {preview.from}
-                  </p>
-                  <p className="or-mail__meta">
-                    <span>Subject</span> <strong>{preview.subject}</strong>
-                  </p>
-                  <pre className="or-mail__body">{preview.text}</pre>
-                </div>
-              ) : null}
+              {preview ? <MailPreview from={preview.from} subject={preview.subject} html={preview.html} /> : null}
               {canSend ? (
-                <form method="post" action="/admin-actions/outreach" className="or-form or-form--quiet">
-                  <input type="hidden" name="action" value="test" />
-                  <input type="hidden" name="audience" value={audience} />
-                  <input type="hidden" name="state" value={state ?? ""} />
-                  <input type="hidden" name="level" value={level ?? ""} />
-                  <button type="submit" className="ad-btn" disabled={!sample || remaining === 0}>
-                    Send me a test
-                  </button>
-                  <span className="or-hint">Goes to {me?.email}, with a working link.</span>
-                </form>
+                <TestForm action="test" me={me?.email ?? ""} disabled={!sample || remaining === 0}
+                  hidden={{ audience, state: state ?? "", level: level ?? "" }}
+                  note="Each gets a working link to this sample school, so you can try the whole journey." />
               ) : null}
             </Card>
           </Grid>
@@ -358,19 +342,9 @@ export async function Outreach(props: AdminViewServerProps) {
                   </Link>
                 }
               >
-                <div className="or-mail">
-                  <p className="or-mail__meta">
-                    <span>Subject</span> <strong>{general.subject}</strong>
-                  </p>
-                  <pre className="or-mail__body">{general.text}</pre>
-                </div>
+                <MailPreview from={general.from} subject={general.subject} html={general.html} />
                 {canSend ? (
-                  <form method="post" action="/admin-actions/outreach" className="or-form or-form--quiet">
-                    <input type="hidden" name="action" value="test-general" />
-                    <button type="submit" className="ad-btn" disabled={remaining === 0}>
-                      Send me a test
-                    </button>
-                  </form>
+                  <TestForm action="test-general" me={me?.email ?? ""} disabled={remaining === 0} hidden={{}} />
                 ) : null}
               </Card>
             </Grid>
@@ -479,5 +453,62 @@ export async function Outreach(props: AdminViewServerProps) {
         </p>
       </PageContainer>
     </DefaultTemplate>
+  );
+}
+
+/**
+ * The email exactly as it will arrive, drawn in a sandboxed frame so its own
+ * styles cannot leak into the admin, and nothing in it can run.
+ */
+function MailPreview({ from, subject, html }: { from: string; subject: string; html: string }) {
+  return (
+    <div className="or-mail">
+      <p className="or-mail__meta">
+        <span>From</span> {from}
+      </p>
+      <p className="or-mail__meta">
+        <span>Subject</span> <strong>{subject}</strong>
+      </p>
+      <iframe className="or-mail__frame" title={`Preview: ${subject}`} srcDoc={html} sandbox="" loading="lazy" />
+    </div>
+  );
+}
+
+/** Send a test to one or more addresses, defaulting to the person signed in. */
+function TestForm({
+  action,
+  me,
+  disabled,
+  hidden,
+  note,
+}: {
+  action: "test" | "test-general";
+  me: string;
+  disabled: boolean;
+  hidden: Record<string, string>;
+  note?: string;
+}) {
+  const id = `or-test-${action}`;
+  return (
+    <form method="post" action="/admin-actions/outreach" className="or-test">
+      <input type="hidden" name="action" value={action} />
+      {Object.entries(hidden).map(([k, v]) => (
+        <input key={k} type="hidden" name={k} value={v} />
+      ))}
+      <label htmlFor={id} className="or-test__label">
+        Send a test to
+      </label>
+      <div className="or-test__row">
+        <input id={id} name="testTo" type="text" defaultValue={me} autoComplete="off"
+          placeholder="you@eduplana.org, colleague@eduplana.org" />
+        <button type="submit" className="ad-btn" disabled={disabled}>
+          Send test
+        </button>
+      </div>
+      <p className="or-hint">
+        Up to {MAX_TEST_RECIPIENTS} addresses, separated by commas. Marked [Test] in the subject.
+        {note ? ` ${note}` : ""}
+      </p>
+    </form>
   );
 }
