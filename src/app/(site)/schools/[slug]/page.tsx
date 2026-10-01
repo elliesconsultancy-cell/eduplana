@@ -33,7 +33,6 @@ import { IconChipList } from "@/components/icon-chip";
 import {
   CareerBadge,
   CareerBreakdown,
-  VerifiedBadge,
 } from "@/components/career-badge";
 import { allSchools, getSchool, profileDepth, relatedSchools } from "@/lib/schools";
 import {
@@ -161,16 +160,26 @@ export default async function SchoolPage({
   };
 
   return (
-    <article className="pb-4">
+    <article className="relative pb-4">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schoolJsonLd) }}
       />
       <ProfileBar school={school} tel={tel} />
 
+      {school.verified ? (
+        // A verified page opens on a brand wash rather than plain white: the
+        // difference should register before a word of it is read.
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[480px] bg-gradient-to-b from-brand-100/80 via-brand-50/70 to-transparent"
+        />
+      ) : null}
+
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Breadcrumb school={school} />
         <Masthead school={school} />
+        {school.verified ? <VerifiedPanel school={school} tel={tel} /> : null}
 
         {school.images.gallery.length > 0 ? (
           <div className="mt-7">
@@ -278,8 +287,11 @@ function ProfileBar({ school, tel }: { school: School; tel: string | null }) {
   return (
     <div className="sticky top-[68px] z-30 border-b border-ink-100 bg-white/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5 sm:px-6">
-        <p className="min-w-0 flex-1 truncate font-display text-[15px] text-ink-950">
-          {school.name}
+        <p className="flex min-w-0 flex-1 items-center gap-1.5 font-display text-[15px] text-ink-950">
+          <span className="truncate">{school.name}</span>
+          {school.verified ? (
+            <BadgeCheck size={17} strokeWidth={2.4} aria-label="Verified" className="shrink-0 fill-brand-600 text-white" />
+          ) : null}
         </p>
         <div className="flex shrink-0 items-center gap-2">
           <SaveButton slug={school.slug} compact />
@@ -352,6 +364,13 @@ function Masthead({ school }: { school: School }) {
       <div className="min-w-0 flex-1">
         <h1 className="font-display tracking-display text-[1.75rem] leading-[1.12] text-ink-950 sm:text-[2.6rem]">
           {school.name}
+          {school.verified ? (
+            <BadgeCheck
+              aria-label="Verified by Eduplana"
+              strokeWidth={2.2}
+              className="ml-2 inline-block size-7 -translate-y-1 fill-brand-600 align-middle text-white sm:size-9"
+            />
+          ) : null}
         </h1>
         {school.tagline ? (
           <p className="mt-1.5 text-[15px] text-brand-700">{school.tagline}</p>
@@ -366,8 +385,7 @@ function Masthead({ school }: { school: School }) {
           {locationLabel(school)}
         </p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <VerifiedBadge school={school} />
+        <div className="mt-4 flex flex-wrap items-center gap-2 empty:hidden">
           <CareerBadge school={school} />
         </div>
 
@@ -506,6 +524,49 @@ function AtAGlance({ school }: { school: School }) {
   );
 }
 
+/**
+ * What "verified" means, said once and plainly, on the pages that have earned
+ * it. Dark rather than tinted so it reads as a seal, not one more card; the
+ * claim is limited to what was actually checked.
+ */
+function VerifiedPanel({ school, tel }: { school: School; tel: string | null }) {
+  return (
+    <section
+      aria-label="Verified by Eduplana"
+      className="relative mt-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-700 text-white shadow-lift"
+    >
+      <div
+        aria-hidden
+        className="absolute -right-10 -top-16 size-56 rounded-full bg-brand-500/25 blur-2xl"
+      />
+      <div className="relative flex flex-wrap items-center gap-4 p-5 sm:gap-5 sm:p-6">
+        <span
+          aria-hidden
+          className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/20"
+        >
+          <BadgeCheck size={32} strokeWidth={2} className="fill-white text-brand-800" />
+        </span>
+        <div className="min-w-0 flex-1 basis-64">
+          <p className="font-display text-lg leading-tight sm:text-xl">Verified by Eduplana</p>
+          <p className="mt-1 max-w-xl text-[14px] leading-relaxed text-white/75">
+            {school.name} has confirmed this listing with us, and the contact details on this
+            page were checked with the school directly.
+          </p>
+        </div>
+        {tel ? (
+          <a
+            href={tel}
+            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-brand-900 transition-colors hover:bg-brand-50"
+          >
+            <Phone size={15} strokeWidth={2.5} aria-hidden />
+            Call the school
+          </a>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 function ContactAside({
   school,
   phone,
@@ -606,6 +667,12 @@ function ContactAside({
           <p className="mt-1 text-[13px] leading-relaxed text-brand-100">
             Contact {school.name} directly to confirm fees and admissions.
           </p>
+          {school.verified ? (
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-[12px] font-semibold text-white ring-1 ring-white/20">
+              <BadgeCheck size={14} strokeWidth={2.4} aria-hidden className="fill-white text-brand-800" />
+              Confirmed with the school
+            </p>
+          ) : null}
         </div>
 
         {rows.length > 0 ? (

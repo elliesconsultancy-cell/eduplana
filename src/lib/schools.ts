@@ -309,6 +309,7 @@ export async function search(filters: SearchFilters): Promise<School[]> {
     if (filters.faith && school.faith !== filters.faith) continue;
     if (filters.hasPhotos && school.images.gallery.length === 0) continue;
     if (filters.careerReady && careerProfile(school).tier !== "strong") continue;
+    if (filters.verified && !school.verified) continue;
 
     if (filters.curriculum && !school.curricula.includes(filters.curriculum)) continue;
 
@@ -375,19 +376,23 @@ function sortResults(
       );
       break;
     case "photos":
-      // Default browse order: richer profiles first, so an empty query still
-      // lands on something worth looking at.
+      // Default browse order: schools confirmed with Eduplana first, then
+      // richer profiles, so an empty query lands on the most trustworthy
+      // listings rather than whichever sorts first alphabetically.
       scored.sort(
         (a, b) =>
+          Number(b.school.verified) - Number(a.school.verified) ||
           b.school.images.gallery.length - a.school.images.gallery.length ||
           profileDepth(b.school) - profileDepth(a.school) ||
           a.school.name.localeCompare(b.school.name),
       );
       break;
     default:
+      // Relevance decides; between equally good matches, a verified school wins.
       scored.sort(
         (a, b) =>
           b.score - a.score ||
+          Number(b.school.verified) - Number(a.school.verified) ||
           b.school.images.gallery.length - a.school.images.gallery.length ||
           a.school.name.localeCompare(b.school.name),
       );

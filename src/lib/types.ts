@@ -80,6 +80,8 @@ export interface SearchFilters {
   hasPhotos?: boolean;
   /** Only schools clearing the career-signal bar. */
   careerReady?: boolean;
+  /** Only schools whose details Eduplana has confirmed with the school. */
+  verified?: boolean;
   sort?: SortKey;
 }
 

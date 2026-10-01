@@ -1,9 +1,8 @@
 import { AssetImage } from "@/components/asset-image";
 import Link from "next/link";
-import { Camera, Compass, MapPin, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Camera, MapPin } from "lucide-react";
 import type { School } from "@/lib/types";
 import { boardingLabel, locationLabel, shortFee } from "@/lib/format";
-import { careerProfile } from "@/lib/career";
 import { SaveButton, CompareButton } from "./school-actions";
 
 /**
@@ -16,10 +15,16 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
   // Clamped visually rather than cut in the string: CSS's ellipsis reads as
   // "there is more", a cut sentence reads as broken data.
   const teaser = school.summary?.replace(/\s+/g, " ").trim();
-  const career = careerProfile(school);
+  const verified = school.verified;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-ink-200 hover:shadow-lift">
+    <article
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift ${
+        verified
+          ? "border-brand-300 ring-1 ring-brand-500/25 hover:border-brand-400"
+          : "border-ink-100 hover:border-ink-200"
+      }`}
+    >
       <div className="relative aspect-[16/10] overflow-hidden bg-ink-100">
         {photo ? (
           <AssetImage
@@ -35,23 +40,20 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
         )}
 
         {/*
-         * One row, no photo count. The count chip sat on the right and pushed
-         * the career badge onto a second line at three-column widths — and it
-         * was telling you something the gallery on the profile shows anyway.
+         * Level on the left; on a verified school, the seal on the right. The
+         * career signal lives on the profile, where it is shown with its
+         * workings — on a card it was one chip too many and read as a claim.
          */}
-        <div className="absolute inset-x-3 top-3 flex items-center gap-1.5">
+        <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-1.5">
           <Chip tone="dark">{school.level === "primary" ? "Primary" : "Secondary"}</Chip>
-          {career.tier === "strong" ? (
-            <Chip tone="career" title={`${career.count} of 8 career indicators published`}>
-              <Compass size={10} strokeWidth={3} aria-hidden />
-              Career signals
-            </Chip>
-          ) : null}
-          {school.verified ? (
-            <Chip tone="verified">
-              <ShieldCheck size={10} strokeWidth={3} aria-hidden />
+          {verified ? (
+            <span
+              title="Details confirmed with the school by Eduplana"
+              className="inline-flex items-center gap-1 rounded-full bg-white py-1 pl-1.5 pr-2.5 text-[11px] font-bold text-brand-700 shadow-[0_2px_10px_rgb(14_42_83/0.25)]"
+            >
+              <BadgeCheck size={14} strokeWidth={2.4} aria-hidden className="fill-brand-600 text-white" />
               Verified
-            </Chip>
+            </span>
           ) : null}
         </div>
       </div>
@@ -66,6 +68,14 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
           >
             {school.name}
           </Link>
+          {verified ? (
+            <BadgeCheck
+              size={18}
+              strokeWidth={2.4}
+              aria-label="Verified"
+              className="ml-1 inline-block -translate-y-px fill-brand-600 align-middle text-white"
+            />
+          ) : null}
         </h3>
 
         <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-500">
@@ -134,13 +144,11 @@ function Chip({
   title,
 }: {
   children: React.ReactNode;
-  tone: "dark" | "career" | "verified";
+  tone: "dark";
   title?: string;
 }) {
   const tones = {
     dark: "bg-ink-950/70 text-white",
-    career: "bg-career-600 text-white",
-    verified: "bg-brand-600 text-white",
   };
   return (
     <span

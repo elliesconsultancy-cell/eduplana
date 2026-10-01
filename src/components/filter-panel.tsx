@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Compass } from "lucide-react";
+import { BadgeCheck, Compass } from "lucide-react";
 import { SchoolSearchBox } from "./school-search-box";
 import type { Facet } from "@/lib/types";
 
@@ -41,6 +41,7 @@ const CHIP_LABELS: Record<string, (value: string) => string> = {
   feeMax: (v) => FEE_OPTIONS.find((f) => f.value === v)?.label ?? `Under ₦${v}`,
   hasPhotos: () => "Has photos",
   careerReady: () => "Strong career signals",
+  verified: () => "Verified schools",
 };
 
 export function FilterPanel({ facets, total }: { facets: Facets; total: number }) {
@@ -151,6 +152,26 @@ export function FilterPanel({ facets, total }: { facets: Facets; total: number }
               ]}
               onChange={(v) => setParam("level", v)}
             />
+          </Group>
+
+          <Group title="Verified by Eduplana">
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-brand-200 bg-brand-50 p-3 text-sm">
+              <input
+                type="checkbox"
+                checked={params.get("verified") === "1"}
+                onChange={(e) => setParam("verified", e.target.checked ? "1" : null)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-brand-200 accent-brand-600"
+              />
+              <span>
+                <span className="flex items-center gap-1.5 font-semibold text-brand-900">
+                  <BadgeCheck size={15} strokeWidth={2.4} aria-hidden />
+                  Verified schools only
+                </span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-ink-600">
+                  Schools whose details Eduplana has confirmed with the school.
+                </span>
+              </span>
+            </label>
           </Group>
 
           <Group title="Career education">

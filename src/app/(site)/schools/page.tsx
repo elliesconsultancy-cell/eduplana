@@ -31,6 +31,7 @@ function toFilters(params: Params): SearchFilters {
     feeMax: Number.isFinite(feeMax) && feeMax > 0 ? feeMax : undefined,
     hasPhotos: one(params, "hasPhotos") === "1",
     careerReady: one(params, "careerReady") === "1",
+    verified: one(params, "verified") === "1",
     sort: (one(params, "sort") as SortKey) || undefined,
   };
 }
@@ -157,6 +158,7 @@ function EmptyState({ filters }: { filters: SearchFilters }) {
   drop("curriculum", "Any curriculum");
   drop("hasPhotos", "Include schools without photos");
   drop("careerReady", "Include schools without career signals");
+  drop("verified", "Include schools not yet verified");
   drop("q", "Clear the search text");
 
   return (
