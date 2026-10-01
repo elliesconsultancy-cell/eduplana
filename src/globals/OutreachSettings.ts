@@ -7,9 +7,9 @@ export const DEFAULT_SUBJECT = "{school} on Eduplana: please check your listing"
 
 export const DEFAULT_BODY = `Dear {school} team,
 
-My name is Babatunde Adegbite, and I am a co-founder of Eduplana (www.eduplana.org), a free directory that helps parents in Nigeria find and compare private schools on fees, curriculum, facilities and more.
+We are Eduplana (www.eduplana.org), a free directory that helps parents in Nigeria find and compare private schools on fees, curriculum, facilities and more.
 
-{school} is already listed on Eduplana, based on information your school has published. Parents are using these listings to decide which schools to shortlist and visit, so we want to make sure yours is accurate and complete.
+{school} is already listed on Eduplana, based on information your school has published. Parents use these listings to decide which schools to shortlist and visit, so we want to make sure yours is accurate and complete.
 
 Could you take two minutes to check it? This private link lets you review and correct your details, including fees, contact information, facilities and photographs, without creating an account:
 
@@ -20,8 +20,20 @@ If everything is already correct, you can confirm it with one click and we will 
 Thank you, and do reply to this email if you have any questions.
 
 Warm regards,
-Babatunde Adegbite
-Co-founder, Eduplana`;
+The Eduplana team`;
+
+export const DEFAULT_GENERAL_SUBJECT = "List your school on Eduplana, free";
+
+export const DEFAULT_GENERAL_BODY = `Hello,
+
+We are Eduplana (www.eduplana.org), a free directory that helps parents in Nigeria find and compare private schools on fees, curriculum, facilities and more.
+
+Parents across Nigeria use Eduplana to shortlist schools to visit. We would like to include your school, at no cost to you.
+
+If you would like to be listed, simply reply to this email with your school's name and address, and we will send you a private link to add your fees, facilities and photographs.
+
+Warm regards,
+The Eduplana team`;
 
 /**
  * The outreach email, editable from the admin.
@@ -49,7 +61,7 @@ export const OutreachSettings: GlobalConfig = {
           name: "fromName",
           type: "text",
           required: true,
-          defaultValue: "Babatunde at Eduplana",
+          defaultValue: "Eduplana",
           admin: { width: "50%", description: "Shown as the sender." },
         },
         {
@@ -79,6 +91,25 @@ export const OutreachSettings: GlobalConfig = {
         typeof value === "string" && value.includes("{link}")
           ? true
           : "The email must include {link}, or schools have no way to reach their listing.",
+    },
+    {
+      type: "collapsible",
+      label: "Email for schools not on Eduplana",
+      admin: {
+        initCollapsed: true,
+        description:
+          "Sent from \u201cSend to specific addresses\u201d when an address does not belong to any listing, so there is no private link to give. No placeholders.",
+      },
+      fields: [
+        { name: "generalSubject", type: "text", required: true, defaultValue: DEFAULT_GENERAL_SUBJECT },
+        {
+          name: "generalBody",
+          type: "textarea",
+          required: true,
+          defaultValue: DEFAULT_GENERAL_BODY,
+          admin: { rows: 14 },
+        },
+      ],
     },
     {
       name: "dailyLimit",

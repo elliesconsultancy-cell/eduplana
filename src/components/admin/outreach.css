@@ -34,6 +34,7 @@
   padding-top: var(--ad-4);
   border-top: 1px solid var(--ad-border);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font-family: inherit;
   font-size: 0.9rem;
   line-height: 1.55;
@@ -97,4 +98,93 @@
 .ad-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Tabs: where recipients come from. */
+.or-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-block-end: var(--ad-5);
+  padding: 4px;
+  border: 1px solid var(--ep-line);
+  border-radius: 12px;
+  background: var(--ep-surface);
+  width: fit-content;
+  max-width: 100%;
+}
+.or-tabs a {
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ep-muted);
+  text-decoration: none;
+}
+.or-tabs a:hover {
+  color: var(--ep-ink);
+}
+.or-tabs a.is-active {
+  background: var(--ep-brand-soft);
+  color: var(--ep-brand-ink);
+}
+.or-tabs__quota {
+  padding-inline: 12px;
+  font-size: 0.82rem;
+  color: var(--ep-muted);
+}
+
+/* The recipient list: scrolls inside the card rather than stretching it. */
+.or-list {
+  max-height: 360px;
+  margin: var(--ad-4) calc(var(--ad-5) * -1) 0;
+  overflow: auto;
+  border-block: 1px solid var(--ep-line);
+}
+.or-list--tall {
+  max-height: 520px;
+}
+.or-list .ad-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--ep-surface);
+}
+.or-list .ad-table tbody th {
+  max-width: 280px;
+}
+.or-send {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ad-3);
+  margin-block-start: var(--ad-4);
+}
+.or-addr {
+  display: grid;
+  gap: var(--ad-3);
+  justify-items: start;
+}
+.or-addr textarea {
+  width: 100%;
+  padding: var(--ad-3);
+  border: 1px solid var(--ep-line-strong);
+  border-radius: var(--ep-radius-m);
+  background: var(--theme-input-bg);
+  color: var(--ep-ink);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+.or-addr textarea:focus {
+  outline: none;
+  border-color: var(--ep-brand);
+  box-shadow: 0 0 0 4px var(--ep-ring);
+}
+.ad-pill--up {
+  background: var(--ep-up-soft);
+  color: var(--ep-up);
 }

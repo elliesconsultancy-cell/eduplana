@@ -8,7 +8,12 @@ import { allSchools } from "@/lib/schools";
 import { toSchool, type SchoolDoc } from "@/lib/school-record";
 import { SITE_URL } from "@/lib/site";
 import type { School } from "@/lib/types";
-import { DEFAULT_BODY, DEFAULT_SUBJECT } from "@/globals/OutreachSettings";
+import {
+  DEFAULT_BODY,
+  DEFAULT_GENERAL_BODY,
+  DEFAULT_GENERAL_SUBJECT,
+  DEFAULT_SUBJECT,
+} from "@/globals/OutreachSettings";
 import {
   complianceFooter,
   fill,
@@ -48,6 +53,8 @@ export interface Settings {
   fromEmail: string;
   subject: string;
   body: string;
+  generalSubject: string;
+  generalBody: string;
   dailyLimit: number;
 }
 
@@ -55,10 +62,12 @@ export async function settings(payload?: Payload): Promise<Settings> {
   const p = payload ?? (await db());
   const s = (await p.findGlobal({ slug: "outreach-settings", overrideAccess: true })) as Partial<Settings>;
   return {
-    fromName: s.fromName || "Babatunde at Eduplana",
+    fromName: s.fromName || "Eduplana",
     fromEmail: s.fromEmail || "info@eduplana.org",
     subject: s.subject || DEFAULT_SUBJECT,
     body: s.body || DEFAULT_BODY,
+    generalSubject: s.generalSubject || DEFAULT_GENERAL_SUBJECT,
+    generalBody: s.generalBody || DEFAULT_GENERAL_BODY,
     dailyLimit: Math.min(95, Math.max(1, Number(s.dailyLimit) || 80)),
   };
 }
@@ -222,15 +231,175 @@ export async function recipients(filters: Filters, known?: ContactRow[]): Promis
     .sort((a, b) => a.email.localeCompare(b.email));
 }
 
-/** Emails sent in the last 24 hours: every one carries a freshly issued link. */
+/**
+ * Contact rows for addresses that belong to no listing are keyed by the
+ * address itself under this prefix, so they share the table — and its opt-out
+ * and "already emailed" checks — with school rows.
+ */
+const ADDRESS_KEY = "addr:";
+
+/**
+ * Emails sent in the last 24 hours. A listing email always carries a freshly
+ * issued link, so links count those; general emails carry none and are counted
+ * from their contact rows.
+ */
 export async function sentInLastDay(payload?: Payload): Promise<number> {
   const p = payload ?? (await db());
-  const { totalDocs } = await p.count({
-    collection: "access-links",
-    where: { createdAt: { greater_than: new Date(Date.now() - DAY).toISOString() } },
+  const since = new Date(Date.now() - DAY).toISOString();
+  const [links, general] = await Promise.all([
+    p.count({ collection: "access-links", where: { createdAt: { greater_than: since } }, overrideAccess: true }),
+    p.count({
+      collection: "school-contacts",
+      where: { and: [{ school: { like: ADDRESS_KEY } }, { lastSentAt: { greater_than: since } }] },
+      overrideAccess: true,
+    }),
+  ]);
+  return links.totalDocs + general.totalDocs;
+}
+
+/* ------------------------------------------------- specific addresses -- */
+
+export type PlanStatus = "listing" | "general" | "sent-before" | "opted-out" | "invalid" | "duplicate";
+
+export interface PlannedAddress {
+  email: string;
+  status: PlanStatus;
+  /** The listings at this address, when it belongs to any. */
+  schools: Inbox["schools"];
+  lastSentAt: string | null;
+}
+
+const VALID = /^[a-z0-9]([a-z0-9._%+-]*[a-z0-9])?@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+export const MAX_ADDRESSES = 200;
+
+export function splitAddresses(raw: string): string[] {
+  return raw
+    .split(/[\s,;]+/)
+    .map((e) => e.trim().toLowerCase().replace(/^mailto:/, "").replace(/^[<"']+|[>"'.]+$/g, ""))
+    .filter(Boolean)
+    .slice(0, MAX_ADDRESSES);
+}
+
+/**
+ * What would happen to each pasted address, decided before anything is sent:
+ * which listing it belongs to, or that it belongs to none, or why it will be
+ * skipped. The page shows this list, and sending works through it unchanged.
+ */
+export async function planAddresses(raw: string[], includeSent = false, known?: ContactRow[]): Promise<PlannedAddress[]> {
+  const rows = known ?? (await contacts());
+  const byEmail = new Map<string, ContactRow[]>();
+  for (const r of rows) byEmail.set(r.email, [...(byEmail.get(r.email) ?? []), r]);
+  const listings = new Map<string, Inbox["schools"]>();
+  for (const s of await allSchools()) {
+    if (!s.email) continue;
+    const e = s.email.toLowerCase();
+    listings.set(e, [...(listings.get(e) ?? []), { id: s.id, name: s.name, area: s.area, state: s.state, level: s.level }]);
+  }
+
+  const seen = new Set<string>();
+  return raw.map((email) => {
+    const schools = listings.get(email) ?? [];
+    const prior = byEmail.get(email) ?? [];
+    const lastSentAt = prior.map((r) => r.lastSentAt).filter(Boolean).sort().pop() ?? null;
+    let status: PlanStatus;
+    if (!VALID.test(email)) status = "invalid";
+    else if (seen.has(email)) status = "duplicate";
+    else if (prior.some((r) => r.optedOut)) status = "opted-out";
+    else if (lastSentAt && !includeSent) status = "sent-before";
+    else status = schools.length ? "listing" : "general";
+    seen.add(email);
+    return { email, status, schools, lastSentAt };
+  });
+}
+
+/** Sends the general email to addresses that belong to no listing, and records them. */
+export async function sendGeneral(addresses: string[]): Promise<{ sent: number; error?: string }> {
+  const payload = await db();
+  const s = await settings(payload);
+  const remaining = s.dailyLimit - (await sentInLastDay(payload));
+  if (remaining <= 0) throw new LimitError(`Today's limit of ${s.dailyLimit} emails has been reached.`);
+  const queue = addresses.slice(0, remaining);
+  let sent = 0;
+  for (let i = 0; i < queue.length; i += 50) {
+    const batch = queue.slice(i, i + 50);
+    const messages = batch.map((email) => generalMessage(s, email));
+    const key = createHash("sha256").update(batch.join(",")).digest("hex");
+    try {
+      await sendBatch(messages, `general-${new Date().toISOString().slice(0, 10)}-${key}`);
+    } catch (error) {
+      return { sent, error: error instanceof Error ? error.message : String(error) };
+    }
+    const now = new Date().toISOString();
+    const { docs } = await payload.find({
+      collection: "school-contacts",
+      where: { school: { in: batch.map((e) => ADDRESS_KEY + e) } },
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+    });
+    const existing = new Map(docs.map((d) => [String(d.school), d]));
+    for (const email of batch) {
+      const prior = existing.get(ADDRESS_KEY + email);
+      if (prior) {
+        await payload.update({
+          collection: "school-contacts",
+          id: prior.id,
+          data: { sends: Number(prior.sends ?? 0) + 1, lastSentAt: now },
+          overrideAccess: true,
+        });
+      } else {
+        await payload.create({
+          collection: "school-contacts",
+          data: { school: ADDRESS_KEY + email, name: `${email} (not on Eduplana)`, email, status: "sent", sends: 1, firstSentAt: now, lastSentAt: now },
+          overrideAccess: true,
+        });
+      }
+    }
+    sent += batch.length;
+  }
+  return { sent };
+}
+
+/** The listings at each of these addresses, for sending the normal outreach email. */
+export async function inboxesFor(addresses: string[]): Promise<Inbox[]> {
+  const wanted = new Set(addresses);
+  const inboxes = new Map<string, Inbox>();
+  for (const s of await allSchools()) {
+    const e = s.email?.toLowerCase();
+    if (!e || !wanted.has(e)) continue;
+    const inbox = inboxes.get(e) ?? { email: e, schools: [] };
+    inbox.schools.push({ id: s.id, name: s.name, area: s.area, state: s.state, level: s.level });
+    inboxes.set(e, inbox);
+  }
+  return addresses.map((a) => inboxes.get(a)).filter((i): i is Inbox => Boolean(i));
+}
+
+export interface RecentSend {
+  name: string;
+  email: string;
+  status: string;
+  lastSentAt: string;
+  school: string;
+}
+
+/** The latest contacts, newest first, for the "Recently sent" list. */
+export async function recentSends(limit = 12, payload?: Payload): Promise<RecentSend[]> {
+  const p = payload ?? (await db());
+  const { docs } = await p.find({
+    collection: "school-contacts",
+    where: { lastSentAt: { exists: true } },
+    sort: "-lastSentAt",
+    limit,
+    depth: 0,
     overrideAccess: true,
   });
-  return totalDocs;
+  return docs.map((d) => ({
+    name: String(d.name ?? d.email),
+    email: String(d.email),
+    status: String(d.status),
+    lastSentAt: String(d.lastSentAt),
+    school: String(d.school),
+  }));
 }
 
 /* -------------------------------------------------------------- messages -- */
@@ -256,6 +425,26 @@ export function outreachMessage(s: Settings, inbox: Inbox, link: string, to = in
     text: body,
     html: toHtml(body),
     unsubscribeUrl: oneClickUnsubscribeUrl(inbox.email),
+  };
+}
+
+export function generalMessage(s: Settings, to: string): Message {
+  const unsubscribe = unsubscribeUrl(to);
+  const footer = [
+    "—",
+    `You are receiving this because ${to} was given to us as a contact address for a school. ` +
+      "If that is not right, or you would rather not hear from us, use the link below.",
+    `To stop receiving emails from us: ${unsubscribe}`,
+  ].join("\n");
+  const body = `${s.generalBody}\n\n${footer}`;
+  return {
+    from: from(s),
+    replyTo: s.fromEmail,
+    to,
+    subject: s.generalSubject,
+    text: body,
+    html: toHtml(body),
+    unsubscribeUrl: oneClickUnsubscribeUrl(to),
   };
 }
 
@@ -355,7 +544,13 @@ export async function sendTest(to: string, inbox: Inbox): Promise<void> {
   }
   const link = await issueLink(payload, to, inbox.schools.map((x) => x.id), "requested", 1);
   const message = outreachMessage(s, inbox, manageUrl(link.token), to);
-  await sendOne({ ...message, subject: `[Test] ${message.subject}` });
+  try {
+    await sendOne({ ...message, subject: `[Test] ${message.subject}` });
+  } catch (error) {
+    // A link whose email never left would still count against the day's limit.
+    await payload.delete({ collection: "access-links", id: link.id, overrideAccess: true });
+    throw error;
+  }
 }
 
 /* ----------------------------------------------------- school-requested -- */
@@ -402,14 +597,19 @@ export async function requestLink(rawEmail: string): Promise<void> {
     `The link works for ${REQUESTED_LINK_DAYS * 24} hours. If you did not ask for it, you can ignore this email — nothing changes unless someone uses the link.`,
     "Eduplana",
   ].join("\n\n");
-  await sendOne({
-    from: from(s),
-    replyTo: s.fromEmail,
-    to: email,
-    subject: `Your link to update ${names} on Eduplana`,
-    text,
-    html: toHtml(text),
-  });
+  try {
+    await sendOne({
+      from: from(s),
+      replyTo: s.fromEmail,
+      to: email,
+      subject: `Your link to update ${names} on Eduplana`,
+      text,
+      html: toHtml(text),
+    });
+  } catch (error) {
+    await payload.delete({ collection: "access-links", id: link.id, overrideAccess: true });
+    throw error;
+  }
 }
 
 /* ------------------------------------------------------------ opting out -- */
@@ -433,6 +633,15 @@ export async function optOut(email: string): Promise<void> {
       await payload.create({
         collection: "school-contacts",
         data: { school: s.id, name: s.name, email: address, status: "none", optedOut: true, sends: 0 },
+        overrideAccess: true,
+      });
+    }
+    // An address on no listing still has to be remembered, or it could be
+    // pasted into "Send to specific addresses" again.
+    if (schools.length === 0) {
+      await payload.create({
+        collection: "school-contacts",
+        data: { school: ADDRESS_KEY + address, name: `${address} (not on Eduplana)`, email: address, status: "none", optedOut: true, sends: 0 },
         overrideAccess: true,
       });
     }

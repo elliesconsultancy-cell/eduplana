@@ -790,6 +790,8 @@ export interface OutreachSetting {
   fromEmail: string;
   subject: string;
   body: string;
+  generalSubject: string;
+  generalBody: string;
   /**
    * Most emails sent in any 24 hours. Resend's free plan allows 100 a day across everything, including the Gmail send-as addresses, so this leaves headroom. A new domain that sends hundreds at once gets marked as spam — ramp up slowly.
    */
@@ -806,6 +808,8 @@ export interface OutreachSettingsSelect<T extends boolean = true> {
   fromEmail?: T;
   subject?: T;
   body?: T;
+  generalSubject?: T;
+  generalBody?: T;
   dailyLimit?: T;
   updatedAt?: T;
   createdAt?: T;
