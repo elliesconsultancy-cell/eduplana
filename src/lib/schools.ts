@@ -514,9 +514,11 @@ export async function relatedSchools(school: School, limit = 4): Promise<School[
       ? Math.abs(s.fee.min - school.fee.min)
       : Number.MAX_SAFE_INTEGER;
 
-  return [...sameArea, ...sameState]
-    .sort((a, b) => feeGap(a) - feeGap(b) || profileDepth(b) - profileDepth(a))
-    .slice(0, limit);
+  // Verified schools lead within each group: a parent comparing should see the
+  // listings whose details were confirmed before the ones that were not.
+  const byPreference = (a: School, b: School) =>
+    Number(b.verified) - Number(a.verified) || feeGap(a) - feeGap(b) || profileDepth(b) - profileDepth(a);
+  return [...sameArea.sort(byPreference), ...sameState.sort(byPreference)].slice(0, limit);
 }
 
 export const FEE_STEPS = [50_000, 150_000, 300_000, 500_000, 750_000, 1_000_000];

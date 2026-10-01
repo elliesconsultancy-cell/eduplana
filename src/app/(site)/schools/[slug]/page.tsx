@@ -119,7 +119,9 @@ export default async function SchoolPage({
   const school = await getSchool(slug);
   if (!school) notFound();
 
-  const related = await relatedSchools(school);
+  // A verified school's page is the school's own: it does not point parents
+  // at its neighbours. Unverified pages still suggest nearby schools.
+  const related = school.verified ? [] : await relatedSchools(school);
   const summary = school.summary;
   const phone = displayPhone(school.phone);
   const tel = telHref(school.phone);
@@ -363,14 +365,21 @@ function Masthead({ school }: { school: School }) {
 
       <div className="min-w-0 flex-1">
         <h1 className="font-display tracking-display text-[1.75rem] leading-[1.12] text-ink-950 sm:text-[2.6rem]">
-          {school.name}
           {school.verified ? (
-            <BadgeCheck
-              aria-label="Verified by Eduplana"
-              strokeWidth={2.2}
-              className="ml-2 inline-block size-7 -translate-y-1 fill-brand-600 align-middle text-white sm:size-9"
-            />
-          ) : null}
+            <>
+              {school.name.trim().split(/\s+/).slice(0, -1).join(" ")}{" "}
+              <span className="whitespace-nowrap">
+                {school.name.trim().split(/\s+/).pop()}
+                <BadgeCheck
+                  aria-label="Verified by Eduplana"
+                  strokeWidth={2.2}
+                  className="ml-2 inline-block size-7 -translate-y-1 fill-brand-600 align-middle text-white sm:size-9"
+                />
+              </span>
+            </>
+          ) : (
+            school.name
+          )}
         </h1>
         {school.tagline ? (
           <p className="mt-1.5 text-[15px] text-brand-700">{school.tagline}</p>

@@ -19,10 +19,12 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
 
   return (
     <article
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift ${
+      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white transition-all duration-300 hover:-translate-y-1 ${
         verified
-          ? "border-brand-300 ring-1 ring-brand-500/25 hover:border-brand-400"
-          : "border-ink-100 hover:border-ink-200"
+          ? // Verified: a brand frame and a blue glow, so the card reads as a
+            // different kind of listing before any text is read.
+            "border-2 border-brand-500 shadow-[0_14px_34px_-14px_rgb(34_96_183/0.55)] hover:border-brand-600 hover:shadow-[0_22px_46px_-16px_rgb(34_96_183/0.65)]"
+          : "border border-ink-100 shadow-card hover:border-ink-200 hover:shadow-lift"
       }`}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-ink-100">
@@ -44,21 +46,26 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
          * career signal lives on the profile, where it is shown with its
          * workings — on a card it was one chip too many and read as a claim.
          */}
-        <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-1.5">
+        <div className="absolute inset-x-3 top-3 flex items-center gap-1.5">
           <Chip tone="dark">{school.level === "primary" ? "Primary" : "Secondary"}</Chip>
-          {verified ? (
-            <span
-              title="Details confirmed with the school by Eduplana"
-              className="inline-flex items-center gap-1 rounded-full bg-white py-1 pl-1.5 pr-2.5 text-[11px] font-bold text-brand-700 shadow-[0_2px_10px_rgb(14_42_83/0.25)]"
-            >
-              <BadgeCheck size={14} strokeWidth={2.4} aria-hidden className="fill-brand-600 text-white" />
-              Verified
-            </span>
-          ) : null}
         </div>
+
+        {verified ? (
+          <div
+            title="Details confirmed with the school by Eduplana"
+            className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-brand-950/95 via-brand-900/75 to-transparent px-4 pb-3 pt-12"
+          >
+            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white shadow-sm">
+              <BadgeCheck size={17} strokeWidth={2.3} aria-hidden className="fill-brand-600 text-white" />
+            </span>
+            <span className="text-[13px] font-bold tracking-wide text-white">Verified by Eduplana</span>
+          </div>
+        ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div
+        className={`flex flex-1 flex-col p-5 ${verified ? "bg-gradient-to-b from-brand-50 via-brand-50/40 to-white" : ""}`}
+      >
         <h3 className="font-display text-[17px] leading-snug text-ink-950">
           {/* Stretched link keeps the whole card clickable without nesting
               interactive elements inside an anchor. */}
@@ -66,16 +73,8 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
             href={`/schools/${school.slug}`}
             className="transition-colors before:absolute before:inset-0 group-hover:text-brand-700"
           >
-            {school.name}
+            <NameWithCheck name={school.name} verified={verified} />
           </Link>
-          {verified ? (
-            <BadgeCheck
-              size={18}
-              strokeWidth={2.4}
-              aria-label="Verified"
-              className="ml-1 inline-block -translate-y-px fill-brand-600 align-middle text-white"
-            />
-          ) : null}
         </h3>
 
         <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-500">
@@ -157,5 +156,29 @@ function Chip({
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * The name, with the verified check bound to its last word: on a long name a
+ * check left to wrap on its own reads as a stray mark rather than a badge.
+ */
+function NameWithCheck({ name, verified }: { name: string; verified: boolean }) {
+  if (!verified) return <>{name}</>;
+  const words = name.trim().split(/\s+/);
+  const last = words.pop();
+  return (
+    <>
+      {words.length ? `${words.join(" ")} ` : ""}
+      <span className="whitespace-nowrap">
+        {last}
+        <BadgeCheck
+          size={18}
+          strokeWidth={2.4}
+          aria-label="Verified"
+          className="ml-1 inline-block -translate-y-px fill-brand-600 align-middle text-white"
+        />
+      </span>
+    </>
   );
 }
