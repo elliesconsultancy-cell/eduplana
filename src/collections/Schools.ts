@@ -176,9 +176,13 @@ export const Schools: CollectionConfig = {
 
   // Edits are staged until published, so a half-finished record never appears
   // on the public site. Version history also makes mistakes recoverable.
+  //
+  // Five is enough to undo a bad edit. Every version is a full copy of the
+  // record, and across 7,375 schools twenty each would outgrow the free plan's
+  // 0.5 GB of storage long before anyone needed the twentieth.
   versions: {
     drafts: true,
-    maxPerDoc: 20,
+    maxPerDoc: 5,
   },
   access: {
     /**

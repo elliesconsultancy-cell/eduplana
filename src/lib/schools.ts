@@ -1,14 +1,14 @@
 import "server-only";
 
 import { cache } from "react";
-import primary from "@/data/schools.primary.json";
-import secondary from "@/data/schools.secondary.json";
+import snapshot from "@/data/schools.snapshot.json";
 import { unstable_cache } from "next/cache";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { SCHOOLS_TAG } from "./cache-tags";
 import { careerProfile } from "./career";
-import type { Facet, FeeItem, GalleryImage, School, SearchFilters, SortKey } from "./types";
+import { toSchool, type SchoolDoc } from "./school-record";
+import type { Facet, School, SearchFilters, SortKey } from "./types";
 
 /**
  * The data layer.
@@ -16,157 +16,135 @@ import type { Facet, FeeItem, GalleryImage, School, SearchFilters, SortKey } fro
  * Records live in Postgres and are edited in the admin. Everything above this
  * file calls `search()`, `getSchool()`, `facetsFor()` and friends, so the
  * surface is unchanged from when these records were flat JSON — only the
- * bodies below read from the database instead of an import.
+ * bodies below decide where the records come from.
  *
- * Two layers of caching, doing different jobs:
+ * Where they come from is shaped by one number: Neon's free plan allows 5 GB of
+ * data out of the database a month, and the whole directory is 9.5 MB. Reading
+ * it in full wherever a server instance starts — and instances start all the
+ * time, for builds, for traffic, after idling — spent that allowance within a
+ * day of the switch to Postgres and locked the database for the rest of the
+ * month. So the directory is never read in full at runtime:
  *
- *   unstable_cache  spares the database. One read of all published records is
- *                   shared across every visitor until an edit invalidates it,
- *                   so Neon sees a handful of queries a day rather than one
- *                   per page view.
+ *   snapshot   Every published record, as of `syncedAt`, ships inside the
+ *              deployment (scripts/snapshot-schools.mts). Starting an instance
+ *              costs the database nothing.
  *
- *   react cache     spares the CPU. The slug index and the search haystack are
- *                   Maps, which cannot be serialised into the data cache, so
- *                   they are rebuilt once per request and reused within it.
+ *   changes    What the admin has saved since then: records updated after
+ *              `syncedAt`, plus anything unpublished or deleted. Normally a
+ *              handful of rows. Held in the shared data cache and only re-read
+ *              when an edit invalidates the tag, so one read serves every
+ *              instance until the next save.
  *
- * An edit in the admin invalidates the tag (see the schools collection's
- * afterChange hook) and the next request rebuilds — no redeploy.
+ * Refreshing the snapshot after bulk edits keeps the change set small; the
+ * script's header says how.
  */
 
 /** Re-exported for callers that already import from here. */
 export { SCHOOLS_TAG };
 
+const BASE = (snapshot as unknown as { syncedAt: string; schools: School[] }).schools;
+
 /**
- * Payload returns array rows with an extra `id`, and `_status` alongside the
- * document. Narrowing here rather than casting keeps the domain type honest
- * about what the rest of the app is allowed to assume.
+ * Changes are records saved strictly after the snapshot's newest timestamp.
+ *
+ * Strictly, with no overlap: a bulk write stamps thousands of rows with one
+ * timestamp, and a window reaching back over it would refetch all of them on
+ * every edit — the cost this arrangement exists to avoid. The snapshot script
+ * is run deliberately, not while editors are working, so there is no in-flight
+ * save for an overlap to catch.
  */
-type SchoolDoc = Record<string, unknown>;
+const SINCE = (snapshot as { syncedAt: string }).syncedAt;
 
-function toSchool(doc: SchoolDoc): School {
-  const images = (doc.images ?? {}) as { logo?: string | null; gallery?: unknown[] };
-  const fee = (doc.fee ?? {}) as { label?: string | null; min?: number | null; max?: number | null };
-  const list = (value: unknown): string[] => (Array.isArray(value) ? (value as string[]) : []);
-
-  return {
-    id: String(doc.id),
-    slug: String(doc.slug),
-    name: String(doc.name),
-    level: doc.level as School["level"],
-    tagline: (doc.tagline as string | null) ?? null,
-    summary: (doc.summary as string | null) ?? null,
-    state: (doc.state as string | null) ?? null,
-    area: (doc.area as string | null) ?? null,
-    address: (doc.address as string | null) ?? null,
-    busStop: (doc.busStop as string | null) ?? null,
-    phone: (doc.phone as string | null) ?? null,
-    email: (doc.email as string | null) ?? null,
-    admissionsOfficer: (doc.admissionsOfficer as string | null) ?? null,
-    admissionsRole: (doc.admissionsRole as string | null) ?? null,
-    website: (doc.website as string | null) ?? null,
-    yearFounded: (doc.yearFounded as number | null) ?? null,
-    curricula: list(doc.curricula),
-    scope: (doc.scope as string | null) ?? null,
-    fee: { label: fee.label ?? null, min: fee.min ?? null, max: fee.max ?? null },
-    feeItems: (Array.isArray(doc.feeItems) ? doc.feeItems : []).map((row) => {
-      const r = row as { label?: string; amount?: number };
-      return { label: String(r.label ?? ""), amount: Number(r.amount ?? 0) } satisfies FeeItem;
-    }),
-    admissionForm: (doc.admissionForm as string | null) ?? null,
-    day: Boolean(doc.day),
-    boarding: Boolean(doc.boarding),
-    faith: (doc.faith as string) ?? "Secular",
-    maxClassSize: (doc.maxClassSize as number | null) ?? null,
-    scholarship: (doc.scholarship as string | null) ?? null,
-    siblingsDiscount: (doc.siblingsDiscount as string | null) ?? null,
-    facilities: list(doc.facilities),
-    activities: list(doc.activities),
-    clubs: list(doc.clubs),
-    images: {
-      logo: images.logo ?? null,
-      gallery: (images.gallery ?? []).map((row) => {
-        const g = row as { full?: string; thumb?: string };
-        return { full: String(g.full ?? ""), thumb: String(g.thumb ?? "") } satisfies GalleryImage;
-      }),
-    },
-    verified: Boolean(doc.verified),
-  };
+interface Changes {
+  /** Minted per read, so an instance can tell its copy is out of date. */
+  version: string;
+  upserts: School[];
+  removals: string[];
 }
 
-/**
- * Every published record, in one query.
- *
- * `pagination: false` rather than a large `limit`: a limit that quietly sat
- * below the row count would drop schools off the site with nothing to show for
- * it. `depth: 0` because nothing here is a relationship — gallery rows and fee
- * lines are array fields and come back regardless.
- */
-async function fetchPublished(): Promise<School[]> {
-  try {
-    const payload = await getPayload({ config });
-    const { docs } = await payload.find({
+async function fetchChanges(since: string): Promise<Changes> {
+  const payload = await getPayload({ config });
+
+  // Every status, not just published: a record unpublished after the snapshot
+  // has to be taken down, and its save is what moved its timestamp.
+  const { docs } = await payload.find({
+    collection: "schools",
+    where: { updatedAt: { greater_than: since } },
+    pagination: false,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  const upserts: School[] = [];
+  const removals: string[] = [];
+  for (const doc of docs as unknown as SchoolDoc[]) {
+    if (doc._status === "published") upserts.push(toSchool(doc));
+    else removals.push(String(doc.id));
+  }
+
+  /*
+   * A deleted row leaves no timestamp behind, so deletions cannot be found by
+   * the query above. A count can: if the database holds a different number of
+   * published records than snapshot + changes would, something was deleted (or
+   * published without a save, by hand). Only then is the id list fetched — a
+   * few hundred KB — to work out which.
+   */
+  const expected = new Set(BASE.map((s) => s.id));
+  for (const s of upserts) expected.add(s.id);
+  for (const id of removals) expected.delete(id);
+
+  const { totalDocs } = await payload.count({
+    collection: "schools",
+    where: { _status: { equals: "published" } },
+    overrideAccess: true,
+  });
+
+  if (totalDocs !== expected.size) {
+    const { docs: live } = await payload.find({
       collection: "schools",
       where: { _status: { equals: "published" } },
       pagination: false,
       depth: 0,
       overrideAccess: true,
+      select: { slug: true },
     });
-    return docs.map((doc) => toSchool(doc as unknown as SchoolDoc));
-  } catch (error) {
-    /*
-     * The site does not go dark because the database is unavailable.
-     *
-     * The JSON files were kept as the migration's rollback; this makes them a
-     * live fallback as well. Visitors get the last committed snapshot — stale
-     * by whatever has been edited since, which is a far better failure than
-     * every school page returning 500. The admin still needs the database and
-     * will still fail, which is correct: an editor should know.
-     */
-    console.error("[schools] database unavailable, serving the committed snapshot", error);
-    return [
-      ...(primary as unknown as School[]),
-      ...(secondary as unknown as School[]),
-    ];
+    const liveIds = new Set(live.map((d) => String(d.id)));
+    for (const id of expected) if (!liveIds.has(id)) removals.push(id);
+
+    const unknown = [...liveIds].filter((id) => !expected.has(id));
+    if (unknown.length > 0) {
+      const { docs: extra } = await payload.find({
+        collection: "schools",
+        where: { id: { in: unknown } },
+        pagination: false,
+        depth: 0,
+        overrideAccess: true,
+      });
+      for (const doc of extra) upserts.push(toSchool(doc as unknown as SchoolDoc));
+    }
   }
+
+  if (upserts.length > 1000) {
+    // The data cache refuses entries over 2 MB, and past that every instance
+    // reads the change set from Postgres itself — correct, but it is the cost
+    // this whole arrangement exists to avoid.
+    console.warn(
+      `[schools] ${upserts.length} records changed since the snapshot — run scripts/snapshot-schools.mts and redeploy`,
+    );
+  }
+
+  return { version: crypto.randomUUID(), upserts, removals };
 }
 
 /**
- * A token that changes exactly when the data does.
+ * The change set, shared across every instance through the data cache.
  *
- * The obvious approach — wrapping the whole dataset in `unstable_cache` — does
- * not work: entries are capped at 2 MB and the dataset is 9.5 MB, so every
- * write was silently rejected and every render fell through to Postgres. Even
- * a trimmed projection is 6.3 MB, so there is no version of that idea that fits.
- *
- * What does fit is a token. The cached value is a random string, so it is a few
- * bytes; when the admin invalidates the tag the entry is dropped and the next
- * read mints a different one. Comparing it against the token held alongside the
- * in-process copy below tells us whether that copy is stale, without asking the
- * database anything.
- *
- * `revalidate` is a safety net rather than the mechanism: if an invalidation is
- * ever missed, the site heals itself within five minutes instead of serving a
- * stale directory until the next deploy.
+ * No `revalidate`: a timer re-reading the database is precisely what exhausted
+ * the quota the first time. The tag is invalidated by the schools collection's
+ * afterChange and afterDelete hooks, so the set is re-read exactly when the
+ * data changes and at no other time.
  */
-const readVersion = unstable_cache(
-  async () => crypto.randomUUID(),
-  ["schools:version"],
-  /*
-   * Invalidated by tag only — deliberately no `revalidate`.
-   *
-   * A five-minute refresh looked like a cheap safety net and was not: it
-   * re-read all 7,375 records, 9.5 MB, every five minutes in every running
-   * instance. That is 2.7 GB a day per instance against a 5 GB monthly
-   * allowance, and it exhausted the quota in about two days, taking the whole
-   * site down with it.
-   *
-   * The tag is invalidated by the schools collection's afterChange hook, which
-   * runs on every save, so the cache is refreshed exactly when the data
-   * changes and at no other time. If an invalidation is ever missed, saving
-   * any record clears it.
-   */
-  { tags: [SCHOOLS_TAG] },
-);
+const readChanges = unstable_cache(fetchChanges, ["schools:changes"], { tags: [SCHOOLS_TAG] });
 
 interface Dataset {
   all: School[];
@@ -190,34 +168,55 @@ function index(all: School[]): Dataset {
   };
 }
 
-/**
- * The dataset and the token it was built from, held for the life of the
- * process. Serverless instances are reused between requests, so in practice
- * this is read far more often than it is filled.
- */
-let held: { version: string; data: Dataset } | null = null;
-let inFlight: Promise<Dataset> | null = null;
+function apply(changes: Changes): School[] {
+  const byId = new Map(BASE.map((s) => [s.id, s]));
+  for (const id of changes.removals) byId.delete(id);
+  for (const s of changes.upserts) byId.set(s.id, s);
+  return [...byId.values()];
+}
 
 /**
- * Deduplicated per request by React's cache, and shared across requests by the
- * token check. A burst of concurrent requests on a cold instance waits on one
- * query rather than starting several.
+ * The dataset and the change-set version it was built from, held for the life
+ * of the process. Instances are reused between requests, so this is read far
+ * more often than it is built.
  */
-const dataset = cache(async (): Promise<Dataset> => {
-  const version = await readVersion();
-  if (held && held.version === version) return held.data;
-  if (!inFlight) {
-    inFlight = fetchPublished()
-      .then((all) => {
-        const data = index(all);
-        held = { version, data };
-        return data;
-      })
-      .finally(() => {
-        inFlight = null;
-      });
+let held: { version: string; data: Dataset } | null = null;
+let inFlight: Promise<Changes> | null = null;
+let snapshotOnly: Dataset | null = null;
+
+/** After a failed read, the database is left alone for a minute. */
+let quietUntil = 0;
+
+/**
+ * The site does not go dark because the database is unavailable.
+ *
+ * A failed read falls back to whatever this instance last built, or the
+ * snapshot itself on a fresh one — stale by the edits since, which is a far
+ * better failure than every school page returning 500. The pause stops every
+ * request in the meantime from waiting on a connection that is not coming.
+ */
+async function currentChanges(): Promise<Changes | null> {
+  if (Date.now() < quietUntil) return null;
+  inFlight ??= readChanges(SINCE).finally(() => {
+    inFlight = null;
+  });
+  try {
+    return await inFlight;
+  } catch (error) {
+    console.error("[schools] database unavailable, serving the snapshot", error);
+    quietUntil = Date.now() + 60_000;
+    return null;
   }
-  return inFlight;
+}
+
+/** Deduplicated per request by React's cache. */
+const dataset = cache(async (): Promise<Dataset> => {
+  const changes = await currentChanges();
+  if (!changes) return held?.data ?? (snapshotOnly ??= index(BASE));
+  if (held?.version === changes.version) return held.data;
+  const data = index(apply(changes));
+  held = { version: changes.version, data };
+  return data;
 });
 
 export async function allSchools(): Promise<School[]> {
