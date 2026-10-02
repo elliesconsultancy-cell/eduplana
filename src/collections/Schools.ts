@@ -429,6 +429,18 @@ export const Schools: CollectionConfig = {
       ],
     },
     {
+      name: "featured",
+      type: "checkbox",
+      defaultValue: false,
+      index: true,
+      access: { update: isAdmin },
+      admin: {
+        position: "sidebar",
+        description:
+          "Show in \u201cFeatured schools\u201d on the home page. Only verified schools are featured; ticking this on an unverified school has no effect until it is verified.",
+      },
+    },
+    {
       name: "verified",
       type: "checkbox",
       defaultValue: false,

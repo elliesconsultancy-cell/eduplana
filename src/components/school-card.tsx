@@ -58,7 +58,7 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
             <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white shadow-sm">
               <BadgeCheck size={17} strokeWidth={2.3} aria-hidden className="fill-brand-600 text-white" />
             </span>
-            <span className="text-[13px] font-bold tracking-wide text-white">Verified by Eduplana</span>
+            <span className="text-[13px] font-bold tracking-wide text-white">Eduplana Verified</span>
           </div>
         ) : null}
       </div>
@@ -87,8 +87,13 @@ export function SchoolCard({ school, priority = false }: { school: School; prior
         ) : null}
 
         <dl className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <dt className="sr-only">Fees</dt>
-          <dd className="font-display text-[17px] text-brand-700">{shortFee(school)}</dd>
+          {/* No fee published: say nothing rather than "n/a", which reads as a fault. */}
+          {school.fee.min != null || school.fee.max != null ? (
+            <>
+              <dt className="sr-only">Fees</dt>
+              <dd className="font-display text-[17px] text-brand-700">{shortFee(school)}</dd>
+            </>
+          ) : null}
           <dt className="sr-only">Model</dt>
           <dd className="text-[13px] text-ink-500">{boardingLabel(school)}</dd>
         </dl>
@@ -120,12 +125,14 @@ function LogoPlaceholder({ school }: { school: School }) {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 via-white to-ink-100">
       {school.images.logo ? (
+        // Sized by the box, not a fixed square: wide wordmarks shrank to a
+        // sliver inside 64x64 while square crests filled it.
         <AssetImage
           path={school.images.logo}
           alt=""
-          width={96}
-          height={96}
-          className="h-16 w-16 rounded-xl object-contain"
+          width={240}
+          height={120}
+          className="h-auto max-h-24 w-auto max-w-[62%] rounded-lg object-contain"
         />
       ) : (
         <span className="flex flex-col items-center gap-1.5 text-brand-700/35">

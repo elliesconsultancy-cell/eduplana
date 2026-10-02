@@ -437,6 +437,7 @@ function AtAGlance({ school }: { school: School }) {
           : formatFee(school),
       tint: "bg-amber-50 text-amber-700",
       feature: true,
+      omitWhenEmpty: true,
     },
     {
       icon: BookOpen,
@@ -558,6 +559,10 @@ function VerifiedHero({ school, phone, tel }: { school: School; phone: string | 
     },
   ];
 
+  // Only facts the school has published: an empty cell in a strip this
+  // prominent reads as a gap in the school, not in our data.
+  const shown = facts.filter((f) => f.value);
+
   return (
     <section className="relative isolate overflow-hidden bg-brand-950 text-white">
       {photo ? (
@@ -594,7 +599,7 @@ function VerifiedHero({ school, phone, tel }: { school: School; phone: string | 
             <div className="min-w-0">
               <p className="inline-flex items-center gap-1.5 rounded-full bg-white/10 py-1 pl-1.5 pr-3 text-[13px] font-semibold text-white ring-1 ring-white/20 backdrop-blur">
                 <BadgeCheck size={17} strokeWidth={2.2} aria-hidden className="fill-white text-brand-800" />
-                Verified school
+                Eduplana Verified
               </p>
               <h1 className="font-display tracking-display mt-3 text-[2rem] leading-[1.08] text-white sm:text-[2.9rem]">
                 {words.length ? `${words.join(" ")} ` : ""}
@@ -648,18 +653,20 @@ function VerifiedHero({ school, phone, tel }: { school: School; phone: string | 
           </div>
         </div>
 
-        <dl className="mt-8 grid grid-cols-2 overflow-hidden rounded-2xl bg-white/[0.07] ring-1 ring-white/15 backdrop-blur-sm lg:grid-cols-4">
-          {facts.map((f, i) => (
+        <dl
+          className={`mt-8 grid grid-cols-2 overflow-hidden rounded-2xl bg-white/[0.07] ring-1 ring-white/15 backdrop-blur-sm ${
+            shown.length === 4 ? "lg:grid-cols-4" : shown.length === 3 ? "lg:grid-cols-3" : ""
+          }`}
+        >
+          {shown.map((f, i) => (
             <div
               key={f.label}
               className={`px-5 py-4 ${i % 2 ? "border-l border-white/10" : ""} ${i >= 2 ? "border-t border-white/10 lg:border-t-0" : ""} ${
-                i === 2 ? "lg:border-l" : ""
-              }`}
+                i === 2 && shown.length > 2 ? "lg:border-l" : ""
+              } ${shown.length === 3 && i === 2 ? "col-span-2 lg:col-span-1" : ""}`}
             >
               <dt className="text-[12px] font-medium text-white/60">{f.label}</dt>
-              <dd className={`mt-1 font-display text-[17px] leading-snug ${f.value ? "text-white" : "text-white/40"}`}>
-                {f.value ?? "Not published"}
-              </dd>
+              <dd className="mt-1 font-display text-[17px] leading-snug text-white">{f.value}</dd>
             </div>
           ))}
         </dl>

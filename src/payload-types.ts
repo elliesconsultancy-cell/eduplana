@@ -299,6 +299,10 @@ export interface School {
       | null;
   };
   /**
+   * Show in “Featured schools” on the home page. Only verified schools are featured; ticking this on an unverified school has no effect until it is verified.
+   */
+  featured?: boolean | null;
+  /**
    * Only tick this once someone has confirmed these details with the school directly. Never from the school's own website alone.
    */
   verified?: boolean | null;
@@ -632,6 +636,7 @@ export interface SchoolsSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  featured?: T;
   verified?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -773,7 +778,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * The email schools receive. Placeholders: {school} is the school's name, {location} its town and state, and {link} its private link. A footer saying why they received it, with an unsubscribe link, is always added.
+ * The email schools receive. Placeholders: {school} is the school's name and {location} its town and state. A paragraph that is just {listing} becomes a panel linking to each of the school's pages on Eduplana; one that is just {link} becomes the button to their private edit page. The logo, and a footer saying why they received it with an unsubscribe link, are always added.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "outreach-settings".

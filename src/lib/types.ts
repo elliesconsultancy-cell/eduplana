@@ -64,6 +64,8 @@ export interface School {
    * those say "the school published this", this says "we checked".
    */
   verified: boolean;
+  /** Chosen by an admin for the home page. Only counts on a verified school. */
+  featured: boolean;
 }
 
 export interface SearchFilters {

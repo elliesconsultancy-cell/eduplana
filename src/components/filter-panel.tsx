@@ -154,7 +154,7 @@ export function FilterPanel({ facets, total }: { facets: Facets; total: number }
             />
           </Group>
 
-          <Group title="Verified by Eduplana">
+          <Group title="Eduplana Verified">
             <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-brand-200 bg-brand-50 p-3 text-sm">
               <input
                 type="checkbox"

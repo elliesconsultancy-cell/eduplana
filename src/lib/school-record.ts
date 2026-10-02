@@ -60,5 +60,6 @@ export function toSchool(doc: SchoolDoc): School {
       }),
     },
     verified: Boolean(doc.verified),
+    featured: Boolean(doc.featured),
   };
 }

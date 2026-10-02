@@ -89,8 +89,11 @@ export default async function HomePage() {
   const careerCount = all.filter((s) => careerProfile(s).tier === "strong").length;
   // One card per school: most verified schools have a primary and a secondary
   // listing under the same name, and showing both reads as a duplicate.
+  // Schools an admin ticked "featured" lead; other verified schools fill any
+  // remaining places, so the section never sits half empty.
+  const ordered = [...featured.filter((s) => s.featured), ...featured.filter((s) => !s.featured)];
   const seen = new Set<string>();
-  const verifiedSchools = featured.filter((s) => {
+  const verifiedSchools = ordered.filter((s) => {
     const key = s.name.toLowerCase().replace(/\s*\((primary|secondary)\)\s*$/, "").replace(/[^a-z0-9]+/g, " ").trim();
     if (seen.has(key)) return false;
     seen.add(key);
