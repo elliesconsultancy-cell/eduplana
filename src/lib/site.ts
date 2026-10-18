@@ -27,7 +27,10 @@ export const SITE_DESCRIPTION =
  */
 export const SITE_PROFILES = ["https://www.instagram.com/eduplanafound/"];
 
-export const FOUNDERS = [{ name: "Babatunde Adegbite", jobTitle: "Co-founder" }];
+export const FOUNDERS = [
+  { name: "Oriyomi Ogunwale", jobTitle: "Co-founder & Team Lead" },
+  { name: "Babatunde Adegbite", jobTitle: "Co-founder & Chief Technology Officer" },
+];
 
 /** Absolute URL for a site-relative path, with no double slashes. */
 export const absoluteUrl = (path: string) => `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;

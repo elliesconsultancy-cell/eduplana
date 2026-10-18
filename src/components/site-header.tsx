@@ -45,6 +45,7 @@ const NAV: NavEntry[] = [
       { href: "/insights/reports", label: "Reports & data", hint: "Budget analyses and datasets" },
     ],
   },
+  { href: "/about", label: "About" },
   { href: "/compare", label: "Compare" },
   { href: "/shortlist", label: "Saved" },
 ];

@@ -212,6 +212,7 @@ function SiteFooter() {
           <FooterColumn
             title="More"
             links={[
+              { href: "/about", label: "About us" },
               { href: "/for-schools", label: "For schools" },
               { href: "/insights/reports", label: "Reports & data" },
               { href: "/shortlist", label: "Saved schools" },
