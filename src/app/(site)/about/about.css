@@ -1,0 +1,192 @@
+/*
+ * Motion and the orbit on the About page.
+ *
+ * Everything that moves is inside `prefers-reduced-motion: no-preference`, so
+ * a person who has asked their device for less movement gets the finished page,
+ * still. Nothing here carries information the page does not also state in text.
+ */
+
+/* ---------------------------------------------------------------- the hero -- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* One sequence on arrival: headline, subline, buttons, then the map. */
+  .ab-rise {
+    animation: ab-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+  @keyframes ab-rise {
+    from {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+  }
+
+  /* The connecting lines draw themselves; each is normalised to length 1. */
+  .nm-arc {
+    stroke-dasharray: 1;
+    animation: nm-draw 1.7s cubic-bezier(0.45, 0, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+  @keyframes nm-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .nm-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: nm-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+  @keyframes nm-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.2);
+    }
+  }
+
+  /* City names follow their markers rather than leading them. */
+  .nm-fade {
+    animation: nm-fade 0.6s ease-out both;
+    animation-delay: var(--d, 0ms);
+  }
+  @keyframes nm-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* A slow ring off Lagos and Abuja, the two places the most schools are. */
+  .nm-ping {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: nm-ping 3.4s ease-out infinite;
+    animation-delay: var(--d, 2.4s);
+  }
+  @keyframes nm-ping {
+    0% {
+      opacity: 0.55;
+      transform: scale(0.6);
+    }
+    80%,
+    100% {
+      opacity: 0;
+      transform: scale(2.4);
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- the orbit -- */
+
+/*
+ * Six groups circling Eduplana. The ring turns; each chip turns the other way
+ * at the same speed, so the words stay upright. Pausing on hover keeps them
+ * readable for anyone who wants to stop and look.
+ */
+.eco-spoke {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 35%;
+  height: 1px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--color-brand-200), transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .eco-orbit {
+    animation: eco-turn 110s linear infinite;
+  }
+  .eco-chip {
+    animation: eco-turn 110s linear infinite reverse;
+  }
+  .eco:hover .eco-orbit,
+  .eco:hover .eco-chip,
+  .eco:focus-within .eco-orbit,
+  .eco:focus-within .eco-chip {
+    animation-play-state: paused;
+  }
+  @keyframes eco-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .eco-hub::before {
+    content: "";
+    position: absolute;
+    inset: -14%;
+    border-radius: 9999px;
+    border: 1px solid var(--color-brand-300);
+    animation: eco-breathe 3.6s ease-out infinite;
+  }
+  @keyframes eco-breathe {
+    0% {
+      opacity: 0.7;
+      transform: scale(0.85);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+  }
+}
+
+/* ------------------------------------------------------------ the campaigns -- */
+
+.ab-marquee {
+  display: flex;
+  width: max-content;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ab-marquee {
+    animation: ab-scroll 48s linear infinite;
+  }
+  .ab-band:hover .ab-marquee {
+    animation-play-state: paused;
+  }
+  @keyframes ab-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+/* Still: the four campaigns, wrapped, once. The looped copy is only for motion. */
+@media (prefers-reduced-motion: reduce) {
+  .ab-marquee {
+    width: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 0.5rem;
+  }
+  .ab-marquee [data-loop] {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------ the timeline -- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .ab-here::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: var(--color-brand-600);
+    animation: ab-here 2.6s ease-out infinite;
+  }
+  @keyframes ab-here {
+    0% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(3);
+    }
+  }
+}

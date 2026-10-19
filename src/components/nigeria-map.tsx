@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { NIGERIA_PATH, NIGERIA_VIEWBOX, project } from "@/lib/nigeria-map";
 
 /**
@@ -63,17 +64,36 @@ export function NigeriaMap({ counts }: { counts: Map<string, number> }) {
         <path d={NIGERIA_PATH} fill="url(#nm-land)" stroke="#6ba3e3" strokeOpacity="0.55" strokeWidth="2.2" strokeLinejoin="round" />
 
         <g aria-hidden fill="none" stroke="#a9cbf2" strokeOpacity="0.32" strokeWidth="1.6">
-          {hubs.flatMap((h) =>
-            points.filter((p) => p !== h && !(h.name === "Abuja" && p.name === "Lagos")).map((p) => (
-              <path key={`${h.name}-${p.name}`} d={arc(h, p)} />
-            )),
-          )}
+          {hubs
+            .flatMap((h) => points.filter((p) => p !== h && !(h.name === "Abuja" && p.name === "Lagos")).map((p) => [h, p] as const))
+            .map(([h, p], i) => (
+              // pathLength 1 lets one dash animation draw every line, whatever its length.
+              <path
+                key={`${h.name}-${p.name}`}
+                d={arc(h, p)}
+                pathLength={1}
+                className="nm-arc"
+                style={{ "--d": `${700 + i * 60}ms` } as CSSProperties}
+              />
+            ))}
         </g>
 
         <g aria-hidden>
-          {points.map((p) => (
-            <g key={p.name}>
+          {points.map((p, i) => (
+            <g key={p.name} className="nm-dot" style={{ "--d": `${1500 + i * 110}ms` } as CSSProperties}>
               <circle cx={p.x} cy={p.y} r={radius(p.n) * 2.4} fill="url(#nm-glow)" />
+              {p.hub ? (
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={radius(p.n) * 1.2}
+                  fill="none"
+                  stroke="#bcd9fa"
+                  strokeWidth="2"
+                  className="nm-ping"
+                  style={{ "--d": `${2600 + i * 700}ms` } as CSSProperties}
+                />
+              ) : null}
               <circle cx={p.x} cy={p.y} r={radius(p.n) * 0.62} fill="#ffffff" fillOpacity="0.95" />
             </g>
           ))}
@@ -82,13 +102,14 @@ export function NigeriaMap({ counts }: { counts: Map<string, number> }) {
             .map((p) => (
               <text
                 key={`${p.name}-label`}
+                className="nm-fade"
+                style={{ "--d": `${1900 + points.indexOf(p) * 110}ms`, fontFamily: "inherit" } as CSSProperties}
                 x={p.x + radius(p.n) * 0.62 + 12}
                 y={p.y + 6}
                 fill="#ffffff"
                 fillOpacity="0.88"
                 fontSize="27"
                 fontWeight="600"
-                style={{ fontFamily: "inherit" }}
               >
                 {p.name}
               </text>
