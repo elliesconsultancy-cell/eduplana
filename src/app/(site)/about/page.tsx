@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BarChart3, ChevronDown, Mail, Search, Users } from "lucide-react";
+import { ArrowRight, BarChart3, Mail, Search, Users } from "lucide-react";
 import { NigeriaMap } from "@/components/nigeria-map";
+import { TeamGrid } from "@/components/team-grid";
 import { topStates, totalCount } from "@/lib/schools";
-import { TEAM, type Person } from "@/lib/team";
+import { TEAM } from "@/lib/team";
 import { SITE_URL, absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -213,47 +213,13 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* The team, at a glance */}
-      <section id="team" className="scroll-mt-20 mx-auto max-w-6xl px-4 pt-16 sm:px-6 sm:pt-24">
+      {/* The team. A profile opens in a panel from the right. */}
+      <section id="team" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
         <h2 className="font-display text-[2rem] leading-[1.1] text-ink-950 sm:text-[2.75rem]">
           The people behind the work
         </h2>
         <p className="mt-3 text-[17px] text-ink-600">A shared belief in what education can become.</p>
-
-        <ul className="mt-10 grid gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
-          {TEAM.map((p) => (
-            <li key={p.slug}>
-              <a href={`#${p.slug}`} className="group flex h-full flex-col">
-                <div className="relative aspect-[4/4.4] overflow-hidden rounded-2xl bg-brand-950">
-                  <Image
-                    src={p.photo}
-                    alt={`Portrait of ${p.name}`}
-                    fill
-                    unoptimized
-                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 260px"
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  />
-                </div>
-                <h3 className="font-display mt-4 text-[1.1rem] leading-snug text-ink-950">{p.name}</h3>
-                <p className="mt-0.5 text-sm text-ink-500">{p.role}</p>
-                <p className="mt-2 text-[14px] leading-relaxed text-ink-600">{p.tagline}</p>
-                <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-brand-700 group-hover:text-brand-900">
-                  Read profile
-                  <ArrowUpRight size={15} strokeWidth={2.4} aria-hidden />
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Full profiles */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="space-y-6 sm:space-y-8">
-          {TEAM.map((p) => (
-            <Profile key={p.slug} person={p} />
-          ))}
-        </div>
+        <TeamGrid people={TEAM} />
       </section>
 
       {/* Closing call */}
@@ -285,108 +251,5 @@ export default async function AboutPage() {
         </div>
       </section>
     </>
-  );
-}
-
-/**
- * One person, on a card of their own: the portrait on the left with their role
- * across it, the story on the right. The portrait stays in view while a longer
- * bio scrolls past it, and the profile has its own address so it can be linked
- * to directly. The first two paragraphs are always visible; the rest open with
- * a native <details>, which works without JavaScript and is readable to search
- * engines either way.
- *
- * The card clips with overflow-clip, not overflow-hidden: hidden makes it a
- * scroll container, and the portrait's `sticky` would then stick to the card
- * instead of the page.
- */
-function Profile({ person }: { person: Person }) {
-  const shown = person.paragraphs.slice(0, 2);
-  const more = person.paragraphs.slice(2);
-
-  return (
-    <article
-      id={person.slug}
-      className="scroll-mt-28 overflow-clip rounded-[2rem] border border-ink-100 bg-white shadow-card lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]"
-    >
-      <div className="p-3 sm:p-4 lg:p-5">
-        <div className="relative aspect-square overflow-hidden rounded-[1.5rem] bg-brand-950 lg:sticky lg:top-[88px]">
-          {/* Already sized and compressed, so the optimizer has nothing to add. */}
-          <Image
-            src={person.photo}
-            alt={`Portrait of ${person.name}`}
-            fill
-            unoptimized
-            sizes="(max-width: 1024px) 90vw, 416px"
-            className="object-cover"
-          />
-          {/* A cool blue wash at the foot: the role needs a surface to sit on. */}
-          <div
-            aria-hidden
-            className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-brand-950/85 to-transparent"
-          />
-          {person.group === "co-founder" ? (
-            <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-[12px] font-bold text-brand-800 shadow-sm">
-              Co-founder
-            </span>
-          ) : null}
-          <p className="absolute inset-x-4 bottom-4 text-[15px] font-semibold leading-snug text-white">
-            {person.role}
-          </p>
-        </div>
-      </div>
-
-      <div className="min-w-0 p-6 sm:p-8 lg:py-10 lg:pl-4 lg:pr-12">
-        <h3 className="font-display text-[2rem] leading-[1.1] tracking-display text-ink-950 sm:text-[2.5rem]">
-          {person.name}
-        </h3>
-
-        <p className="mt-5 text-[1.12rem] leading-[1.7] text-ink-800">{shown[0]}</p>
-        {shown.slice(1).map((para) => (
-          <p key={para} className="mt-4 text-[16px] leading-[1.8] text-ink-600">
-            {para}
-          </p>
-        ))}
-
-        {more.length > 0 ? (
-          <details className="group mt-4">
-            <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-full bg-brand-50 px-4 py-2 text-sm font-bold text-brand-800 transition-colors hover:bg-brand-100 [&::-webkit-details-marker]:hidden">
-              <span className="group-open:hidden">Read the full profile</span>
-              <span className="hidden group-open:inline">Show less</span>
-              <ChevronDown
-                size={16}
-                strokeWidth={2.6}
-                aria-hidden
-                className="transition-transform group-open:rotate-180"
-              />
-            </summary>
-            <div className="mt-5 space-y-4">
-              {more.map((para) => (
-                <p key={para} className="text-[16px] leading-[1.8] text-ink-600">
-                  {para}
-                </p>
-              ))}
-            </div>
-          </details>
-        ) : null}
-
-        <div className="mt-8 border-t border-ink-100 pt-6">
-          <ul className="flex flex-wrap gap-2">
-            {person.expertise.map((e) => (
-              <li key={e} className="rounded-full bg-brand-50 px-3 py-1 text-[13px] font-semibold text-brand-800">
-                {e}
-              </li>
-            ))}
-          </ul>
-
-          {person.workedWith?.length ? (
-            <p className="mt-5 text-sm leading-relaxed text-ink-500">
-              <span className="font-semibold text-ink-700">Has worked with </span>
-              {person.workedWith.join(", ")}.
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </article>
   );
 }
