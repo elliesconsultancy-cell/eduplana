@@ -1,8 +1,5 @@
 import "server-only";
 
-import { getPayload } from "payload";
-import config from "@payload-config";
-
 /**
  * Record what a visitor did, without ever delaying them.
  *
@@ -33,6 +30,12 @@ type Event =
 export function record(event: Event): Promise<void> {
   return (async () => {
     try {
+      // Loaded on use, not at import: /schools records searches, and should not
+      // load the CMS just to render the page. See lib/schools.ts.
+      const [{ getPayload }, { default: config }] = await Promise.all([
+        import("payload"),
+        import("@payload-config"),
+      ]);
       const payload = await getPayload({ config });
       await payload.create({
         collection: "events",

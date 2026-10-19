@@ -24,23 +24,48 @@ import { absoluteUrl } from "@/lib/site";
  * rank. The bare `/schools` and every `/schools/<slug>` profile stay open: the
  * rule matches the question mark, not the path.
  */
+/**
+ * Crawlers that read the whole site and give nothing back: SEO-tool scrapers
+ * that sell the data on, and bulk dataset collectors. None of them sends a
+ * parent to a school. Each one that obeys robots.txt is a crawl of 7,375
+ * profiles that never happens; the ones that do not obey are for the firewall.
+ *
+ * Search engines and AI assistants are deliberately not on this list — being
+ * found in them is the point. Add a name here if the logs show it is heavy.
+ */
+const UNWANTED_CRAWLERS = [
+  "AhrefsBot",
+  "SemrushBot",
+  "MJ12bot",
+  "DotBot",
+  "BLEXBot",
+  "DataForSeoBot",
+  "Bytespider",
+  "CCBot",
+  "PetalBot",
+  "serpstatbot",
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: [
-        "/admin",
-        "/admin/",
-        "/payload-api/",
-        "/api/",
-        "/schools?",
-        "/compare",
-        "/shortlist",
-        "/manage",
-        "/unsubscribe",
-      ],
-    },
+    rules: [
+      { userAgent: UNWANTED_CRAWLERS, disallow: "/" },
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: [
+          "/admin",
+          "/admin/",
+          "/payload-api/",
+          "/api/",
+          "/schools?",
+          "/compare",
+          "/shortlist",
+          "/manage",
+          "/unsubscribe",
+        ],
+      },
+    ],
     sitemap: absoluteUrl("/sitemap.xml"),
     host: absoluteUrl("/").replace(/\/$/, ""),
   };

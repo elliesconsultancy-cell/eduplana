@@ -3,8 +3,6 @@ import "server-only";
 import { cache } from "react";
 import snapshot from "@/data/schools.snapshot.json";
 import { unstable_cache } from "next/cache";
-import { getPayload } from "payload";
-import config from "@payload-config";
 import { SCHOOLS_TAG } from "./cache-tags";
 import { careerProfile } from "./career";
 import { toSchool, type SchoolDoc } from "./school-record";
@@ -63,6 +61,21 @@ interface Changes {
 }
 
 async function fetchChanges(since: string): Promise<Changes> {
+  /*
+   * Imported here, not at the top of the file, on purpose.
+   *
+   * Loading Payload (core, the Postgres adapter, the editor) costs about a
+   * second of CPU in a fresh process; parsing the whole school snapshot costs
+   * a twentieth of that. This function runs only when the shared change set is
+   * not already cached, so a page served from cache never pays for the CMS. A
+   * static import made every public page — the home page, every profile, every
+   * search — load it at startup regardless, and on a plan billed by CPU time
+   * that is what a crawler wakes up a function to do.
+   */
+  const [{ getPayload }, { default: config }] = await Promise.all([
+    import("payload"),
+    import("@payload-config"),
+  ]);
   const payload = await getPayload({ config });
 
   // Every status, not just published: a record unpublished after the snapshot

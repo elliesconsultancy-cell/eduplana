@@ -9,10 +9,22 @@ import { suggest } from "@/lib/schools";
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q") ?? "";
+  // Case and stray spaces do not change the answer, so they should not change
+  // the cache entry: "Lekki", "lekki" and "lekki " are one request to the CDN.
+  const q = (searchParams.get("q") ?? "").trim().toLowerCase();
 
   return NextResponse.json(
     { suggestions: await suggest(q) },
-    { headers: { "Cache-Control": "public, max-age=60" } },
+    {
+      headers: {
+        /*
+         * `max-age` is the browser, `s-maxage` is Vercel's CDN: the same prefix
+         * typed by anyone is worked out once an hour, not once per keystroke.
+         * An hour is the staleness this accepts after an edit — a school that
+         * was renamed or unpublished can be suggested for up to that long.
+         */
+        "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    },
   );
 }

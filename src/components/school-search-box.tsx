@@ -60,7 +60,8 @@ export function SchoolSearchBox({
     // Debounced: a fetch per keystroke would fire ten times for one word.
     const timer = setTimeout(() => {
       setLoading(true);
-      fetch(`/api/suggest?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
+      // Lowercased so "Lekki" and "lekki" are one entry in the CDN's cache.
+      fetch(`/api/suggest?q=${encodeURIComponent(trimmed.toLowerCase())}`, { signal: controller.signal })
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
         .then((data: { suggestions: Suggestion[] }) => {
           setResult({ key: trimmed, items: data.suggestions });
@@ -71,7 +72,7 @@ export function SchoolSearchBox({
           setResult({ key: trimmed, items: EMPTY });
           setLoading(false);
         });
-    }, 160);
+    }, 250);
 
     return () => {
       clearTimeout(timer);
