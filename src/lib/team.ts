@@ -16,6 +16,8 @@ export interface Person {
   role: string;
   group: "co-founder" | "leadership";
   photo: string;
+  /** One line for the team grid, drawn from the bio and nothing else. */
+  tagline: string;
   /** One sentence, for search engines and link previews. */
   summary: string;
   /** The first two are shown; the rest sit behind "Read the full profile". */
@@ -31,6 +33,8 @@ export const TEAM: Person[] = [
     role: "Co-Founder & Team Lead",
     group: "co-founder",
     photo: "/team/oriyomi-ogunwale.webp",
+    tagline:
+      "Leads Eduplana's work for accountability and transparency in Nigeria's education sector.",
     summary:
       "Co-founded Eduplana in 2017 as a civic tech organisation promoting accountability and transparency in Nigeria's education sector, and leads the team.",
     paragraphs: [
@@ -49,6 +53,8 @@ export const TEAM: Person[] = [
     role: "Co-Founder & Chief Technology Officer",
     group: "co-founder",
     photo: "/team/babatunde-adegbite.webp",
+    tagline:
+      "Builds the platform that puts clear, honest education data in people's hands.",
     summary:
       "Co-founder and CTO of Eduplana, a software engineer of more than ten years who builds the platform that puts education data in the hands of parents, schools and policymakers.",
     paragraphs: [
@@ -67,6 +73,8 @@ export const TEAM: Person[] = [
     role: "Head, Strategy & Partnerships",
     group: "leadership",
     photo: "/team/tomiwa-anjorin.webp",
+    tagline:
+      "Leads strategy and partnerships, with a record in performance management.",
     summary:
       "Management consultant who leads strategy and partnerships at Eduplana, with experience building strategy and performance management systems for public and private organisations.",
     paragraphs: [
@@ -95,6 +103,8 @@ export const TEAM: Person[] = [
     role: "Digital Communication Lead",
     group: "leadership",
     photo: "/team/olufunlola-adeola.webp",
+    tagline:
+      "Leads digital communication, shaping how Eduplana shows up online.",
     summary:
       "Social media manager and UI/UX designer who leads Eduplana's Digital Communication team, shaping the brand's online presence and community engagement.",
     paragraphs: [
