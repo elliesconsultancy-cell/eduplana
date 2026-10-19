@@ -136,38 +136,6 @@
   }
 }
 
-/* ------------------------------------------------------------ the campaigns -- */
-
-.ab-marquee {
-  display: flex;
-  width: max-content;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .ab-marquee {
-    animation: ab-scroll 48s linear infinite;
-  }
-  .ab-band:hover .ab-marquee {
-    animation-play-state: paused;
-  }
-  @keyframes ab-scroll {
-    to {
-      transform: translateX(-50%);
-    }
-  }
-}
-/* Still: the four campaigns, wrapped, once. The looped copy is only for motion. */
-@media (prefers-reduced-motion: reduce) {
-  .ab-marquee {
-    width: auto;
-    flex-wrap: wrap;
-    justify-content: center;
-    row-gap: 0.5rem;
-  }
-  .ab-marquee [data-loop] {
-    display: none;
-  }
-}
-
 /* ------------------------------------------------------------ the timeline -- */
 
 @media (prefers-reduced-motion: no-preference) {

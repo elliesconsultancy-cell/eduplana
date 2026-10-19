@@ -255,33 +255,6 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* The campaigns, in the open. */}
-      <section aria-label="Our major advocacy campaigns" className="ab-band relative overflow-hidden bg-brand-950 py-10 sm:py-14">
-        <div aria-hidden className="absolute -left-24 top-1/2 size-[420px] -translate-y-1/2 rounded-full bg-brand-600/25 blur-3xl" />
-        <p className="relative text-center text-sm font-semibold text-brand-200">Our major advocacy campaigns</p>
-        <div className="relative mt-6 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)]">
-          <div className="ab-marquee">
-            {[false, true].map((loop) => (
-              <ul
-                key={String(loop)}
-                {...(loop ? { "aria-hidden": true, "data-loop": "" } : {})}
-                className="flex shrink-0 items-center"
-              >
-                {CAMPAIGNS.map((c) => (
-                  <li key={c} className="flex items-center whitespace-nowrap">
-                    <span className="font-display px-5 text-[2.2rem] leading-none text-white sm:px-8 sm:text-[3.8rem]">
-                      <span className="text-brand-400">#</span>
-                      {c}
-                    </span>
-                    <span aria-hidden className="size-2 rounded-full bg-brand-500" />
-                  </li>
-                ))}
-              </ul>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* The journey */}
       <section className="bg-brand-50/70">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
@@ -296,6 +269,7 @@ export default async function AboutPage() {
                 when: "2017",
                 title: "Advocacy & accountability",
                 body: "We started by championing greater transparency and accountability in Nigerian education, and by turning education data into public pressure for change.",
+                tags: CAMPAIGNS,
                 done: true,
               },
               {
@@ -330,6 +304,22 @@ export default async function AboutPage() {
                 <p className="font-display text-[1.15rem] text-ink-950">{step.when}</p>
                 <h3 className="mt-1 text-[1.02rem] font-semibold text-brand-800">{step.title}</h3>
                 <p className="mt-3 max-w-sm text-[15px] leading-relaxed text-ink-600">{step.body}</p>
+                {"tags" in step && step.tags ? (
+                  <div className="mt-4">
+                    <p className="text-[13px] font-semibold text-ink-700">Major campaigns</p>
+                    <ul className="mt-2 flex flex-wrap gap-1.5">
+                      {step.tags.map((t) => (
+                        <li
+                          key={t}
+                          className="rounded-full bg-white px-2.5 py-1 text-[12.5px] font-semibold text-brand-800 ring-1 ring-brand-200"
+                        >
+                          <span className="text-brand-500">#</span>
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </li>
             ))}
           </ol>
