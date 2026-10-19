@@ -2,8 +2,8 @@
  * The people on the About page.
  *
  * Kept as data, apart from the layout, so a bio or a photograph can be changed
- * without touching the page. Portraits are 720×900 WebP in `public/team/`, cropped
- * to one shape so the four sit together.
+ * without touching the page. Portraits are 900×900 WebP in `public/team/`, cropped
+ * square so the four sit together.
  *
  * Bios are written from the ones each person supplied: tightened, put in the
  * third person throughout, and with nothing added. Pronouns appear only where
@@ -35,12 +35,12 @@ export const TEAM: Person[] = [
       "Co-founded Eduplana in 2017 as a civic tech organisation promoting accountability and transparency in Nigeria's education sector, and leads the team.",
     paragraphs: [
       "Oriyomi Ogunwale co-founded Eduplana in 2017, a civic tech organisation that promotes accountability and transparency in the education sector, and leads the team today.",
-      "Oriyomi has led Eduplana on civic projects that give citizens access to education governance and help them understand how public education works, through information gathering, civic action and campaigning for change. A champion for accountability and transparency in Nigeria's education sector, Oriyomi's background is in data processing and management, behavioural science, and project development and management.",
+      "Oriyomi has led Eduplana on civic projects that give citizens access to education governance and help them understand how public education works, through information gathering, civic action and campaigning for change. A champion for accountability and transparency in Nigeria's education sector, Oriyomi's background is in data processing and management, behavioural science, management consulting, and project development and management.",
       "Those projects include Education Financing Advocacy, Public School Needs Assessment, Education Policy Reform, Teachers' Welfare, Universities' Autonomy and States Education Funding. The major advocacy campaigns include #EducationFund, #SaveLautech, #StudentInjustice and #OutofSchoolChildren. Eduplana's education infographics have been published in newspapers, and the team partners with radio stations.",
       "Oriyomi is a member of the Open Data Team and Open Alliance in Nigeria, which work to improve openness and accountability in government.",
       "Oriyomi is a graduate of Animal Nutrition from the Federal University of Agriculture, Abeokuta (FUNAAB), where Oriyomi was a member of AIESEC Abeokuta and JCIN FUNAAB and served as the 2010 Vice-President of JCIN FUNAAB. Oriyomi is also a graduate of Non-Profit Leadership and Management from Lagos Business School.",
     ],
-    expertise: ["Data processing & management", "Behavioural science", "Project development", "Education advocacy"],
+    expertise: ["Management consulting", "Data processing & management", "Behavioural science", "Project development", "Education advocacy"],
     workedWith: ["BudgIT", "EiE Nigeria", "IBP", "Malala Fund", "OGP", "USAID SACE"],
   },
   {
