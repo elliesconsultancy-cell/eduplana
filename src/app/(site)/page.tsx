@@ -16,6 +16,7 @@ import {
   Sparkles,
   Users,
   type LucideIcon,
+  ArrowUpRight,
 } from "lucide-react";
 import { SearchForm } from "@/components/search-form";
 import { SchoolCard } from "@/components/school-card";
@@ -114,6 +115,7 @@ export default async function HomePage() {
       <FeaturedSchools featured={verifiedSchools.slice(0, 6)} />
       <ManagementPillars />
       <Heritage archive={archive} />
+      <AdvisorBand />
       <Doors />
     </>
   );
@@ -507,6 +509,43 @@ function Doors() {
             </div>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Points parents to Eduplana Advisor, the sister site for career guidance. It is
+ * a separate site, so this is a plain link out, marked with an arrow.
+ */
+function AdvisorBand() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 pt-16 sm:px-6 sm:pt-20">
+      <div className="grid items-center gap-8 rounded-3xl bg-brand-50 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr]">
+        <div>
+          <h2 className="font-display text-[1.75rem] leading-tight text-ink-950 sm:text-[2.25rem]">
+            Chosen a school? Now help them choose a career.
+          </h2>
+          <p className="mt-4 max-w-xl leading-relaxed text-ink-600">
+            Eduplana Advisor is our sister platform for parents. It offers a free Career Advisor ID,
+            the cDiary career planning guide, a parent community and career coaching.
+          </p>
+          <a
+            href="https://advisor.eduplana.org"
+            rel="noopener"
+            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-700"
+          >
+            Visit Eduplana Advisor
+            <ArrowUpRight size={16} strokeWidth={2.4} aria-hidden />
+          </a>
+        </div>
+        <ul className="grid gap-3 text-sm font-semibold text-ink-800">
+          {["A free Career Advisor ID", "The cDiary career planning guide", "A parent community on WhatsApp", "Career coaching sessions"].map((t) => (
+            <li key={t} className="rounded-xl bg-white px-4 py-3 shadow-card">
+              {t}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

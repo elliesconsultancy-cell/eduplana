@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { CompareTray } from "@/components/compare-tray";
@@ -191,6 +192,14 @@ function SiteFooter() {
               Education data and management for Nigeria — from choosing a school to running one
               well.
             </p>
+            <a
+              href="https://advisor.eduplana.org"
+              rel="noopener"
+              className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-900"
+            >
+              Visit Eduplana Advisor
+              <ArrowUpRight size={14} strokeWidth={2.4} aria-hidden />
+            </a>
           </div>
           <FooterColumn
             title="Find schools"

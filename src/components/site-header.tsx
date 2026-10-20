@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
 import { useShortlist } from "./shortlist-provider";
 
 interface NavLink {
@@ -12,6 +12,8 @@ interface NavLink {
   label: string;
   /** One line of context in dropdowns; ignored for flat links. */
   hint?: string;
+  /** A different site: opens normally, with an arrow so it is not a surprise. */
+  external?: boolean;
 }
 
 interface NavGroup {
@@ -35,6 +37,12 @@ const NAV: NavEntry[] = [
         href: "/for-schools",
         label: "For schools",
         hint: "The management platform behind the profile",
+      },
+      {
+        href: "https://advisor.eduplana.org",
+        label: "Eduplana Advisor",
+        hint: "Career guidance for parents, with the cDiary",
+        external: true,
       },
     ],
   },
@@ -137,7 +145,7 @@ export function SiteHeader() {
                   <ul>
                     {entry.items.map((item) => (
                       <li key={item.href}>
-                        <MobileLink href={item.href} pathname={pathname} hint={item.hint}>
+                        <MobileLink href={item.href} pathname={pathname} hint={item.hint} external={item.external}>
                           {item.label}
                         </MobileLink>
                       </li>
@@ -168,13 +176,26 @@ function MobileLink({
   href,
   pathname,
   hint,
+  external,
   children,
 }: {
   href: string;
   pathname: string;
   hint?: string;
+  external?: boolean;
   children: React.ReactNode;
 }) {
+  if (external) {
+    return (
+      <a href={href} rel="noopener" className="block rounded-lg px-3 py-2.5 text-ink-800 transition-colors hover:bg-ink-50">
+        <span className="flex items-center gap-1 text-[15px] font-semibold">
+          {children}
+          <ArrowUpRight size={15} strokeWidth={2.4} aria-hidden />
+        </span>
+        {hint ? <span className="mt-0.5 block text-xs text-ink-500">{hint}</span> : null}
+      </a>
+    );
+  }
   return (
     <Link
       href={href}
@@ -277,26 +298,52 @@ function NavDropdown({ group, pathname }: { group: NavGroup; pathname: string })
           <ul className="overflow-hidden rounded-xl border border-ink-100 bg-white p-1.5 shadow-float">
             {group.items.map((item) => (
               <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  aria-current={isActive(pathname, item.href) ? "page" : undefined}
-                  className={`block rounded-lg px-3 py-2.5 transition-colors ${
-                    isActive(pathname, item.href) ? "bg-brand-50" : "hover:bg-ink-50"
-                  }`}
+                <DropdownAnchor
+                  item={item}
+                  active={isActive(pathname, item.href)}
+                  onNavigate={() => setOpen(false)}
                 >
-                  <span className="block text-sm font-semibold text-ink-900">{item.label}</span>
+                  <span className="flex items-center gap-1 text-sm font-semibold text-ink-900">
+                    {item.label}
+                    {item.external ? <ArrowUpRight size={14} strokeWidth={2.4} aria-hidden /> : null}
+                  </span>
                   {item.hint ? (
                     <span className="mt-0.5 block text-xs leading-relaxed text-ink-500">
                       {item.hint}
                     </span>
                   ) : null}
-                </Link>
+                </DropdownAnchor>
               </li>
             ))}
           </ul>
         </div>
       ) : null}
     </div>
+  );
+}
+
+function DropdownAnchor({
+  item,
+  active,
+  onNavigate,
+  children,
+}: {
+  item: NavLink;
+  active: boolean;
+  onNavigate: () => void;
+  children: React.ReactNode;
+}) {
+  const className = `block rounded-lg px-3 py-2.5 transition-colors ${active ? "bg-brand-50" : "hover:bg-ink-50"}`;
+  if (item.external) {
+    return (
+      <a href={item.href} rel="noopener" onClick={onNavigate} className={className}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link href={item.href} onClick={onNavigate} aria-current={active ? "page" : undefined} className={className}>
+      {children}
+    </Link>
   );
 }
