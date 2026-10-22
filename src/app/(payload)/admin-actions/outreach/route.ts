@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import {
   LimitError,
+  createInvite,
   db,
   generalMessage,
   inboxesFor,
@@ -65,11 +66,27 @@ export async function POST(request: Request) {
       const to = testRecipients(field("testTo"), String(user.email));
       const s = await settings(payload);
       for (const address of to) {
-        const m = generalMessage(s, address);
+        const m = generalMessage(s, address, await createInvite(address, payload));
         await sendOne({ ...m, subject: `[Test] ${m.subject}` });
       }
       back.searchParams.set("tested", to.join(", "));
       back.searchParams.set("testKind", "general");
+    } else if (action === "invite-link") {
+      back.searchParams.set("tab", "invite");
+      const raw = field("inviteEmail")?.toLowerCase() ?? null;
+      const email = raw && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw) ? raw : null;
+      if (raw && !email) throw new Error("That email address does not look right. Leave it empty to make a link without one.");
+      back.searchParams.set("link", await createInvite(email, payload));
+    } else if (action === "invite-send") {
+      back.searchParams.set("tab", "invite");
+      if (field("confirm") !== "yes") throw new Error("Tick the box to confirm you have checked the list.");
+      const plan = await planAddresses(splitAddresses(field("addresses") ?? ""), false);
+      const general = plan.filter((p) => p.status === "general").map((p) => p.email);
+      if (general.length === 0) throw new Error("No address on the list can be sent an invitation.");
+      const result = await sendGeneral(general);
+      back.searchParams.set("sent", String(result.sent));
+      back.searchParams.set("of", String(plan.length));
+      if (result.error) back.searchParams.set("error", result.error);
     } else if (action === "send") {
       if (field("confirm") !== "yes") throw new Error("Tick the box to confirm you have checked a test email.");
       // Exactly the inboxes the preview listed — re-checked against the

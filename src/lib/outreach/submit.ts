@@ -8,8 +8,9 @@ import { EMPTY_LISTING, toListing } from "./listing";
 import { allSchools } from "@/lib/schools";
 import { sendOne, toHtml } from "./mail";
 import { diff, normalize, type Problems } from "./normalize";
-import { db, loadSchool, settings, type Access } from "./server";
+import { db, loadSchool, settings, type Access, type Invite } from "./server";
 import { putImage } from "./storage";
+import { hashToken } from "./tokens";
 
 /**
  * What happens when a school sends its listing back.
@@ -221,15 +222,17 @@ const simplify = (name: string) =>
     .trim();
 
 /**
- * A school that is not in the directory asking to be added.
+ * A school that is not in the directory, invited to be added.
  *
- * Nothing here publishes anything. The submission waits in the same review
+ * Only reachable with an invitation link (see the route), so a stranger cannot
+ * send schools in. Nothing here publishes anything. The submission waits in the same review
  * queue as corrections, and approving it is what creates the listing, so a
  * stranger filling in a public form cannot put a page on the site. The listing
  * it creates is not verified: nobody has yet shown that the sender speaks for
  * the school.
  */
 export async function submitNewSchool(
+  invite: Invite,
   values: Record<string, unknown>,
   rawContact: Record<string, unknown>,
   rawMessage: unknown,
@@ -291,6 +294,12 @@ export async function submitNewSchool(
   }
 
   const message = clean(rawMessage, 2000) || null;
+  await payload.update({
+    collection: "access-links",
+    where: { tokenHash: { equals: hashToken(invite.token) } },
+    data: { lastUsedAt: new Date().toISOString() },
+    overrideAccess: true,
+  });
   const submission = await payload.create({
     collection: "school-submissions",
     data: {

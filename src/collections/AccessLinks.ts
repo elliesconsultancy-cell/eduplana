@@ -40,6 +40,7 @@ export const AccessLinks: CollectionConfig = {
       options: [
         { label: "Outreach email", value: "outreach" },
         { label: "Requested by the school", value: "requested" },
+        { label: "Invitation to add a school", value: "invite" },
       ],
     },
     { name: "lastUsedAt", type: "date" },

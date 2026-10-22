@@ -81,7 +81,7 @@ async function issueLink(
   payload: Payload,
   email: string,
   schools: string[],
-  purpose: "outreach" | "requested",
+  purpose: "outreach" | "requested" | "invite",
   days: number,
 ): Promise<{ token: string; id: string | number }> {
   const token = newToken();
@@ -101,6 +101,49 @@ async function issueLink(
 
 export const manageUrl = (token: string) => `${SITE_URL}/manage/${token}`;
 
+/* --------------------------------------------------------------- invitations -- */
+
+/** How long an invitation to add a school stays valid. */
+const INVITE_LINK_DAYS = 30;
+/** What the `email` column holds for a link made to copy rather than to email. */
+const SHARED_LINK = "(copied link)";
+
+export const inviteUrl = (token: string) => `${SITE_URL}/list-your-school/${token}`;
+
+/**
+ * A private link that opens the "add your school" form. Adding schools is by
+ * invitation only: the form has no public address, and this link is the only
+ * way in. It opens no existing listing, so it cannot be used to change one.
+ */
+export async function createInvite(email: string | null, payload?: Payload): Promise<string> {
+  const p = payload ?? (await db());
+  const { token } = await issueLink(p, email?.trim().toLowerCase() || SHARED_LINK, [], "invite", INVITE_LINK_DAYS);
+  return inviteUrl(token);
+}
+
+export interface Invite {
+  token: string;
+  /** The address the invitation was emailed to, if it was emailed. */
+  email: string | null;
+}
+
+/** The invitation a token stands for, or null if it is unknown, expired, or not an invitation. */
+export async function resolveInvite(token: string): Promise<Invite | null> {
+  if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) return null;
+  const payload = await db();
+  const { docs } = await payload.find({
+    collection: "access-links",
+    where: { and: [{ tokenHash: { equals: hashToken(token) } }, { purpose: { equals: "invite" } }] },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const link = docs[0];
+  if (!link || Date.parse(String(link.expiresAt)) < Date.now()) return null;
+  const email = String(link.email);
+  return { token, email: email === SHARED_LINK ? null : email };
+}
+
 export interface Access {
   token: string;
   email: string;
@@ -113,7 +156,7 @@ export async function resolveLink(token: string): Promise<Access | null> {
   const payload = await db();
   const { docs } = await payload.find({
     collection: "access-links",
-    where: { tokenHash: { equals: hashToken(token) } },
+    where: { and: [{ tokenHash: { equals: hashToken(token) } }, { purpose: { not_equals: "invite" } }] },
     limit: 1,
     depth: 0,
     overrideAccess: true,
@@ -248,7 +291,13 @@ export async function sentInLastDay(payload?: Payload): Promise<number> {
   const p = payload ?? (await db());
   const since = new Date(Date.now() - DAY).toISOString();
   const [links, general] = await Promise.all([
-    p.count({ collection: "access-links", where: { createdAt: { greater_than: since } }, overrideAccess: true }),
+    // Invitations are not counted here: an emailed one is already counted as a
+    // general send below, and one made to copy sends nothing at all.
+    p.count({
+      collection: "access-links",
+      where: { and: [{ createdAt: { greater_than: since } }, { purpose: { not_equals: "invite" } }] },
+      overrideAccess: true,
+    }),
     p.count({
       collection: "school-contacts",
       where: { and: [{ school: { like: ADDRESS_KEY } }, { lastSentAt: { greater_than: since } }] },
@@ -323,7 +372,10 @@ export async function sendGeneral(addresses: string[]): Promise<{ sent: number; 
   let sent = 0;
   for (let i = 0; i < queue.length; i += 50) {
     const batch = queue.slice(i, i + 50);
-    const messages = batch.map((email) => generalMessage(s, email));
+    // Each school gets a link of its own, so an invitation forwarded or left
+    // in an inbox can be traced and expires on its own.
+    const links = await Promise.all(batch.map((email) => createInvite(email, payload)));
+    const messages = batch.map((email, n) => generalMessage(s, email, links[n]));
     const key = createHash("sha256").update(batch.join(",")).digest("hex");
     try {
       await sendBatch(messages, `general-${new Date().toISOString().slice(0, 10)}-${key}`);
@@ -448,12 +500,8 @@ export function outreachMessage(s: Settings, inbox: Inbox, link: string, to = in
   };
 }
 
-export function generalMessage(s: Settings, to: string): Message {
-  const blocks = blocksFrom(
-    s.generalBody,
-    {},
-    { link: { href: `${SITE_URL}/list-your-school?email=${encodeURIComponent(to)}`, label: "Add your school to Eduplana" } },
-  );
+export function generalMessage(s: Settings, to: string, inviteHref: string): Message {
+  const blocks = blocksFrom(s.generalBody, {}, { link: { href: inviteHref, label: "Add your school to Eduplana" } });
   const { html, text } = renderEmail(blocks, {
     reason:
       `You are receiving this because ${to} was given to us as a contact address for a school. ` +

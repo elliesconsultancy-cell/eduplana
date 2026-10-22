@@ -62,6 +62,7 @@ export default function robots(): MetadataRoute.Robots {
           "/compare",
           "/shortlist",
           "/manage",
+          "/list-your-school",
           "/unsubscribe",
         ],
       },

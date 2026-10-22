@@ -223,7 +223,6 @@ function SiteFooter() {
             links={[
               { href: "/about", label: "About us" },
               { href: "/for-schools", label: "For schools" },
-              { href: "/list-your-school", label: "Add your school" },
               { href: "/insights/reports", label: "Reports & data" },
               { href: "/shortlist", label: "Saved schools" },
               { href: "/compare", label: "Compare schools" },

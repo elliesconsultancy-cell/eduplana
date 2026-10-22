@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 
+import { resolveInvite } from "@/lib/outreach/server";
 import { submitNewSchool } from "@/lib/outreach/submit";
 
-/** A school that is not in the directory asking to be added. See lib/outreach/submit.ts. */
+/** A school invited to be added sending its details in. See lib/outreach/submit.ts. */
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ ok: false, error: "The form could not be read." }, { status: 400 });
+  }
+
+  const invite = await resolveInvite(String(body.token ?? ""));
+  if (!invite) {
+    return NextResponse.json(
+      { ok: false, error: "This invitation has expired or is not valid. Email info@eduplana.org and we will send a new one." },
+      { status: 403 },
+    );
   }
 
   // Bots fill the hidden field or submit within a second of loading the page.
@@ -20,6 +29,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await submitNewSchool(
+      invite,
       (body.values ?? {}) as Record<string, unknown>,
       (body.contact ?? {}) as Record<string, unknown>,
       body.message,

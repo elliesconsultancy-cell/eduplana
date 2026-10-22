@@ -58,7 +58,7 @@ function Section({ title, note, children }: { title: string; note?: string; chil
   );
 }
 
-export function ListSchoolForm({ states, email }: { states: string[]; email: string }) {
+export function ListSchoolForm({ states, email, token }: { states: string[]; email: string; token: string }) {
   const top = useRef<HTMLFormElement>(null);
   const [startedAt] = useState(() => Date.now());
   const [school, setSchool] = useState({
@@ -96,7 +96,7 @@ export function ListSchoolForm({ states, email }: { states: string[]; email: str
       const res = await fetch("/api/list-school", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ values: school, contact, message, website: trap, t: startedAt }),
+        body: JSON.stringify({ token, values: school, contact, message, website: trap, t: startedAt }),
       });
       const json = await res.json();
       if (json.ok) {

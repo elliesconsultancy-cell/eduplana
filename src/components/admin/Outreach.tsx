@@ -4,6 +4,7 @@ import { DefaultTemplate } from "@payloadcms/next/templates";
 import { BadgeCheck, Mail, MailOpen, MessageSquareReply } from "lucide-react";
 
 import { NIGERIAN_STATE_NAMES } from "@/collections/Schools";
+import { CopyLink } from "./CopyLink";
 import { allSchools } from "@/lib/schools";
 import {
   MAX_ADDRESSES,
@@ -61,7 +62,7 @@ const STATUS: Record<string, { label: string; tone: string }> = {
 
 const PLAN: Record<PlanStatus, { label: string; tone: string; sends: boolean }> = {
   listing: { label: "Gets their private link", tone: "ad-pill--brand", sends: true },
-  general: { label: "Not on Eduplana: gets the general email", tone: "", sends: true },
+  general: { label: "Not on Eduplana: gets an invitation to add their school", tone: "", sends: true },
   "sent-before": { label: "Already emailed, skipped", tone: "ad-pill--warn", sends: false },
   "opted-out": { label: "Unsubscribed, skipped", tone: "ad-pill--down", sends: false },
   invalid: { label: "Not a valid address, skipped", tone: "ad-pill--down", sends: false },
@@ -74,7 +75,9 @@ export async function Outreach(props: AdminViewServerProps) {
   const me = initPageResult.req.user as { role?: string; email?: string } | null;
   const canSend = me?.role === "admin" || me?.role === "super-admin";
 
-  const tab = one(searchParams, "tab") === "addresses" ? "addresses" : "directory";
+  const tabParam = one(searchParams, "tab");
+  const tab = tabParam === "addresses" ? "addresses" : tabParam === "invite" ? "invite" : "directory";
+  const inviteLink = one(searchParams, "link");
   const state = one(searchParams, "state");
   const level = one(searchParams, "level");
   const audience: Audience = one(searchParams, "audience") === "reminder" ? "reminder" : "new";
@@ -106,7 +109,7 @@ export async function Outreach(props: AdminViewServerProps) {
 
   const sample = chosen[0] ?? matching[0];
   const preview = sample ? outreachMessage(s, sample, `${SITE_URL}/manage/(private link for this inbox)`) : null;
-  const general = generalMessage(s, "school@example.com");
+  const general = generalMessage(s, "school@example.com", `${SITE_URL}/list-your-school/(private link for this school)`);
 
   const sent = one(searchParams, "sent");
   const of = one(searchParams, "of");
@@ -190,6 +193,10 @@ export async function Outreach(props: AdminViewServerProps) {
           <Link href="/admin/outreach?tab=addresses" className={tab === "addresses" ? "is-active" : ""}
             aria-current={tab === "addresses" ? "page" : undefined}>
             Specific addresses
+          </Link>
+          <Link href="/admin/outreach?tab=invite" className={tab === "invite" ? "is-active" : ""}
+            aria-current={tab === "invite" ? "page" : undefined}>
+            Invite a new school
           </Link>
           <span className="or-tabs__quota">
             {nf.format(sentToday)} sent in the last 24 hours, {nf.format(remaining)} more allowed today
@@ -309,6 +316,70 @@ export async function Outreach(props: AdminViewServerProps) {
               ) : null}
             </Card>
           </Grid>
+        ) : tab === "invite" ? (
+          <Grid cols="wide">
+            <Card
+              title="Email an invitation"
+              note="For a school that is not on Eduplana. Adding a school is by invitation only: each address gets its own private link to the form, and nothing goes live until you approve it."
+              aside={
+                <Link className="ad-btn ad-btn--small" href="/admin/globals/outreach-settings">
+                  Edit
+                </Link>
+              }
+            >
+              <MailPreview from={general.from} subject={general.subject} html={general.html} />
+              {canSend ? (
+                <>
+                  <TestForm action="test-general" me={me?.email ?? ""} disabled={remaining === 0} hidden={{ tab: "invite" }}
+                    note="The test has a working link, so you can try filling the form in." />
+                  <form method="post" action="/admin-actions/outreach" className="or-send">
+                    <input type="hidden" name="action" value="invite-send" />
+                    <label className="or-test__label" htmlFor="or-invite-to">
+                      Send the invitation to
+                    </label>
+                    <textarea id="or-invite-to" name="addresses" rows={4} required
+                      placeholder={"head@school-one.com, info@school-two.ng"} />
+                    <p className="or-hint">
+                      Up to {MAX_ADDRESSES} addresses, separated by commas or new lines. Addresses already emailed,
+                      unsubscribed, or belonging to a school already on Eduplana are skipped.
+                    </p>
+                    <label className="or-check">
+                      <input type="checkbox" name="confirm" value="yes" required />
+                      <span>I have checked this list.</span>
+                    </label>
+                    <button type="submit" className="ad-btn ad-btn--primary" disabled={remaining === 0}>
+                      Send invitations
+                    </button>
+                  </form>
+                </>
+              ) : null}
+            </Card>
+
+            <Card
+              title="Or copy a link to send yourself"
+              note="Makes a private link for one school to send by WhatsApp or your own email. It works for 30 days, and is shown only once, here."
+            >
+              {inviteLink ? (
+                <div className="or-banner or-banner--ok" role="status">
+                  Your link is ready. Copy it now: it is not stored in a readable form, so it cannot be shown again.
+                  <CopyLink value={inviteLink} />
+                </div>
+              ) : null}
+              {canSend ? (
+                <form method="post" action="/admin-actions/outreach" className="or-send">
+                  <input type="hidden" name="action" value="invite-link" />
+                  <label className="or-test__label" htmlFor="or-invite-email">
+                    The school&rsquo;s email (optional)
+                  </label>
+                  <input id="or-invite-email" name="inviteEmail" type="email" autoComplete="off"
+                    placeholder="Fills in their email on the form" />
+                  <button type="submit" className="ad-btn">
+                    Create a link
+                  </button>
+                </form>
+              ) : null}
+            </Card>
+          </Grid>
         ) : (
           <>
             <Grid cols="wide">
@@ -335,7 +406,7 @@ export async function Outreach(props: AdminViewServerProps) {
 
               <Card
                 title="For schools not on Eduplana"
-                note="Addresses that belong to no listing get this instead, since there is no listing to link to."
+                note="Addresses that belong to no listing get this instead: an invitation, with a private link to add their school."
                 aside={
                   <Link className="ad-btn ad-btn--small" href="/admin/globals/outreach-settings">
                     Edit
