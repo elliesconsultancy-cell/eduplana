@@ -44,18 +44,25 @@ export function SubmissionDiff({ data }: UIFieldServerProps) {
   const before = (data?.before ?? {}) as Partial<Listing>;
   const kind = data?.kind as string | undefined;
   const slug = data?.schoolSlug as string | undefined;
-  const keys = LISTING_KEYS.filter((k) => k in changes);
+  const isNew = data?.kind === "new";
+  // A school not yet listed has no "before": show what it sent, skipping what it left empty.
+  const keys = LISTING_KEYS.filter(
+    (k) => k in changes && (!isNew || (changes[k] != null && changes[k] !== "" && !(Array.isArray(changes[k]) && (changes[k] as unknown[]).length === 0))),
+  );
+  const proposedLevel = (data?.changes as { level?: string } | undefined)?.level;
 
   return (
     <div className="ad sd">
       <div className="sd-head">
         <div>
           <p className="sd-eyebrow">
-            {kind === "removal"
-              ? "Removal request"
-              : kind === "confirm"
-                ? "Confirmed with no changes"
-                : `${keys.length} field${keys.length === 1 ? "" : "s"} changed`}
+            {kind === "new"
+              ? "New school to add"
+              : kind === "removal"
+                ? "Removal request"
+                : kind === "confirm"
+                  ? "Confirmed with no changes"
+                  : `${keys.length} field${keys.length === 1 ? "" : "s"} changed`}
           </p>
           <h2 className="sd-title">{String(data?.schoolName ?? "School")}</h2>
         </div>
@@ -66,6 +73,13 @@ export function SubmissionDiff({ data }: UIFieldServerProps) {
         ) : null}
       </div>
 
+      {isNew ? (
+        <p className="sd-callout">
+          This school is not in the directory. Approving creates a new {proposedLevel ?? "school"} listing and
+          publishes it, <strong>unverified</strong>. Before you tick Verified on it, confirm with the school by
+          email that the sender speaks for it. Nothing is live until you approve.
+        </p>
+      ) : null}
       {kind === "removal" ? (
         <p className="sd-callout">
           Approving unpublishes this listing. It is not deleted, so it can be republished from the
@@ -81,8 +95,8 @@ export function SubmissionDiff({ data }: UIFieldServerProps) {
           <thead>
             <tr>
               <th scope="col">Field</th>
-              <th scope="col">On the site now</th>
-              <th scope="col">Proposed</th>
+              <th scope="col">{isNew ? "" : "On the site now"}</th>
+              <th scope="col">{isNew ? "Sent in" : "Proposed"}</th>
             </tr>
           </thead>
           <tbody>

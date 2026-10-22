@@ -80,6 +80,13 @@ export default async function ManagePage({
             </a>{" "}
             from your school&rsquo;s official address and we will update it.
           </p>
+          <p className="mt-4 text-sm text-ink-500">
+            Not on Eduplana yet?{" "}
+            <a className="font-semibold text-brand-700 underline" href="/list-your-school">
+              Add your school
+            </a>
+            .
+          </p>
         </>
       )}
     </div>

@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 
 import { SITE_URL } from "@/lib/site";
-import { toListing } from "./listing";
+import { EMPTY_LISTING, toListing } from "./listing";
+import { allSchools } from "@/lib/schools";
 import { sendOne, toHtml } from "./mail";
 import { diff, normalize, type Problems } from "./normalize";
 import { db, loadSchool, settings, type Access } from "./server";
@@ -201,4 +202,130 @@ export async function storePhoto(
     putImage(`${base}-thumb.webp`, thumb),
   ]);
   return { full: fullPath, thumb: thumbPath };
+}
+
+/* ------------------------------------------------------- a school not listed -- */
+
+export type NewSchoolResult =
+  | { ok: true }
+  | { ok: false; problems?: Problems & { name?: string; level?: string; contact?: string }; error?: string };
+
+/** Submissions a single contact address may send in a day, so the form cannot be used to flood the queue. */
+const NEW_PER_DAY = 3;
+
+const simplify = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/\((primary|secondary)\)/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+/**
+ * A school that is not in the directory asking to be added.
+ *
+ * Nothing here publishes anything. The submission waits in the same review
+ * queue as corrections, and approving it is what creates the listing, so a
+ * stranger filling in a public form cannot put a page on the site. The listing
+ * it creates is not verified: nobody has yet shown that the sender speaks for
+ * the school.
+ */
+export async function submitNewSchool(
+  values: Record<string, unknown>,
+  rawContact: Record<string, unknown>,
+  rawMessage: unknown,
+): Promise<NewSchoolResult> {
+  const contact: Contact = {
+    name: clean(rawContact.name, 120),
+    role: clean(rawContact.role, 120),
+    email: clean(rawContact.email, 160).toLowerCase() || null,
+  };
+  if (!contact.name || !contact.role) {
+    return { ok: false, problems: { contact: "Tell us your name and your role at the school." } };
+  }
+  if (!contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+    return { ok: false, problems: { contact: "Enter an email address we can reach you on." } };
+  }
+
+  const name = clean(values.name, 160);
+  const level = values.level === "primary" || values.level === "secondary" ? values.level : null;
+  const problems: NonNullable<Extract<NewSchoolResult, { ok: false }>["problems"]> = {};
+  if (name.length < 3) problems.name = "Enter the school's full name.";
+  if (!level) problems.level = "Choose primary or secondary. A school with both can be added once for each.";
+
+  const { listing, problems: listingProblems } = normalize(values, "new", EMPTY_LISTING);
+  Object.assign(problems, listingProblems);
+  if (!listing.state && !problems.state) problems.state = "Choose the school's state.";
+  if (!listing.area && !problems.area) problems.area = "Enter the town or district.";
+  if (!listing.address && !problems.address) problems.address = "Enter the school's address.";
+  if (Object.keys(problems).length > 0) return { ok: false, problems };
+
+  // Already in the directory? Then the right route is the private link, which
+  // proves the sender is the school. Asking again here would make a duplicate.
+  const key = simplify(name);
+  const existing = (await allSchools()).find(
+    (s) => simplify(s.name) === key && (s.state ?? "").toLowerCase() === (listing.state ?? "").toLowerCase(),
+  );
+  if (existing) {
+    return {
+      ok: false,
+      problems: {
+        name: `${existing.name} is already on Eduplana. To update it, request your private link at eduplana.org/manage.`,
+      },
+    };
+  }
+
+  const payload = await db();
+  const { totalDocs } = await payload.count({
+    collection: "school-submissions",
+    where: {
+      and: [
+        { kind: { equals: "new" } },
+        { contactEmail: { equals: contact.email } },
+        { createdAt: { greater_than: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() } },
+      ],
+    },
+    overrideAccess: true,
+  });
+  if (totalDocs >= NEW_PER_DAY) {
+    return { ok: false, error: "You have sent several schools today. We will review them, and you can send more tomorrow." };
+  }
+
+  const message = clean(rawMessage, 2000) || null;
+  const submission = await payload.create({
+    collection: "school-submissions",
+    data: {
+      school: `new-${randomUUID()}`,
+      schoolName: name,
+      kind: "new",
+      status: "pending",
+      contactName: contact.name,
+      contactRole: contact.role,
+      contactEmail: contact.email,
+      message,
+      changes: { name, level, ...listing },
+      before: {},
+    },
+    overrideAccess: true,
+  });
+
+  try {
+    const s = await settings(payload);
+    const text = [
+      `${name} (${level}) asked to be added to Eduplana.`,
+      `From: ${contact.name}, ${contact.role} (${contact.email})`,
+      ...(message ? [`Their note: ${message}`] : []),
+      `Review it: ${SITE_URL}/admin/collections/school-submissions/${submission.id}`,
+    ].join("\n\n");
+    await sendOne({
+      from: `Eduplana <${s.fromEmail}>`,
+      to: s.fromEmail,
+      subject: `New school to review: ${name}`,
+      text,
+      html: toHtml(text),
+    });
+  } catch (error) {
+    console.error("[outreach] could not send the review notification", error);
+  }
+
+  return { ok: true };
 }

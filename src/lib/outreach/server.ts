@@ -449,7 +449,11 @@ export function outreachMessage(s: Settings, inbox: Inbox, link: string, to = in
 }
 
 export function generalMessage(s: Settings, to: string): Message {
-  const blocks = blocksFrom(s.generalBody, {});
+  const blocks = blocksFrom(
+    s.generalBody,
+    {},
+    { link: { href: `${SITE_URL}/list-your-school?email=${encodeURIComponent(to)}`, label: "Add your school to Eduplana" } },
+  );
   const { html, text } = renderEmail(blocks, {
     reason:
       `You are receiving this because ${to} was given to us as a contact address for a school. ` +

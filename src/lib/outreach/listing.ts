@@ -127,3 +127,33 @@ export function describe(key: ListingKey, value: unknown): string {
   if (Array.isArray(value)) return value.length ? value.join(", ") : "—";
   return String(value);
 }
+
+/** The starting point for a school that is not in the directory yet. */
+export const EMPTY_LISTING: Listing = {
+  tagline: null,
+  summary: null,
+  scope: null,
+  yearFounded: null,
+  curricula: [],
+  faith: "Secular",
+  state: null,
+  area: null,
+  address: null,
+  busStop: null,
+  phone: null,
+  email: null,
+  admissionsOfficer: null,
+  admissionsRole: null,
+  website: null,
+  fee: { label: null, min: null, max: null },
+  feeItems: [],
+  scholarship: null,
+  siblingsDiscount: null,
+  day: true,
+  boarding: false,
+  maxClassSize: null,
+  facilities: [],
+  activities: [],
+  clubs: [],
+  images: { logo: null, gallery: [] },
+};

@@ -8,7 +8,7 @@ const isAdmin = ({ req }: { req: { user?: { role?: string } | null } }) =>
  *
  * Nothing a school submits reaches the public site until an admin approves it
  * here. Approving writes the changes to the school, publishes it, and marks it
- * verified — the school itself has confirmed the details, which is exactly what
+ * verified (a school that was not listed is created, published and left unverified) — the school itself has confirmed the details, which is exactly what
  * `verified` claims. Rejecting leaves the listing as it was.
  *
  * A decision is final: once a submission is approved or rejected it cannot be
@@ -56,7 +56,47 @@ export const SchoolSubmissions: CollectionConfig = {
         data.reviewedBy = req.user?.id;
         data.reviewedAt = new Date().toISOString();
 
-        if (to === "approved") {
+        if (to === "approved" && originalDoc.kind === "new") {
+          // A school that was not in the directory. Approving creates the
+          // listing and publishes it, but does not verify it: that is a
+          // separate claim, made once someone has confirmed the sender speaks
+          // for the school.
+          const c = (originalDoc.changes ?? {}) as Record<string, unknown>;
+          const name = String(c.name ?? "").trim();
+          const level = c.level === "secondary" ? "secondary" : "primary";
+          const base =
+            name
+              .toLowerCase()
+              .normalize("NFKD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "")
+              .slice(0, 80) || "school";
+          let slug = base;
+          for (const candidate of [base, `${base}-${level}`, `${base}-${Math.random().toString(16).slice(2, 6)}`]) {
+            const { totalDocs } = await req.payload.count({
+              collection: "schools",
+              where: { slug: { equals: candidate } },
+              req,
+              overrideAccess: true,
+            });
+            slug = candidate;
+            if (totalDocs === 0) break;
+          }
+          const { name: _n, level: _l, ...listing } = c;
+          void _n;
+          void _l;
+          const id = `${slug}-${Math.random().toString(16).slice(2, 7)}`;
+          await req.payload.create({
+            collection: "schools",
+            data: { ...listing, id, name, slug, level, verified: false, _status: "published" } as never,
+            req,
+            overrideAccess: true,
+          });
+          // From here on the submission points at the school it created.
+          data.school = id;
+          data.schoolSlug = slug;
+        } else if (to === "approved") {
           const id = String(originalDoc.school);
           if (originalDoc.kind === "removal") {
             // Unpublished rather than deleted: the record and its history stay,
@@ -132,6 +172,7 @@ export const SchoolSubmissions: CollectionConfig = {
         { label: "Corrections", value: "update" },
         { label: "Confirmed as correct", value: "confirm" },
         { label: "Asked to be removed", value: "removal" },
+        { label: "New school to add", value: "new" },
       ],
       admin: { readOnly: true, position: "sidebar" },
     },

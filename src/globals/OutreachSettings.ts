@@ -32,7 +32,11 @@ We are Eduplana (www.eduplana.org), a free directory that helps parents in Niger
 
 Parents across Nigeria use Eduplana to shortlist schools to visit. We would like to include your school, at no cost to you.
 
-If you would like to be listed, simply reply to this email with your school's name and address, and we will send you a private link to add your fees, facilities and photographs.
+It takes about five minutes. Tell us the basics and we will check and publish your listing, then send you a private link to add your fees and photographs.
+
+{link}
+
+If your school is already on Eduplana, you can ignore this and request your private link at www.eduplana.org/manage.
 
 Warm regards,
 The Eduplana team`;
@@ -100,7 +104,7 @@ export const OutreachSettings: GlobalConfig = {
       admin: {
         initCollapsed: true,
         description:
-          "Sent from \u201cSend to specific addresses\u201d when an address does not belong to any listing, so there is no private link to give. No placeholders.",
+          "Sent from \u201cSend to specific addresses\u201d when an address does not belong to any listing. A paragraph that is just {link} becomes a button to the \u201cAdd your school\u201d form, with the recipient\u2019s address filled in. No other placeholders.",
       },
       fields: [
         { name: "generalSubject", type: "text", required: true, defaultValue: DEFAULT_GENERAL_SUBJECT },

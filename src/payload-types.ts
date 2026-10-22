@@ -326,7 +326,7 @@ export interface SchoolSubmission {
    * For the team. Not sent to the school.
    */
   reviewNote?: string | null;
-  kind: 'update' | 'confirm' | 'removal';
+  kind: 'update' | 'confirm' | 'removal' | 'new';
   school: string;
   schoolName?: string | null;
   schoolSlug?: string | null;
