@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { requestLinkAction } from "./actions";
 
@@ -82,9 +83,9 @@ export default async function ManagePage({
           </p>
           <p className="mt-4 text-sm text-ink-500">
             Not on Eduplana yet?{" "}
-            <a className="font-semibold text-brand-700 underline" href="/list-your-school">
+            <Link className="font-semibold text-brand-700 underline" href="/list-your-school">
               Add your school
-            </a>
+            </Link>
             .
           </p>
         </>

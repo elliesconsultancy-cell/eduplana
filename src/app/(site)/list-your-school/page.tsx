@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { NIGERIAN_STATE_NAMES } from "@/collections/Schools";
 import { ListSchoolForm } from "@/components/list-school-form";
@@ -35,9 +36,9 @@ export default async function ListYourSchoolPage({
       </p>
       <p className="mt-3 text-sm text-ink-500">
         Already listed? Request your private link at{" "}
-        <a className="font-semibold text-brand-700 underline" href="/manage">
+        <Link className="font-semibold text-brand-700 underline" href="/manage">
           eduplana.org/manage
-        </a>{" "}
+        </Link>{" "}
         instead.
       </p>
       <ListSchoolForm states={[...NIGERIAN_STATE_NAMES]} email={prefill} />
