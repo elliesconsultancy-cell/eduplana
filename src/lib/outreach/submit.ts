@@ -171,18 +171,16 @@ const MAX_BYTES = 4 * 1024 * 1024;
  * that only claims to be an image. Sizes match the existing pipeline: 1600px
  * for the gallery, 480x320 thumbnails, and a 400px logo.
  */
-export async function storePhoto(
-  access: Access,
-  schoolId: string,
+async function encodeAndStore(
+  folder: string,
   file: File,
   kind: "photo" | "logo",
 ): Promise<{ full: string; thumb: string } | { logo: string }> {
-  if (!access.schools.includes(schoolId)) throw new Error("This link does not cover that school.");
   if (!file.type.startsWith("image/")) throw new Error("That file is not an image.");
   if (file.size > MAX_BYTES) throw new Error("That image is too large. Use one under 4 MB.");
 
   const input = Buffer.from(await file.arrayBuffer());
-  const base = `/schools/uploads/${schoolId}/${randomUUID()}`;
+  const base = `/schools/uploads/${folder}/${randomUUID()}`;
 
   if (kind === "logo") {
     const logo = await sharp(input)
@@ -205,6 +203,32 @@ export async function storePhoto(
   return { full: fullPath, thumb: thumbPath };
 }
 
+export async function storePhoto(
+  access: Access,
+  schoolId: string,
+  file: File,
+  kind: "photo" | "logo",
+): Promise<{ full: string; thumb: string } | { logo: string }> {
+  if (!access.schools.includes(schoolId)) throw new Error("This link does not cover that school.");
+  return encodeAndStore(schoolId, file, kind);
+}
+
+/**
+ * The folder a school's photographs go in before it has an id of its own.
+ * Derived from the invitation, so only that invitation's uploads can be
+ * attached to the submission it makes.
+ */
+export const inviteFolder = (invite: Invite) => `invite-${hashToken(invite.token).slice(0, 16)}`;
+
+/** A photograph from the "add your school" form, stored against the invitation. */
+export async function storeInvitePhoto(
+  invite: Invite,
+  file: File,
+  kind: "photo" | "logo",
+): Promise<{ full: string; thumb: string } | { logo: string }> {
+  return encodeAndStore(inviteFolder(invite), file, kind);
+}
+
 /* ------------------------------------------------------- a school not listed -- */
 
 export type NewSchoolResult =
@@ -213,6 +237,8 @@ export type NewSchoolResult =
 
 /** Submissions a single contact address may send in a day, so the form cannot be used to flood the queue. */
 const NEW_PER_DAY = 3;
+/** Photographs a new school may send with its first submission. */
+const MAX_NEW_PHOTOS = 12;
 
 const simplify = (name: string) =>
   name
@@ -255,7 +281,8 @@ export async function submitNewSchool(
   if (name.length < 3) problems.name = "Enter the school's full name.";
   if (!level) problems.level = "Choose primary or secondary. A school with both can be added once for each.";
 
-  const { listing, problems: listingProblems } = normalize(values, "new", EMPTY_LISTING);
+  const { listing, problems: listingProblems } = normalize(values, inviteFolder(invite), EMPTY_LISTING);
+  listing.images.gallery = listing.images.gallery.slice(0, MAX_NEW_PHOTOS);
   Object.assign(problems, listingProblems);
   if (!listing.state && !problems.state) problems.state = "Choose the school's state.";
   if (!listing.area && !problems.area) problems.area = "Enter the town or district.";

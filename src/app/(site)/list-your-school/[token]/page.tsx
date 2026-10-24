@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+const STEPS = [
+  { title: "Tell us about your school", body: "The basics, your fees and photographs. It takes about ten minutes." },
+  { title: "We check it", body: "A person at Eduplana reviews every new school, usually within two working days." },
+  { title: "You are listed", body: "Parents can find and compare you, and you get a private link to keep it up to date." },
+];
+
 /**
  * Where a school invited to join Eduplana adds itself.
  *
@@ -24,7 +30,7 @@ export default async function ListYourSchoolPage({ params }: { params: Promise<{
 
   if (!invite) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-12 sm:px-6 sm:py-20">
+      <div className="mx-auto max-w-xl px-4 py-16 sm:px-6 sm:py-24">
         <h1 className="font-display text-3xl font-semibold text-ink-950 sm:text-4xl">This link is not valid</h1>
         <p className="mt-4 text-[17px] leading-relaxed text-ink-600">
           Adding a school is by invitation, and this invitation has expired or does not exist. If you were invited,
@@ -39,16 +45,37 @@ export default async function ListYourSchoolPage({ params }: { params: Promise<{
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-20">
-      <h1 className="font-display text-3xl font-semibold text-ink-950 sm:text-4xl">
-        Add your school to Eduplana
-      </h1>
-      <p className="mt-4 text-[17px] leading-relaxed text-ink-600">
-        You have been invited to list your school on Eduplana, a free directory that helps parents across Nigeria
-        find and compare private schools. Tell us the basics and we will create your listing. We check every new
-        school before it goes live, and nothing is published until we have.
-      </p>
-      <ListSchoolForm states={[...NIGERIAN_STATE_NAMES]} email={invite.email ?? ""} token={token} />
-    </div>
+    <>
+      <section className="border-b border-ink-100 bg-gradient-to-b from-brand-50 to-white">
+        <div className="mx-auto max-w-3xl px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16">
+          <h1 className="font-display text-[2rem] font-semibold leading-tight text-ink-950 sm:text-5xl">
+            Add your school to Eduplana
+          </h1>
+          <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-ink-600 sm:text-lg">
+            You have been invited to list your school on Eduplana, a free directory that helps parents across
+            Nigeria find and compare private schools. Listing is free, and nothing goes live until we have checked
+            it.
+          </p>
+          <ol className="mt-10 grid gap-4 sm:grid-cols-3">
+            {STEPS.map((step, n) => (
+              <li key={step.title} className="rounded-2xl bg-white/80 p-5 shadow-card ring-1 ring-ink-100">
+                <span
+                  aria-hidden
+                  className="grid size-8 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white"
+                >
+                  {n + 1}
+                </span>
+                <p className="font-display mt-4 font-semibold text-ink-950">{step.title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+        <ListSchoolForm states={[...NIGERIAN_STATE_NAMES]} email={invite.email ?? ""} token={token} />
+      </div>
+    </>
   );
 }
