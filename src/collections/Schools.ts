@@ -456,5 +456,13 @@ export const Schools: CollectionConfig = {
         },
       },
     },
+    {
+      name: "updateLink",
+      type: "ui",
+      admin: {
+        position: "sidebar",
+        components: { Field: "@/components/admin/SchoolLinkPanel#SchoolLinkPanel" },
+      },
+    },
   ],
 };

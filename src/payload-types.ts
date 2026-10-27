@@ -482,7 +482,7 @@ export interface AccessLink {
     | boolean
     | null;
   expiresAt: string;
-  purpose: 'outreach' | 'requested' | 'invite';
+  purpose: 'outreach' | 'requested' | 'invite' | 'shared';
   lastUsedAt?: string | null;
   updatedAt: string;
   createdAt: string;

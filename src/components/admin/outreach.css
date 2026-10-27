@@ -233,3 +233,10 @@
 
 .or-copy { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
 .or-copy input { flex: 1; min-width: 0; padding: 0.6rem 0.75rem; border: 1px solid var(--ad-line, #d9dce3); border-radius: 8px; background: var(--ad-surface, #fff); color: inherit; font: inherit; }
+
+.sl { margin-bottom: 1.25rem; padding: 1rem; border: 1px solid var(--ad-line, #d9dce3); border-radius: 12px; }
+.sl__title { margin: 0 0 0.35rem; font-weight: 700; }
+.sl__note { margin: 0 0 0.85rem; font-size: 0.85rem; line-height: 1.5; opacity: 0.75; }
+.sl__result { margin: 0 0 0.85rem; font-size: 0.85rem; }
+.sl__result p { margin: 0; }
+.sl__error { margin: 0 0 0.85rem; color: #b42318; font-weight: 600; font-size: 0.85rem; }

@@ -96,7 +96,7 @@ export async function submitListing(
       status: "pending",
       contactName: contact.name,
       contactRole: contact.role,
-      contactEmail: contact.email ?? access.email,
+      contactEmail: contact.email ?? (access.email || null),
       message,
       changes,
       before,
@@ -123,7 +123,7 @@ export async function submitListing(
     if (totalDocs === 0) {
       await payload.create({
         collection: "school-contacts",
-        data: { school: schoolId, name: school.name, email: access.email, status: "submitted", sends: 0, submittedAt: now },
+        data: { school: schoolId, name: school.name, email: access.email || contact.email || school.email || "(not given)", status: "submitted", sends: 0, submittedAt: now },
         overrideAccess: true,
       });
     }

@@ -81,7 +81,7 @@ async function issueLink(
   payload: Payload,
   email: string,
   schools: string[],
-  purpose: "outreach" | "requested" | "invite",
+  purpose: "outreach" | "requested" | "invite" | "shared",
   days: number,
 ): Promise<{ token: string; id: string | number }> {
   const token = newToken();
@@ -100,6 +100,22 @@ async function issueLink(
 }
 
 export const manageUrl = (token: string) => `${SITE_URL}/manage/${token}`;
+
+/**
+ * A private link to one school's listing, made to copy and send by hand.
+ *
+ * The same link the outreach email carries, so it opens the same edit page and
+ * what the school sends back goes through the same review. It is made on
+ * demand from a school's page in the admin; sending it is up to the person
+ * who copies it, so it does not count against the day's email allowance.
+ */
+export async function createSchoolLink(schoolId: string, payload?: Payload): Promise<{ url: string; name: string } | null> {
+  const p = payload ?? (await db());
+  const school = await loadSchool(schoolId);
+  if (!school) return null;
+  const { token } = await issueLink(p, school.email?.trim().toLowerCase() || SHARED_LINK, [school.id], "shared", OUTREACH_LINK_DAYS);
+  return { url: manageUrl(token), name: school.name };
+}
 
 /* --------------------------------------------------------------- invitations -- */
 
@@ -164,7 +180,8 @@ export async function resolveLink(token: string): Promise<Access | null> {
   const link = docs[0];
   if (!link || Date.parse(String(link.expiresAt)) < Date.now()) return null;
   const schools = Array.isArray(link.schools) ? (link.schools as unknown[]).map(String) : [];
-  return { token, email: String(link.email), schools };
+  // A link made to copy has no address when the school has none on file.
+  return { token, email: String(link.email) === SHARED_LINK ? "" : String(link.email), schools };
 }
 
 /**
@@ -291,11 +308,12 @@ export async function sentInLastDay(payload?: Payload): Promise<number> {
   const p = payload ?? (await db());
   const since = new Date(Date.now() - DAY).toISOString();
   const [links, general] = await Promise.all([
-    // Invitations are not counted here: an emailed one is already counted as a
-    // general send below, and one made to copy sends nothing at all.
+    // Invitations and links copied to send by hand are not counted here: an
+    // emailed invitation is already counted as a general send below, and the
+    // others send nothing through Resend at all.
     p.count({
       collection: "access-links",
-      where: { and: [{ createdAt: { greater_than: since } }, { purpose: { not_equals: "invite" } }] },
+      where: { and: [{ createdAt: { greater_than: since } }, { purpose: { not_in: ["invite", "shared"] } }] },
       overrideAccess: true,
     }),
     p.count({
